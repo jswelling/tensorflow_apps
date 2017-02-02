@@ -1,0 +1,1094 @@
++ date
+Mon Aug  1 17:35:19 EDT 2016
++ export MODULEPATH=/home/welling/git/bridges_modules::/opt/modulefiles
++ MODULEPATH=/home/welling/git/bridges_modules::/opt/modulefiles
++ module load cuda/7.5
+++ /usr/bin/modulecmd bash load cuda/7.5
++ eval CUDA_ROOT=/opt/packages/cuda/7.5 ';export' 'CUDA_ROOT;LD_LIBRARY_PATH=/opt/packages/cuda/7.5/lib64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/mic/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4:/opt/intel/debugger_2016/libipt/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin' ';export' 'LD_LIBRARY_PATH;LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5' ';export' 'LOADEDMODULES;PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin' ';export' 'PATH;_LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5' ';export' '_LMFILES_;'
+++ CUDA_ROOT=/opt/packages/cuda/7.5
+++ export CUDA_ROOT
+++ LD_LIBRARY_PATH=/opt/packages/cuda/7.5/lib64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/mic/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4:/opt/intel/debugger_2016/libipt/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin
+++ export LD_LIBRARY_PATH
+++ LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5
+++ export LOADEDMODULES
+++ PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ export PATH
+++ _LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5
+++ export _LMFILES_
++ module load tensorflow/0.9.0
+++ /usr/bin/modulecmd bash load tensorflow/0.9.0
++ eval LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5:tensorflow/0.9.0 ';export' 'LOADEDMODULES;TENSORFLOW_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv' ';export' 'TENSORFLOW_ENV;_LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5:/home/welling/git/bridges_modules/tensorflow/0.9.0' ';export' '_LMFILES_;'
+++ LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5:tensorflow/0.9.0
+++ export LOADEDMODULES
+++ TENSORFLOW_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ export TENSORFLOW_ENV
+++ _LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5:/home/welling/git/bridges_modules/tensorflow/0.9.0
+++ export _LMFILES_
++ source /opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv/bin/activate
+++ deactivate nondestructive
+++ unset -f pydoc
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ '[' -n /bin/bash ']'
+++ hash -r
+++ '[' -z '' ']'
+++ unset VIRTUAL_ENV
+++ '[' '!' nondestructive = nondestructive ']'
+++ VIRTUAL_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ export VIRTUAL_ENV
+++ _OLD_VIRTUAL_PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ PATH=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv/bin:/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ export PATH
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ _OLD_VIRTUAL_PS1=
+++ '[' x '!=' x ']'
++++ basename /opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ PS1='(TensorFlowEnv) '
+++ export PS1
+++ alias pydoc
+++ '[' -n /bin/bash ']'
+++ hash -r
++ python segnet_train.py
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcublas.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcudnn.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcufft.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcuda.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcurand.so locally
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:102] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:84:00.0
+Total memory: 11.17GiB
+Free memory: 11.11GiB
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:126] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:136] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:806] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:84:00.0)
+W tensorflow/core/common_runtime/bfc_allocator.cc:213] Ran out of memory trying to allocate 8.07GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+W tensorflow/core/common_runtime/bfc_allocator.cc:213] Ran out of memory trying to allocate 8.07GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+W tensorflow/core/common_runtime/bfc_allocator.cc:213] Ran out of memory trying to allocate 8.07GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory is available.
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:244] PoolAllocator: After 3321 get requests, put_count=3274 evicted_count=1000 eviction_rate=0.305437 and unsatisfied allocation rate=0.345378
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:256] Raising pool_size_limit_ from 100 to 110
+cnn inputs
+batch of images (4, 360, 480, 3)
+batch of labels (4, 360, 480, 1)
+covn1 (4, 360, 480, 64)
+pool1 (4, 180, 240, 64)
+covn2 (4, 180, 240, 64)
+pool2 (4, 90, 120, 64)
+covn3 (4, 90, 120, 64)
+pool3 (4, 45, 60, 64)
+covn4 (4, 45, 60, 64)
+pool4 (4, 23, 30, 64)
+up4 (4, 45, 60, 64)
+de_covn4 (4, 45, 60, 64)
+up3 (4, 90, 120, 64)
+de_covn3 (4, 90, 120, 64)
+up2 (4, 180, 240, 64)
+de_covn2 (4, 180, 240, 64)
+up1 (4, 360, 480, 64)
+de_covn1 (4, 360, 480, 64)
+start a session
+start on training
+num_examples_per_step,duration 4 4.646682024
+2016-08-01 17:35:31.851280: step 0, loss = 2.31 (0.9 examples/sec; 4.647 sec/batch)
+num_examples_per_step,duration 4 0.73362493515
+2016-08-01 17:36:05.915935: step 20, loss = 14.37 (5.5 examples/sec; 0.734 sec/batch)
+num_examples_per_step,duration 4 0.738646030426
+2016-08-01 17:36:25.792654: step 40, loss = 7.13 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740259170532
+2016-08-01 17:36:45.643186: step 60, loss = 9.71 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740871906281
+2016-08-01 17:37:05.523671: step 80, loss = 5.24 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743934869766
+2016-08-01 17:37:25.319531: step 100, loss = 6.21 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744606018066
+2016-08-01 17:37:45.227678: step 120, loss = 6.77 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.74499797821
+2016-08-01 17:38:05.168614: step 140, loss = 4.72 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.743930101395
+2016-08-01 17:38:25.183835: step 160, loss = 6.76 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743126869202
+2016-08-01 17:38:45.331079: step 180, loss = 8.33 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745573997498
+2016-08-01 17:39:05.418153: step 200, loss = 3.12 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.743834972382
+2016-08-01 17:39:25.461113: step 220, loss = 4.84 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739991188049
+2016-08-01 17:39:45.447426: step 240, loss = 5.84 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744086027145
+2016-08-01 17:40:05.411718: step 260, loss = 2.92 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743932008743
+2016-08-01 17:40:25.357276: step 280, loss = 2.99 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742230176926
+2016-08-01 17:40:45.366130: step 300, loss = 2.59 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742594957352
+2016-08-01 17:41:05.435079: step 320, loss = 5.21 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742954015732
+2016-08-01 17:41:25.317066: step 340, loss = 3.80 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741549015045
+2016-08-01 17:41:45.238970: step 360, loss = 3.12 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743620872498
+2016-08-01 17:42:05.199539: step 380, loss = 2.18 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744995832443
+2016-08-01 17:42:25.049229: step 400, loss = 3.78 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.743589878082
+2016-08-01 17:42:44.987932: step 420, loss = 4.42 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.74359703064
+2016-08-01 17:43:04.907117: step 440, loss = 2.17 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743484973907
+2016-08-01 17:43:24.827589: step 460, loss = 2.74 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739221811295
+2016-08-01 17:43:44.765310: step 480, loss = 4.38 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.73891711235
+2016-08-01 17:44:04.737042: step 500, loss = 1.81 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.744007110596
+2016-08-01 17:44:24.774958: step 520, loss = 1.41 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.741960048676
+2016-08-01 17:44:44.719019: step 540, loss = 4.65 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741579055786
+2016-08-01 17:45:04.685898: step 560, loss = 1.92 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740134000778
+2016-08-01 17:45:24.783673: step 580, loss = 2.34 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.747855901718
+2016-08-01 17:45:44.852967: step 600, loss = 2.35 (5.3 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.744948863983
+2016-08-01 17:46:04.911077: step 620, loss = 3.54 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742717981339
+2016-08-01 17:46:24.820960: step 640, loss = 1.35 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741059064865
+2016-08-01 17:46:44.888919: step 660, loss = 3.65 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743602991104
+2016-08-01 17:47:04.913334: step 680, loss = 5.04 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742080926895
+2016-08-01 17:47:24.960340: step 700, loss = 2.48 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742125988007
+2016-08-01 17:47:44.943290: step 720, loss = 2.31 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.745073080063
+2016-08-01 17:48:04.943135: step 740, loss = 3.56 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742592811584
+2016-08-01 17:48:25.043815: step 760, loss = 9.89 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740453004837
+2016-08-01 17:48:44.978062: step 780, loss = 6.66 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.743660926819
+2016-08-01 17:49:05.000394: step 800, loss = 10.92 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743172883987
+2016-08-01 17:49:24.898655: step 820, loss = 5.80 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742670059204
+2016-08-01 17:49:44.860619: step 840, loss = 8.52 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745658159256
+2016-08-01 17:50:04.792780: step 860, loss = 6.95 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742710113525
+2016-08-01 17:50:24.724525: step 880, loss = 5.30 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.743468999863
+2016-08-01 17:50:44.714244: step 900, loss = 3.88 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741678953171
+2016-08-01 17:51:04.745610: step 920, loss = 7.89 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.745845079422
+2016-08-01 17:51:24.635503: step 940, loss = 13.57 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.740784883499
+2016-08-01 17:51:44.603931: step 960, loss = 4.33 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743063926697
+2016-08-01 17:52:04.515141: step 980, loss = 9.62 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.73922586441
+2016-08-01 17:52:24.476339: step 1000, loss = 3.70 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.744339942932
+2016-08-01 17:52:50.887872: step 1020, loss = 9.69 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743554830551
+2016-08-01 17:53:10.880463: step 1040, loss = 5.31 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.745584964752
+2016-08-01 17:53:30.828758: step 1060, loss = 5.10 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742563962936
+2016-08-01 17:53:50.827641: step 1080, loss = 4.91 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74257183075
+2016-08-01 17:54:10.794091: step 1100, loss = 4.18 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.738859891891
+2016-08-01 17:54:30.809681: step 1120, loss = 5.24 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.746020793915
+2016-08-01 17:54:50.865911: step 1140, loss = 14.81 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.738721847534
+2016-08-01 17:55:10.869025: step 1160, loss = 5.77 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740295886993
+2016-08-01 17:55:30.756429: step 1180, loss = 4.06 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.746587991714
+2016-08-01 17:55:50.730524: step 1200, loss = 7.32 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.74488902092
+2016-08-01 17:56:10.733886: step 1220, loss = 7.85 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.741798877716
+2016-08-01 17:56:30.692760: step 1240, loss = 7.28 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743088960648
+2016-08-01 17:56:50.650255: step 1260, loss = 3.32 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744474172592
+2016-08-01 17:57:10.628845: step 1280, loss = 5.95 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742432117462
+2016-08-01 17:57:30.719150: step 1300, loss = 7.60 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.74138712883
+2016-08-01 17:57:50.690659: step 1320, loss = 10.44 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742172002792
+2016-08-01 17:58:10.590556: step 1340, loss = 6.70 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.745213985443
+2016-08-01 17:58:30.542360: step 1360, loss = 8.68 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740556955338
+2016-08-01 17:58:50.583627: step 1380, loss = 6.28 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.737158060074
+2016-08-01 17:59:10.560552: step 1400, loss = 7.11 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.741333007812
+2016-08-01 17:59:30.462897: step 1420, loss = 8.12 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740505933762
+2016-08-01 17:59:50.320451: step 1440, loss = 8.41 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743108987808
+2016-08-01 18:00:10.275030: step 1460, loss = 5.06 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739943027496
+2016-08-01 18:00:30.146498: step 1480, loss = 5.87 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742810964584
+2016-08-01 18:00:50.079106: step 1500, loss = 7.52 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745386123657
+2016-08-01 18:01:09.997476: step 1520, loss = 3.83 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740782022476
+2016-08-01 18:01:30.028523: step 1540, loss = 4.39 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742375850677
+2016-08-01 18:01:49.863324: step 1560, loss = 6.22 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742792844772
+2016-08-01 18:02:09.782590: step 1580, loss = 7.74 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745520114899
+2016-08-01 18:02:29.661672: step 1600, loss = 7.88 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.744541883469
+2016-08-01 18:02:49.697140: step 1620, loss = 6.06 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.747096061707
+2016-08-01 18:03:09.576043: step 1640, loss = 9.54 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.742699861526
+2016-08-01 18:03:29.549655: step 1660, loss = 15.34 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741166114807
+2016-08-01 18:03:49.443676: step 1680, loss = 9.76 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.750181913376
+2016-08-01 18:04:09.343555: step 1700, loss = 7.02 (5.3 examples/sec; 0.750 sec/batch)
+num_examples_per_step,duration 4 0.740962982178
+2016-08-01 18:04:29.202033: step 1720, loss = 23.20 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740922927856
+2016-08-01 18:04:49.069158: step 1740, loss = 11.03 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740482091904
+2016-08-01 18:05:08.929444: step 1760, loss = 6.96 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74029302597
+2016-08-01 18:05:28.891348: step 1780, loss = 7.21 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742372989655
+2016-08-01 18:05:48.815778: step 1800, loss = 16.94 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740982055664
+2016-08-01 18:06:08.683734: step 1820, loss = 7.73 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740122079849
+2016-08-01 18:06:28.528261: step 1840, loss = 13.20 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744292974472
+2016-08-01 18:06:48.438472: step 1860, loss = 11.48 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.747054815292
+2016-08-01 18:07:08.374769: step 1880, loss = 9.89 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.741504907608
+2016-08-01 18:07:28.218493: step 1900, loss = 9.67 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.74117898941
+2016-08-01 18:07:48.063246: step 1920, loss = 8.78 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.748825073242
+2016-08-01 18:08:07.909485: step 1940, loss = 23.45 (5.3 examples/sec; 0.749 sec/batch)
+num_examples_per_step,duration 4 0.742517948151
+2016-08-01 18:08:27.739736: step 1960, loss = 9.68 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.737100839615
+2016-08-01 18:08:47.738026: step 1980, loss = 5.66 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.742277860641
+2016-08-01 18:09:07.666472: step 2000, loss = 8.18 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741615056992
+2016-08-01 18:09:34.592552: step 2020, loss = 6.38 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739711046219
+2016-08-01 18:09:54.394703: step 2040, loss = 11.94 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74120593071
+2016-08-01 18:10:14.260607: step 2060, loss = 9.48 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.747842073441
+2016-08-01 18:10:34.232444: step 2080, loss = 10.27 (5.3 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.74197602272
+2016-08-01 18:10:54.153099: step 2100, loss = 7.32 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743726015091
+2016-08-01 18:11:13.971545: step 2120, loss = 16.09 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743210077286
+2016-08-01 18:11:34.019592: step 2140, loss = 10.93 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742848873138
+2016-08-01 18:11:53.784862: step 2160, loss = 12.12 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.743243217468
+2016-08-01 18:12:13.623709: step 2180, loss = 9.41 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.743088006973
+2016-08-01 18:12:33.593936: step 2200, loss = 5.17 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739568948746
+2016-08-01 18:12:53.565692: step 2220, loss = 7.82 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.738494157791
+2016-08-01 18:13:13.488689: step 2240, loss = 5.23 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.741181850433
+2016-08-01 18:13:33.413853: step 2260, loss = 17.70 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743280172348
+2016-08-01 18:13:53.306645: step 2280, loss = 13.51 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.738645076752
+2016-08-01 18:14:13.252273: step 2300, loss = 7.68 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.742069959641
+2016-08-01 18:14:33.183232: step 2320, loss = 3.57 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.738746166229
+2016-08-01 18:14:53.075157: step 2340, loss = 8.05 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.743433952332
+2016-08-01 18:15:13.013538: step 2360, loss = 5.27 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740744113922
+2016-08-01 18:15:32.892434: step 2380, loss = 10.74 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743381023407
+2016-08-01 18:15:52.724133: step 2400, loss = 7.04 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74183511734
+2016-08-01 18:16:12.627026: step 2420, loss = 14.67 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743145942688
+2016-08-01 18:16:32.632710: step 2440, loss = 7.14 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742110013962
+2016-08-01 18:16:52.843017: step 2460, loss = 7.62 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744287014008
+2016-08-01 18:17:12.771973: step 2480, loss = 12.26 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.745328903198
+2016-08-01 18:17:32.590905: step 2500, loss = 7.70 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.745959043503
+2016-08-01 18:17:52.428211: step 2520, loss = 4.20 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.73922085762
+2016-08-01 18:18:12.302367: step 2540, loss = 5.70 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.742974996567
+2016-08-01 18:18:32.198289: step 2560, loss = 11.31 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741664171219
+2016-08-01 18:18:51.979295: step 2580, loss = 4.45 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741281032562
+2016-08-01 18:19:11.876560: step 2600, loss = 5.65 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.737829208374
+2016-08-01 18:19:31.757692: step 2620, loss = 5.61 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.73970913887
+2016-08-01 18:19:51.694815: step 2640, loss = 8.72 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741364955902
+2016-08-01 18:20:11.669840: step 2660, loss = 12.01 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739681959152
+2016-08-01 18:20:31.509767: step 2680, loss = 6.16 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.73770904541
+2016-08-01 18:20:51.420745: step 2700, loss = 7.67 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.74293589592
+2016-08-01 18:21:11.285689: step 2720, loss = 7.23 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746111869812
+2016-08-01 18:21:31.122993: step 2740, loss = 4.37 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742349147797
+2016-08-01 18:21:50.909397: step 2760, loss = 8.03 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743776082993
+2016-08-01 18:22:10.818562: step 2780, loss = 10.89 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.738492012024
+2016-08-01 18:22:30.770812: step 2800, loss = 8.44 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.7424929142
+2016-08-01 18:22:50.537556: step 2820, loss = 6.73 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743088960648
+2016-08-01 18:23:10.458849: step 2840, loss = 9.45 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742437839508
+2016-08-01 18:23:30.244277: step 2860, loss = 10.55 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741328001022
+2016-08-01 18:23:50.061057: step 2880, loss = 4.66 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.745075941086
+2016-08-01 18:24:10.073342: step 2900, loss = 4.94 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.741255998611
+2016-08-01 18:24:29.968476: step 2920, loss = 6.88 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.744259119034
+2016-08-01 18:24:49.830056: step 2940, loss = 6.42 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.738070011139
+2016-08-01 18:25:09.593000: step 2960, loss = 7.02 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.738271951675
+2016-08-01 18:25:29.385649: step 2980, loss = 8.49 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.742638111115
+2016-08-01 18:25:49.237184: step 3000, loss = 6.00 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740188121796
+2016-08-01 18:26:15.467911: step 3020, loss = 5.82 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744781017303
+2016-08-01 18:26:35.379728: step 3040, loss = 6.68 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742313146591
+2016-08-01 18:26:55.352930: step 3060, loss = 11.35 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.745012998581
+2016-08-01 18:27:15.332858: step 3080, loss = 9.84 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.739062070847
+2016-08-01 18:27:35.108889: step 3100, loss = 15.25 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740660905838
+2016-08-01 18:27:54.939288: step 3120, loss = 8.26 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739130020142
+2016-08-01 18:28:14.795138: step 3140, loss = 7.03 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.745647192001
+2016-08-01 18:28:34.629789: step 3160, loss = 3.71 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742486000061
+2016-08-01 18:28:54.520132: step 3180, loss = 7.46 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741323947906
+2016-08-01 18:29:14.346001: step 3200, loss = 9.46 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.744673967361
+2016-08-01 18:29:34.259493: step 3220, loss = 10.14 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.743339061737
+2016-08-01 18:29:54.137480: step 3240, loss = 10.33 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.743918895721
+2016-08-01 18:30:14.037153: step 3260, loss = 6.14 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.738783836365
+2016-08-01 18:30:33.856952: step 3280, loss = 10.34 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.745929002762
+2016-08-01 18:30:53.767207: step 3300, loss = 7.65 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.737311840057
+2016-08-01 18:31:13.619901: step 3320, loss = 12.13 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.744053125381
+2016-08-01 18:31:33.709947: step 3340, loss = 5.30 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742227077484
+2016-08-01 18:31:53.585963: step 3360, loss = 5.09 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741143941879
+2016-08-01 18:32:13.426091: step 3380, loss = 10.46 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740842103958
+2016-08-01 18:32:33.319559: step 3400, loss = 13.82 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.745518922806
+2016-08-01 18:32:53.172754: step 3420, loss = 8.36 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.741878986359
+2016-08-01 18:33:13.039163: step 3440, loss = 5.60 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.738764047623
+2016-08-01 18:33:32.973886: step 3460, loss = 14.67 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740710020065
+2016-08-01 18:33:52.831625: step 3480, loss = 8.30 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.747782945633
+2016-08-01 18:34:12.717047: step 3500, loss = 8.81 (5.3 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.742893218994
+2016-08-01 18:34:32.548087: step 3520, loss = 7.74 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744956016541
+2016-08-01 18:34:52.466563: step 3540, loss = 8.94 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.741646051407
+2016-08-01 18:35:12.399214: step 3560, loss = 6.01 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743347883224
+2016-08-01 18:35:32.270765: step 3580, loss = 6.09 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740895986557
+2016-08-01 18:35:52.153956: step 3600, loss = 8.92 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741492986679
+2016-08-01 18:36:12.017661: step 3620, loss = 6.08 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.73818898201
+2016-08-01 18:36:31.823920: step 3640, loss = 6.16 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.739763021469
+2016-08-01 18:36:51.844933: step 3660, loss = 13.87 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.739106178284
+2016-08-01 18:37:11.813345: step 3680, loss = 5.18 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.745153903961
+2016-08-01 18:37:31.791297: step 3700, loss = 8.10 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742048978806
+2016-08-01 18:37:51.771632: step 3720, loss = 8.90 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.750132083893
+2016-08-01 18:38:11.674362: step 3740, loss = 4.97 (5.3 examples/sec; 0.750 sec/batch)
+num_examples_per_step,duration 4 0.740157842636
+2016-08-01 18:38:31.593294: step 3760, loss = 7.83 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742641925812
+2016-08-01 18:38:51.381056: step 3780, loss = 6.37 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.737850904465
+2016-08-01 18:39:11.276045: step 3800, loss = 5.93 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.73900103569
+2016-08-01 18:39:31.167934: step 3820, loss = 9.47 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.746534109116
+2016-08-01 18:39:50.950677: step 3840, loss = 7.38 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.742444992065
+2016-08-01 18:40:11.056839: step 3860, loss = 5.71 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740518093109
+2016-08-01 18:40:31.063189: step 3880, loss = 4.20 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740008115768
+2016-08-01 18:40:50.949555: step 3900, loss = 7.70 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744824886322
+2016-08-01 18:41:10.750058: step 3920, loss = 7.66 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742958068848
+2016-08-01 18:41:30.619215: step 3940, loss = 7.14 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74711894989
+2016-08-01 18:41:50.619418: step 3960, loss = 7.21 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.741480112076
+2016-08-01 18:42:10.662363: step 3980, loss = 6.91 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.74002289772
+2016-08-01 18:42:30.694232: step 4000, loss = 6.71 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74295592308
+2016-08-01 18:42:57.147698: step 4020, loss = 8.30 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744471073151
+2016-08-01 18:43:17.122049: step 4040, loss = 4.40 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.741711854935
+2016-08-01 18:43:37.068327: step 4060, loss = 10.65 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.73824095726
+2016-08-01 18:43:56.927726: step 4080, loss = 10.16 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.740564107895
+2016-08-01 18:44:16.884174: step 4100, loss = 6.76 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743407011032
+2016-08-01 18:44:36.751086: step 4120, loss = 5.02 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74125289917
+2016-08-01 18:44:56.675143: step 4140, loss = 7.93 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.74378991127
+2016-08-01 18:45:16.589087: step 4160, loss = 7.45 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744454145432
+2016-08-01 18:45:36.753798: step 4180, loss = 8.43 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.74275803566
+2016-08-01 18:45:56.805752: step 4200, loss = 7.93 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.743025064468
+2016-08-01 18:46:16.692285: step 4220, loss = 6.47 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739005804062
+2016-08-01 18:46:36.539724: step 4240, loss = 7.60 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.73984003067
+2016-08-01 18:46:56.446517: step 4260, loss = 5.69 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741827011108
+2016-08-01 18:47:16.323587: step 4280, loss = 13.38 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743481874466
+2016-08-01 18:47:36.269232: step 4300, loss = 7.37 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74263215065
+2016-08-01 18:47:56.253363: step 4320, loss = 9.76 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740271091461
+2016-08-01 18:48:16.267533: step 4340, loss = 5.86 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.743720054626
+2016-08-01 18:48:36.123744: step 4360, loss = 6.31 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.740564823151
+2016-08-01 18:48:56.186685: step 4380, loss = 8.01 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.74244093895
+2016-08-01 18:49:16.207288: step 4400, loss = 11.15 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742774009705
+2016-08-01 18:49:36.241761: step 4420, loss = 4.94 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742535114288
+2016-08-01 18:49:56.169362: step 4440, loss = 5.25 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744257926941
+2016-08-01 18:50:16.062421: step 4460, loss = 10.57 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.738608121872
+2016-08-01 18:50:36.003594: step 4480, loss = 8.42 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.741122961044
+2016-08-01 18:50:55.902121: step 4500, loss = 5.11 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739852905273
+2016-08-01 18:51:15.854826: step 4520, loss = 8.69 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740909099579
+2016-08-01 18:51:35.714983: step 4540, loss = 8.18 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741149902344
+2016-08-01 18:51:55.540691: step 4560, loss = 6.37 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.745510101318
+2016-08-01 18:52:15.398871: step 4580, loss = 11.10 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742787122726
+2016-08-01 18:52:35.379169: step 4600, loss = 4.38 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744993925095
+2016-08-01 18:52:55.252429: step 4620, loss = 10.09 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.73960518837
+2016-08-01 18:53:15.054121: step 4640, loss = 8.55 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741764068604
+2016-08-01 18:53:34.918116: step 4660, loss = 8.89 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742837905884
+2016-08-01 18:53:54.938852: step 4680, loss = 5.55 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739765882492
+2016-08-01 18:54:14.850071: step 4700, loss = 5.77 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74405503273
+2016-08-01 18:54:34.884185: step 4720, loss = 5.63 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742667913437
+2016-08-01 18:54:54.821205: step 4740, loss = 6.38 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741770029068
+2016-08-01 18:55:14.655611: step 4760, loss = 5.86 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743647098541
+2016-08-01 18:55:34.498610: step 4780, loss = 9.96 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742957115173
+2016-08-01 18:55:54.281864: step 4800, loss = 6.26 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746994018555
+2016-08-01 18:56:14.239417: step 4820, loss = 6.85 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.746945858002
+2016-08-01 18:56:34.164147: step 4840, loss = 5.06 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.742876052856
+2016-08-01 18:56:54.072975: step 4860, loss = 4.60 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740591049194
+2016-08-01 18:57:14.062739: step 4880, loss = 12.19 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739542007446
+2016-08-01 18:57:33.970414: step 4900, loss = 5.78 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.750264167786
+2016-08-01 18:57:53.916173: step 4920, loss = 6.59 (5.3 examples/sec; 0.750 sec/batch)
+num_examples_per_step,duration 4 0.743913888931
+2016-08-01 18:58:13.858089: step 4940, loss = 8.49 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739140033722
+2016-08-01 18:58:33.748759: step 4960, loss = 12.26 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740396022797
+2016-08-01 18:58:53.630337: step 4980, loss = 6.80 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744687080383
+2016-08-01 18:59:13.570194: step 5000, loss = 8.03 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742164134979
+2016-08-01 18:59:43.254305: step 5020, loss = 7.80 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741228103638
+2016-08-01 19:00:03.257400: step 5040, loss = 8.47 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742751121521
+2016-08-01 19:00:23.140270: step 5060, loss = 9.55 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741585969925
+2016-08-01 19:00:43.008645: step 5080, loss = 5.44 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740389108658
+2016-08-01 19:01:02.875359: step 5100, loss = 6.47 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.738924980164
+2016-08-01 19:01:22.715771: step 5120, loss = 6.43 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.742232084274
+2016-08-01 19:01:42.593087: step 5140, loss = 6.60 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741333007812
+2016-08-01 19:02:02.466233: step 5160, loss = 11.99 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.736840963364
+2016-08-01 19:02:22.414899: step 5180, loss = 7.60 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.741837978363
+2016-08-01 19:02:42.243013: step 5200, loss = 6.60 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739428043365
+2016-08-01 19:03:02.054486: step 5220, loss = 8.75 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.741651058197
+2016-08-01 19:03:22.053180: step 5240, loss = 10.48 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744002819061
+2016-08-01 19:03:41.939129: step 5260, loss = 7.89 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743788957596
+2016-08-01 19:04:01.871234: step 5280, loss = 7.06 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.741657972336
+2016-08-01 19:04:21.844264: step 5300, loss = 6.29 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744822025299
+2016-08-01 19:04:41.746924: step 5320, loss = 9.04 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.74079990387
+2016-08-01 19:05:01.573092: step 5340, loss = 7.30 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741542100906
+2016-08-01 19:05:21.468785: step 5360, loss = 10.51 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.737776041031
+2016-08-01 19:05:41.397115: step 5380, loss = 6.24 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.740803003311
+2016-08-01 19:06:01.381730: step 5400, loss = 8.91 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740093946457
+2016-08-01 19:06:21.272921: step 5420, loss = 6.56 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740562915802
+2016-08-01 19:06:41.207735: step 5440, loss = 11.02 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743532896042
+2016-08-01 19:07:01.068016: step 5460, loss = 6.08 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742210149765
+2016-08-01 19:07:20.981230: step 5480, loss = 9.27 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.738981962204
+2016-08-01 19:07:40.932613: step 5500, loss = 6.13 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.743099212646
+2016-08-01 19:08:00.875338: step 5520, loss = 7.19 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742503881454
+2016-08-01 19:08:20.804600: step 5540, loss = 6.48 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745021104813
+2016-08-01 19:08:40.724523: step 5560, loss = 4.52 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.742821931839
+2016-08-01 19:09:00.576125: step 5580, loss = 5.45 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744338989258
+2016-08-01 19:09:20.550305: step 5600, loss = 10.62 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742168903351
+2016-08-01 19:09:40.413346: step 5620, loss = 12.48 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739366054535
+2016-08-01 19:10:00.518789: step 5640, loss = 10.01 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.741719961166
+2016-08-01 19:10:20.450960: step 5660, loss = 6.20 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743706941605
+2016-08-01 19:10:40.340490: step 5680, loss = 7.97 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744439840317
+2016-08-01 19:11:00.346253: step 5700, loss = 5.93 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.74103307724
+2016-08-01 19:11:20.289247: step 5720, loss = 9.74 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.748028993607
+2016-08-01 19:11:40.170881: step 5740, loss = 6.51 (5.3 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.74822807312
+2016-08-01 19:12:00.061617: step 5760, loss = 7.05 (5.3 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.740365028381
+2016-08-01 19:12:20.033629: step 5780, loss = 6.32 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742635011673
+2016-08-01 19:12:39.993229: step 5800, loss = 8.05 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742794036865
+2016-08-01 19:12:59.945913: step 5820, loss = 10.03 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744489192963
+2016-08-01 19:13:19.897088: step 5840, loss = 6.43 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744492053986
+2016-08-01 19:13:39.789328: step 5860, loss = 7.83 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744421005249
+2016-08-01 19:13:59.714184: step 5880, loss = 10.73 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739118099213
+2016-08-01 19:14:19.550328: step 5900, loss = 10.48 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.742578983307
+2016-08-01 19:14:39.440870: step 5920, loss = 8.50 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74092912674
+2016-08-01 19:14:59.349728: step 5940, loss = 9.75 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739880084991
+2016-08-01 19:15:19.243471: step 5960, loss = 7.19 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.736921072006
+2016-08-01 19:15:39.116429: step 5980, loss = 6.84 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.741331100464
+2016-08-01 19:15:59.032458: step 6000, loss = 4.76 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742136001587
+2016-08-01 19:16:25.358546: step 6020, loss = 13.08 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743026018143
+2016-08-01 19:16:45.367523: step 6040, loss = 8.39 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741897106171
+2016-08-01 19:17:05.249608: step 6060, loss = 5.55 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744994878769
+2016-08-01 19:17:25.135436: step 6080, loss = 7.60 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740675926208
+2016-08-01 19:17:45.195427: step 6100, loss = 9.90 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.73873090744
+2016-08-01 19:18:05.054801: step 6120, loss = 7.92 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.739900112152
+2016-08-01 19:18:24.967210: step 6140, loss = 6.84 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742656946182
+2016-08-01 19:18:44.921502: step 6160, loss = 9.16 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741303920746
+2016-08-01 19:19:04.876624: step 6180, loss = 5.69 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743021965027
+2016-08-01 19:19:24.780739: step 6200, loss = 7.57 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740499019623
+2016-08-01 19:19:44.676424: step 6220, loss = 8.88 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.745010137558
+2016-08-01 19:20:04.614337: step 6240, loss = 10.11 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740911960602
+2016-08-01 19:20:24.497900: step 6260, loss = 7.06 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740750789642
+2016-08-01 19:20:44.333749: step 6280, loss = 9.50 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739585876465
+2016-08-01 19:21:04.206243: step 6300, loss = 7.35 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.739620923996
+2016-08-01 19:21:24.157384: step 6320, loss = 8.60 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742999076843
+2016-08-01 19:21:44.094767: step 6340, loss = 5.68 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745630025864
+2016-08-01 19:22:04.248128: step 6360, loss = 5.12 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.743618011475
+2016-08-01 19:22:24.240617: step 6380, loss = 5.73 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.747583150864
+2016-08-01 19:22:44.081935: step 6400, loss = 4.63 (5.4 examples/sec; 0.748 sec/batch)
+num_examples_per_step,duration 4 0.742063999176
+2016-08-01 19:23:03.910198: step 6420, loss = 5.13 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741677045822
+2016-08-01 19:23:23.722641: step 6440, loss = 6.19 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744090795517
+2016-08-01 19:23:43.611768: step 6460, loss = 6.19 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.737416028976
+2016-08-01 19:24:03.495273: step 6480, loss = 9.68 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.741293907166
+2016-08-01 19:24:23.332385: step 6500, loss = 7.53 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740599870682
+2016-08-01 19:24:43.181119: step 6520, loss = 9.96 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742526054382
+2016-08-01 19:25:03.141095: step 6540, loss = 4.84 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746176958084
+2016-08-01 19:25:23.023570: step 6560, loss = 8.86 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.740373134613
+2016-08-01 19:25:42.975271: step 6580, loss = 12.69 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742491960526
+2016-08-01 19:26:02.982560: step 6600, loss = 6.86 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741034030914
+2016-08-01 19:26:22.903713: step 6620, loss = 7.68 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742803096771
+2016-08-01 19:26:42.881793: step 6640, loss = 4.80 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739256858826
+2016-08-01 19:27:02.728888: step 6660, loss = 4.30 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.739014863968
+2016-08-01 19:27:22.690962: step 6680, loss = 5.81 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.74040389061
+2016-08-01 19:27:42.652664: step 6700, loss = 6.59 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740218877792
+2016-08-01 19:28:02.547556: step 6720, loss = 6.40 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740384101868
+2016-08-01 19:28:22.420041: step 6740, loss = 10.83 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741734981537
+2016-08-01 19:28:42.315591: step 6760, loss = 7.35 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740613937378
+2016-08-01 19:29:02.167157: step 6780, loss = 6.88 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740406990051
+2016-08-01 19:29:22.041843: step 6800, loss = 8.32 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741936922073
+2016-08-01 19:29:41.938886: step 6820, loss = 4.98 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.74439406395
+2016-08-01 19:30:01.779297: step 6840, loss = 7.74 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744269132614
+2016-08-01 19:30:21.852606: step 6860, loss = 8.70 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742045879364
+2016-08-01 19:30:41.687754: step 6880, loss = 5.55 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739228010178
+2016-08-01 19:31:01.681946: step 6900, loss = 8.06 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.744684934616
+2016-08-01 19:31:21.832761: step 6920, loss = 4.66 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740677118301
+2016-08-01 19:31:41.654876: step 6940, loss = 6.70 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741116046906
+2016-08-01 19:32:01.501517: step 6960, loss = 7.64 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743943214417
+2016-08-01 19:32:21.369995: step 6980, loss = 7.69 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.74369096756
+2016-08-01 19:32:41.273668: step 7000, loss = 6.11 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739902019501
+2016-08-01 19:33:07.633153: step 7020, loss = 6.74 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742362976074
+2016-08-01 19:33:27.449786: step 7040, loss = 10.53 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740517854691
+2016-08-01 19:33:47.338442: step 7060, loss = 7.12 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742432832718
+2016-08-01 19:34:07.348572: step 7080, loss = 7.84 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744683980942
+2016-08-01 19:34:27.300642: step 7100, loss = 7.56 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.741811037064
+2016-08-01 19:34:47.149836: step 7120, loss = 10.08 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742917060852
+2016-08-01 19:35:06.964419: step 7140, loss = 6.21 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742708921432
+2016-08-01 19:35:26.897183: step 7160, loss = 6.76 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741271018982
+2016-08-01 19:35:46.887757: step 7180, loss = 7.83 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.739413976669
+2016-08-01 19:36:06.922578: step 7200, loss = 9.30 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.74150800705
+2016-08-01 19:36:26.806990: step 7220, loss = 7.97 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739787101746
+2016-08-01 19:36:46.771225: step 7240, loss = 9.62 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744713068008
+2016-08-01 19:37:06.706429: step 7260, loss = 5.98 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.744447946548
+2016-08-01 19:37:26.534403: step 7280, loss = 5.35 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739379882812
+2016-08-01 19:37:46.388482: step 7300, loss = 6.84 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.742117881775
+2016-08-01 19:38:06.373059: step 7320, loss = 5.85 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741716146469
+2016-08-01 19:38:26.273469: step 7340, loss = 6.65 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.737774848938
+2016-08-01 19:38:46.204590: step 7360, loss = 14.59 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.745896816254
+2016-08-01 19:39:06.116158: step 7380, loss = 10.51 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.74059009552
+2016-08-01 19:39:26.096868: step 7400, loss = 8.31 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.740505218506
+2016-08-01 19:39:46.054195: step 7420, loss = 8.18 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.745536804199
+2016-08-01 19:40:06.027061: step 7440, loss = 5.25 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742993116379
+2016-08-01 19:40:27.170423: step 7460, loss = 7.31 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746893882751
+2016-08-01 19:40:47.011020: step 7480, loss = 9.07 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.743178844452
+2016-08-01 19:41:06.946529: step 7500, loss = 5.90 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74156999588
+2016-08-01 19:41:26.876715: step 7520, loss = 11.34 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739443063736
+2016-08-01 19:41:46.742854: step 7540, loss = 8.33 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.744201183319
+2016-08-01 19:42:06.648121: step 7560, loss = 14.35 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.744014978409
+2016-08-01 19:42:26.584134: step 7580, loss = 15.29 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743515014648
+2016-08-01 19:42:46.493904: step 7600, loss = 6.53 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.742083787918
+2016-08-01 19:43:06.444834: step 7620, loss = 6.81 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742268800735
+2016-08-01 19:43:26.376833: step 7640, loss = 9.69 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.74200797081
+2016-08-01 19:43:46.360194: step 7660, loss = 9.14 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739247083664
+2016-08-01 19:44:06.259759: step 7680, loss = 7.67 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.739283084869
+2016-08-01 19:44:26.259920: step 7700, loss = 10.38 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.743142127991
+2016-08-01 19:44:46.226911: step 7720, loss = 7.42 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741183996201
+2016-08-01 19:45:06.109930: step 7740, loss = 10.82 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741680145264
+2016-08-01 19:45:26.099190: step 7760, loss = 10.02 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.744585037231
+2016-08-01 19:45:46.019163: step 7780, loss = 9.00 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.738331079483
+2016-08-01 19:46:05.924255: step 7800, loss = 6.99 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.745531797409
+2016-08-01 19:46:25.762308: step 7820, loss = 11.31 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.737150907516
+2016-08-01 19:46:45.637121: step 7840, loss = 10.11 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.740921974182
+2016-08-01 19:47:05.576431: step 7860, loss = 5.70 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741582870483
+2016-08-01 19:47:25.570477: step 7880, loss = 8.36 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.739990949631
+2016-08-01 19:47:45.426610: step 7900, loss = 14.11 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.744648933411
+2016-08-01 19:48:05.328317: step 7920, loss = 7.42 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.737893104553
+2016-08-01 19:48:25.182664: step 7940, loss = 6.73 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.742809057236
+2016-08-01 19:48:45.269835: step 7960, loss = 11.29 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746062040329
+2016-08-01 19:49:05.271731: step 7980, loss = 11.12 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.742110013962
+2016-08-01 19:49:25.096690: step 8000, loss = 6.85 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.737921953201
+2016-08-01 19:49:51.749427: step 8020, loss = 6.73 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.739426136017
+2016-08-01 19:50:11.641213: step 8040, loss = 8.61 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.741306066513
+2016-08-01 19:50:31.538642: step 8060, loss = 8.49 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.74267578125
+2016-08-01 19:50:51.393352: step 8080, loss = 5.58 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.737330913544
+2016-08-01 19:51:11.181888: step 8100, loss = 7.46 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.739545822144
+2016-08-01 19:51:31.139239: step 8120, loss = 8.94 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74330997467
+2016-08-01 19:51:51.191604: step 8140, loss = 4.05 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.746734857559
+2016-08-01 19:52:11.063638: step 8160, loss = 7.46 (5.4 examples/sec; 0.747 sec/batch)
+num_examples_per_step,duration 4 0.741473913193
+2016-08-01 19:52:31.155015: step 8180, loss = 5.89 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742186784744
+2016-08-01 19:52:51.228753: step 8200, loss = 7.12 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741675138474
+2016-08-01 19:53:11.135122: step 8220, loss = 6.62 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742694854736
+2016-08-01 19:53:31.115877: step 8240, loss = 6.43 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742334127426
+2016-08-01 19:53:50.990314: step 8260, loss = 5.11 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.742264986038
+2016-08-01 19:54:10.880479: step 8280, loss = 14.05 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.738307952881
+2016-08-01 19:54:30.820039: step 8300, loss = 6.12 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.741756916046
+2016-08-01 19:54:50.799116: step 8320, loss = 7.75 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741805076599
+2016-08-01 19:55:10.676892: step 8340, loss = 5.22 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743303060532
+2016-08-01 19:55:30.598293: step 8360, loss = 7.87 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74471616745
+2016-08-01 19:55:50.570011: step 8380, loss = 5.65 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.741772890091
+2016-08-01 19:56:10.466156: step 8400, loss = 9.34 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.745348215103
+2016-08-01 19:56:30.400219: step 8420, loss = 7.52 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.744258165359
+2016-08-01 19:56:50.287825: step 8440, loss = 7.98 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739612102509
+2016-08-01 19:57:10.205897: step 8460, loss = 4.84 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.743978023529
+2016-08-01 19:57:30.096483: step 8480, loss = 8.62 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739942073822
+2016-08-01 19:57:49.977285: step 8500, loss = 9.21 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.748698949814
+2016-08-01 19:58:09.907308: step 8520, loss = 5.12 (5.3 examples/sec; 0.749 sec/batch)
+num_examples_per_step,duration 4 0.743408918381
+2016-08-01 19:58:29.798006: step 8540, loss = 9.30 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742585897446
+2016-08-01 19:58:49.772136: step 8560, loss = 8.06 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.738649129868
+2016-08-01 19:59:09.686191: step 8580, loss = 11.66 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.746342897415
+2016-08-01 19:59:29.624782: step 8600, loss = 7.24 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.74285197258
+2016-08-01 19:59:49.700697: step 8620, loss = 6.04 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.745021104813
+2016-08-01 20:00:09.573511: step 8640, loss = 6.97 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.740382909775
+2016-08-01 20:00:29.501786: step 8660, loss = 8.57 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.741672992706
+2016-08-01 20:00:49.418056: step 8680, loss = 6.32 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741998910904
+2016-08-01 20:01:09.317586: step 8700, loss = 5.85 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.740731954575
+2016-08-01 20:01:29.210111: step 8720, loss = 11.20 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743098020554
+2016-08-01 20:01:49.092994: step 8740, loss = 6.80 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.74124789238
+2016-08-01 20:02:09.078585: step 8760, loss = 3.92 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.744495868683
+2016-08-01 20:02:28.923510: step 8780, loss = 8.32 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.743010044098
+2016-08-01 20:02:48.751817: step 8800, loss = 14.82 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741665124893
+2016-08-01 20:03:08.655603: step 8820, loss = 9.49 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.738849163055
+2016-08-01 20:03:28.537964: step 8840, loss = 8.90 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.74289393425
+2016-08-01 20:03:48.395454: step 8860, loss = 7.81 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740877866745
+2016-08-01 20:04:08.323617: step 8880, loss = 8.19 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741364955902
+2016-08-01 20:04:28.169245: step 8900, loss = 9.43 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742249011993
+2016-08-01 20:04:48.064008: step 8920, loss = 6.29 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743552923203
+2016-08-01 20:05:07.956563: step 8940, loss = 9.81 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.741481781006
+2016-08-01 20:05:27.832230: step 8960, loss = 9.55 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.737972021103
+2016-08-01 20:05:47.720726: step 8980, loss = 11.86 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.744883060455
+2016-08-01 20:06:07.667772: step 9000, loss = 13.49 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.739398002625
+2016-08-01 20:06:34.072831: step 9020, loss = 7.92 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.74134016037
+2016-08-01 20:06:54.077696: step 9040, loss = 10.84 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.744174003601
+2016-08-01 20:07:13.934090: step 9060, loss = 7.89 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.740279912949
+2016-08-01 20:07:34.012418: step 9080, loss = 11.48 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.753098011017
+2016-08-01 20:07:53.890087: step 9100, loss = 8.13 (5.3 examples/sec; 0.753 sec/batch)
+num_examples_per_step,duration 4 0.738489866257
+2016-08-01 20:08:13.798234: step 9120, loss = 7.56 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.739650964737
+2016-08-01 20:08:33.778178: step 9140, loss = 13.92 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.740057945251
+2016-08-01 20:08:53.751002: step 9160, loss = 7.00 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74148607254
+2016-08-01 20:09:13.851733: step 9180, loss = 4.94 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742094993591
+2016-08-01 20:09:33.784650: step 9200, loss = 5.25 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.74474811554
+2016-08-01 20:09:53.891593: step 9220, loss = 6.81 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.745156049728
+2016-08-01 20:10:13.785076: step 9240, loss = 7.03 (5.4 examples/sec; 0.745 sec/batch)
+num_examples_per_step,duration 4 0.743285894394
+2016-08-01 20:10:33.689419: step 9260, loss = 4.70 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.744111061096
+2016-08-01 20:10:53.607955: step 9280, loss = 9.62 (5.4 examples/sec; 0.744 sec/batch)
+num_examples_per_step,duration 4 0.739166021347
+2016-08-01 20:11:13.477238: step 9300, loss = 7.86 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.740817785263
+2016-08-01 20:11:33.337293: step 9320, loss = 7.69 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.745798826218
+2016-08-01 20:11:53.300237: step 9340, loss = 5.02 (5.4 examples/sec; 0.746 sec/batch)
+num_examples_per_step,duration 4 0.743365049362
+2016-08-01 20:12:13.152910: step 9360, loss = 8.81 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.742204904556
+2016-08-01 20:12:33.020415: step 9380, loss = 9.97 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741474866867
+2016-08-01 20:12:52.943223: step 9400, loss = 7.68 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.743340969086
+2016-08-01 20:13:12.854135: step 9420, loss = 7.99 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.738442897797
+2016-08-01 20:13:32.849304: step 9440, loss = 7.25 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.741096973419
+2016-08-01 20:13:52.672507: step 9460, loss = 6.50 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.741398096085
+2016-08-01 20:14:12.657469: step 9480, loss = 6.09 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742390155792
+2016-08-01 20:14:32.515345: step 9500, loss = 10.84 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.741878032684
+2016-08-01 20:14:52.391904: step 9520, loss = 6.27 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.743305921555
+2016-08-01 20:15:12.338235: step 9540, loss = 6.14 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.741446971893
+2016-08-01 20:15:32.160429: step 9560, loss = 5.46 (5.4 examples/sec; 0.741 sec/batch)
+num_examples_per_step,duration 4 0.742959022522
+2016-08-01 20:15:52.028854: step 9580, loss = 7.05 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.739526033401
+2016-08-01 20:16:11.900551: step 9600, loss = 7.86 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.74183511734
+2016-08-01 20:16:31.727348: step 9620, loss = 10.05 (5.4 examples/sec; 0.742 sec/batch)
+num_examples_per_step,duration 4 0.737183094025
+2016-08-01 20:16:51.625889: step 9640, loss = 10.29 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.737915039062
+2016-08-01 20:17:11.741812: step 9660, loss = 8.83 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.742891788483
+2016-08-01 20:17:31.594111: step 9680, loss = 5.58 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.740083932877
+2016-08-01 20:17:51.533079: step 9700, loss = 12.99 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.742880105972
+2016-08-01 20:18:11.384526: step 9720, loss = 5.58 (5.4 examples/sec; 0.743 sec/batch)
+num_examples_per_step,duration 4 0.737838983536
+2016-08-01 20:18:31.377994: step 9740, loss = 6.04 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.734957933426
+2016-08-01 20:18:50.979560: step 9760, loss = 6.68 (5.4 examples/sec; 0.735 sec/batch)
+num_examples_per_step,duration 4 0.73890209198
+2016-08-01 20:19:10.582498: step 9780, loss = 4.81 (5.4 examples/sec; 0.739 sec/batch)
+num_examples_per_step,duration 4 0.736619949341
+2016-08-01 20:19:30.194879: step 9800, loss = 10.42 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.733868122101
+2016-08-01 20:19:49.779914: step 9820, loss = 11.47 (5.5 examples/sec; 0.734 sec/batch)
+num_examples_per_step,duration 4 0.736833810806
+2016-08-01 20:20:09.414054: step 9840, loss = 4.00 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.73407793045
+2016-08-01 20:20:29.015548: step 9860, loss = 5.17 (5.4 examples/sec; 0.734 sec/batch)
+num_examples_per_step,duration 4 0.739900112152
+2016-08-01 20:20:48.574417: step 9880, loss = 9.95 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.737775802612
+2016-08-01 20:21:08.113545: step 9900, loss = 8.51 (5.4 examples/sec; 0.738 sec/batch)
+num_examples_per_step,duration 4 0.73734998703
+2016-08-01 20:21:27.719319: step 9920, loss = 6.13 (5.4 examples/sec; 0.737 sec/batch)
+num_examples_per_step,duration 4 0.733247041702
+2016-08-01 20:21:47.387775: step 9940, loss = 10.58 (5.5 examples/sec; 0.733 sec/batch)
+num_examples_per_step,duration 4 0.739924192429
+2016-08-01 20:22:06.995288: step 9960, loss = 4.83 (5.4 examples/sec; 0.740 sec/batch)
+num_examples_per_step,duration 4 0.737205982208
+2016-08-01 20:22:26.588784: step 9980, loss = 6.26 (5.4 examples/sec; 0.737 sec/batch)
++ date
+Mon Aug  1 20:22:52 EDT 2016
