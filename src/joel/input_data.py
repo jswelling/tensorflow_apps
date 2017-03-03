@@ -77,6 +77,8 @@ ball_shells = {0: (0, 0),
 def get_data_queues(train_dir, fake_data=False, shuffle=True, num_epochs=None,
                     num_expected_examples=None):
 
+    print('get_data_queues: num_epochs =', num_epochs, type(num_epochs))
+
     yamlRE = re.compile(r'.+_.+_[0123456789]+\.yaml')
     recList = []
     if not fake_data:
@@ -89,12 +91,17 @@ def get_data_queues(train_dir, fake_data=False, shuffle=True, num_epochs=None,
                                             '%s_rotBallSamp_%d.doubles' % (base, idx))
                 labelFName = os.path.join(train_dir,
                                           '%s_rotEdgeSamp_%d.doubles' % (base, idx))
-                                          
+
                 recList.append('%s,%s' % (featureFName, labelFName))
 
     assert len(recList) == num_expected_examples, ('Found %s examples, expected %d'
                                                    % (len(recList),
                                                       num_expected_examples))
+
+    print('get_data_queues: len(recList) =', len(recList))
+    print('get_data_queues: recList[:10] =', recList[:10])
+
+
     featureNameT, labelNameT = tf.decode_csv(recList, [[""], [""]],
                                            name='decodeCSV')
     namePairQ = tf.train.slice_input_producer([featureNameT, labelNameT],
@@ -104,6 +111,9 @@ def get_data_queues(train_dir, fake_data=False, shuffle=True, num_epochs=None,
 
 
 def read_pair_of_files(namePairQ):
+    print('read_pair_of_files: namePairQ[0] =', namePairQ[0])
+    print('read_pair_of_files: namePairQ[1] =', namePairQ[1])
+
     fString = tf.read_file(namePairQ[0], name='featureReadFile')
     fVals = tf.to_float(tf.reshape(tf.decode_raw(fString,
                                      dtypes.float64,
@@ -122,15 +132,20 @@ def read_pair_of_files(namePairQ):
                                         shape=[nOuterSphere]),
                     lambda: tf.nn.l2_normalize(lVals, 0))
     lVals = tf.reshape(lVals, OUTERMOST_SPHERE_SHAPE)
-                    
+
+    print('read_pair_of_files: fVals, lVals =', fVals, lVals)
+
     return fVals, lVals
-    
+
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                    read_threads=1, shuffle_size=100, num_expected_examples=None):
     namePairQ= get_data_queues(train_dir, shuffle=True, num_epochs=num_epochs,
                                num_expected_examples=num_expected_examples)
     flPairList = [read_pair_of_files(namePairQ) for _ in range(read_threads)]
+
+    print('flPairList:', flPairList[:10])
+
     # min_after_dequeue defines how big a buffer we will randomly sample
     #   from -- bigger means better shuffling but slower start up and more
     #   memory used.
@@ -145,6 +160,3 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                                                         capacity=capacity,
                                                         min_after_dequeue=min_after_dequeue)
     return example_batch, label_batch
-
-
-        

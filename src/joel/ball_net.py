@@ -41,10 +41,10 @@ from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 
 def _add_logit_layer(input):
     """Build a single softmax layer.
-    
+
     Args:
       input: The upstream tensor. float - [batch_size, N]
-      
+
     Returns:
       softmax_linear: Output tensor with the computed logits.
     """
@@ -83,11 +83,11 @@ def _add_cross(inputImg):
             maskArr[nRows - (i+1), j] = True
         _gbl_cross_tensor = tf.expand_dims(tf.constant(arr), 0)
         _gbl_cross_mask = tf.expand_dims(tf.constant(maskArr), 0)
-        
+
     nRows, nCols = OUTERMOST_SPHERE_SHAPE
     nOuterCells = nRows*nCols
     batch_size = tf.shape(inputImg)[0]
-    
+
     expandedCross = tf.tile(_gbl_cross_tensor, [batch_size, 1, 1])
     expandedMask = tf.tile(_gbl_cross_mask, [batch_size, 1, 1])
 
@@ -99,7 +99,7 @@ def inference(feature, patternStr):
 
     Args:
       feature: feature placeholder, from inputs().
-      
+
       patternStr: string specifying network pattern. One of:
                   'outer_layer_1_hidden'
 
@@ -130,25 +130,25 @@ def inference(feature, patternStr):
             ball_w = tf.Variable(tf.truncated_normal([N_BALL_SAMPS, nOuterCells],
                                                        stddev=wtStdv),
                                    name='s20_w')
-            tf.histogram_summary(scope + 'ball_w', ball_w)
+            tf.summary.histogram(scope + 'ball_w', ball_w)
             ball_b = tf.Variable(tf.zeros([nOuterCells]),
                                    name='s20_b')
-            tf.histogram_summary(scope + 'ball_b', ball_b)
+            tf.summary.histogram(scope + 'ball_b', ball_b)
             ball_h = tf.nn.relu(tf.matmul(feature, ball_w) + ball_b)
-            tf.histogram_summary(scope + 'ball_h', ball_h)
-            
+            tf.summary.histogram(scope + 'ball_h', ball_h)
+
             skinStart = N_BALL_SAMPS - nOuterCells
             skin_feature = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
-            tf.image_summary(scope + 'feature',
+            tf.summary.image(scope + 'feature',
                              tf.reshape(skin_feature, [batch_size, nRows, nCols, 1]))
-            tf.image_summary(scope + 'hidden',
+            tf.summary.image(scope + 'hidden',
                              tf.reshape(ball_h, [batch_size, nRows, nCols, 1]))
         logits = _add_logit_layer(ball_h)
     else:
         raise RuntimeError('Unknown inference pattern "%s"' % patternStr)
 
     return logits
-#     # 
+#     #
 #     # Hidden 1
 #     with tf.name_scope('hidden1'):
 #         weights = tf.Variable(
@@ -192,12 +192,12 @@ def loss(logits, labels):
     with tf.name_scope('loss') as scope:
         batch_size = tf.shape(labels)[0]
         logits = tf.reshape(logits, [batch_size, -1])
-        tf.histogram_summary(scope + 'logits', logits)
+        tf.summary.histogram(scope + 'logits', logits)
         labels = tf.reshape(labels, [batch_size, -1])
 #         softLogits = tf.nn.softmax(logits)
         softLogits = tf.nn.l2_normalize(logits, 1)
-        tf.histogram_summary(scope + 'soft_logits', softLogits)
-        
+        tf.summary.histogram(scope + 'soft_logits', softLogits)
+
 #         cross_entropy = -tf.reduce_sum(labels * tf.log(softLogits + 1.0e-9))
 #         tf.scalar_summary(scope + 'cross_entropy', cross_entropy)
 #         regularizer = tf.reduce_sum(tf.square(softLogits))
@@ -205,15 +205,15 @@ def loss(logits, labels):
 #         loss = cross_entropy + regularizer
 
         diffSqr = tf.squared_difference(softLogits, labels)
-        tf.histogram_summary(scope + 'squared_difference', diffSqr)
+        tf.summary.histogram(scope + 'squared_difference', diffSqr)
         loss = tf.reduce_sum(diffSqr)
-        
-        tf.histogram_summary(scope + 'loss', loss)
+
+        tf.summary.histogram(scope + 'loss', loss)
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
-        tf.image_summary(scope + 'logits',
+        tf.summary.image(scope + 'logits',
                          tf.reshape(logitImg, [batch_size, nRows, nCols, 1]))
-        tf.image_summary(scope + 'labels', 
+        tf.summary.image(scope + 'labels',
                          tf.reshape(labels, [batch_size, nRows, nCols, 1]))
 #         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logi    ts, labels,
 #                                                                 name='xentropy')
@@ -239,7 +239,7 @@ def training(loss, learning_rate):
       train_op: The Op for training.
     """
     # Add a scalar summary for the snapshot loss.
-    tf.scalar_summary('training_loss', loss)
+    tf.summary.scalar('training_loss', loss)
     # Create the gradient descent optimizer with the given learning rate.
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
     # Create a variable to track the global step.

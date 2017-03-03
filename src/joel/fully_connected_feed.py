@@ -140,33 +140,34 @@ def run_training():
         eval_correct = ball_net.evaluation(logits, label_ph)
 
         # Build the summary operation based on the TF collection of Summaries.
-        summary_op = tf.merge_all_summaries()
+        summary_op = tf.summary.merge_all()
 
         # Create the graph, etc.
-        init_op = tf.initialize_all_variables()
-        
+        # init_op = tf.initialize_all_variables()
+        init_op = tf.global_variables_initializer()
+
         # Create a saver for writing training checkpoints.
         saver = tf.train.Saver()
- 
+
         # Create a session for running operations in the Graph.
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-        
+
         # Instantiate a SummaryWriter to output summaries and the Graph.
-        summary_writer = tf.train.SummaryWriter(FLAGS.log_dir, sess.graph)
- 
- 
+        summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
+
+
         # Initialize the variables (like the epoch counter).
         if len(FLAGS.starting_snapshot) == 0:
             sess.run(init_op)
         else:
             saver.restore(sess, FLAGS.starting_snapshot)
-        
+
         #check_numerics_op = tf.add_check_numerics_ops()
-        
+
         # Start input enqueue threads.
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-        
+
         #feed_dict = {feature_ph: featureBatch, label_ph: labelBatch}
         feed_dict = {}
         step = 0
@@ -177,15 +178,15 @@ def run_training():
             while not coord.should_stop():
                 # Run training steps or whatever
                 start_time = time.time()
-#                 num_chk, _, loss_value = sess.run([check_numerics_op, train_op, loss], 
+#                 num_chk, _, loss_value = sess.run([check_numerics_op, train_op, loss],
 #                                                   feed_dict=feed_dict)
-                _, loss_value = sess.run([train_op, loss], 
+                _, loss_value = sess.run([train_op, loss],
                                          feed_dict=feed_dict)
                 duration = time.time() - start_time
 #                 with sess.as_default():
 #                     print(featureBatch.eval())
 #                     print(labelBatch.eval())
-        
+
                 # Write the summaries and print an overview fairly often.
                 if ((step + 1) % 100 == 0
                     or step < 10
@@ -197,7 +198,7 @@ def run_training():
                     summary_str = sess.run(summary_op, feed_dict=feed_dict)
                     summary_writer.add_summary(summary_str, step)
                     summary_writer.flush()
-    
+
                 # Save a checkpoint and evaluate the model periodically.
                 if (step + 1) % 1000 == 0:
                     saver.save(sess, FLAGS.log_dir, global_step=step)
@@ -225,8 +226,8 @@ def run_training():
 #                             data_sets.test)
 
                 step += 1
-                
-        except tf.errors.OutOfRangeError, e:
+
+        except tf.errors.OutOfRangeError as e:
             print('Done training -- epoch limit reached')
         finally:
             # When done, ask the threads to stop.
@@ -236,9 +237,9 @@ def run_training():
             summary_str = sess.run(summary_op, num_chk)
             summary_writer.add_summary(summary_str, step)
             summary_writer.flush()
-        
+
         # Wait for threads to finish.
-        coord.join(threads)
+        coord.join(threads, stop_grace_period=10)
         sess.close()
 
 
