@@ -23,6 +23,7 @@ import time
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+#import tensorflow.python.debug as tf_debug
 
 import input_data
 from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
@@ -140,10 +141,11 @@ def run_training():
         eval_correct = ball_net.evaluation(logits, label_ph)
 
         # Build the summary operation based on the TF collection of Summaries.
-        summary_op = tf.merge_all_summaries()
+        summary_op = tf.summary.merge_all()
 
         # Create the graph, etc.
-        init_op = tf.initialize_all_variables()
+        init_op = tf.group(tf.global_variables_initializer(),
+                           tf.local_variables_initializer())
         
         # Create a saver for writing training checkpoints.
         saver = tf.train.Saver()
@@ -152,8 +154,8 @@ def run_training():
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
         
         # Instantiate a SummaryWriter to output summaries and the Graph.
-        summary_writer = tf.train.SummaryWriter(FLAGS.log_dir, sess.graph)
- 
+        summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
+
  
         # Initialize the variables (like the epoch counter).
         if len(FLAGS.starting_snapshot) == 0:
@@ -173,14 +175,14 @@ def run_training():
         loss_value = -1.0  # avoid a corner case where it is unset on error
         duration = 0.0     # ditto
         num_chk = None     # ditto
+        #sess = tf_debug.LocalCLIDebugWrapperSession(sess)
         try:
             while not coord.should_stop():
                 # Run training steps or whatever
                 start_time = time.time()
 #                 num_chk, _, loss_value = sess.run([check_numerics_op, train_op, loss], 
 #                                                   feed_dict=feed_dict)
-                _, loss_value = sess.run([train_op, loss], 
-                                         feed_dict=feed_dict)
+                _, loss_value = sess.run([train_op, loss])
                 duration = time.time() - start_time
 #                 with sess.as_default():
 #                     print(featureBatch.eval())
