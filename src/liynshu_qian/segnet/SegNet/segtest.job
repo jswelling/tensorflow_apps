@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p GPU-shared --gres=gpu:1
+#SBATCH -t 12:00:00
+#SBATCH --output="outputs/momentum.out"
+
+
+#echo commands to stdout
+set -x
+
+date
+#move to working directory
+export MODULEPATH=/home/welling/git/bridges_modules:$MODULEPATH
+#module load python/2.7.11_gcc
+module load cuda/7.5
+module load tensorflow/0.9.0
+source $TENSORFLOW_ENV/bin/activate
+
+#run GPU program
+python segnet_train.py
+#python fish_eval.py
+
+
+date

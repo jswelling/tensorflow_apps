@@ -1,0 +1,69 @@
++ date
+Thu Jul 28 17:05:34 EDT 2016
++ export MODULEPATH=/home/welling/git/bridges_modules::/opt/modulefiles
++ MODULEPATH=/home/welling/git/bridges_modules::/opt/modulefiles
++ module load cuda/7.5
+++ /usr/bin/modulecmd bash load cuda/7.5
++ eval CUDA_ROOT=/opt/packages/cuda/7.5 ';export' 'CUDA_ROOT;LD_LIBRARY_PATH=/opt/packages/cuda/7.5/lib64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/mic/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4:/opt/intel/debugger_2016/libipt/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin' ';export' 'LD_LIBRARY_PATH;LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5' ';export' 'LOADEDMODULES;PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin' ';export' 'PATH;_LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5' ';export' '_LMFILES_;'
+++ CUDA_ROOT=/opt/packages/cuda/7.5
+++ export CUDA_ROOT
+++ LD_LIBRARY_PATH=/opt/packages/cuda/7.5/lib64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/mic/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/ipp/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/mkl/lib/intel64:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64/gcc4.4:/opt/intel/debugger_2016/libipt/intel64/lib:/opt/intel/compilers_and_libraries_2016.3.210/linux/daal/lib/intel64_lin:/opt/intel/compilers_and_libraries_2016.3.210/linux/tbb/lib/intel64_lin/gcc4.4:/opt/intel/compilers_and_libraries_2016.3.210/linux/compiler/lib/intel64_lin
+++ export LD_LIBRARY_PATH
+++ LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5
+++ export LOADEDMODULES
+++ PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ export PATH
+++ _LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5
+++ export _LMFILES_
++ module load tensorflow/0.9.0
+++ /usr/bin/modulecmd bash load tensorflow/0.9.0
++ eval LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5:tensorflow/0.9.0 ';export' 'LOADEDMODULES;TENSORFLOW_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv' ';export' 'TENSORFLOW_ENV;_LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5:/home/welling/git/bridges_modules/tensorflow/0.9.0' ';export' '_LMFILES_;'
+++ LOADEDMODULES=psc_path/1.0:slurm/15.08.8:intel/compilers:mpi/intel_mpi:icc/16.0.3:cuda/7.5:tensorflow/0.9.0
+++ export LOADEDMODULES
+++ TENSORFLOW_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ export TENSORFLOW_ENV
+++ _LMFILES_=/opt/modulefiles/psc_path/1.0:/opt/modulefiles/slurm/15.08.8:/opt/modulefiles/intel/compilers:/opt/modulefiles/mpi/intel_mpi:/opt/modulefiles/icc/16.0.3:/home/welling/git/bridges_modules/cuda/7.5:/home/welling/git/bridges_modules/tensorflow/0.9.0
+++ export _LMFILES_
++ source /opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv/bin/activate
+++ deactivate nondestructive
+++ unset -f pydoc
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ '[' -n /bin/bash ']'
+++ hash -r
+++ '[' -z '' ']'
+++ unset VIRTUAL_ENV
+++ '[' '!' nondestructive = nondestructive ']'
+++ VIRTUAL_ENV=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ export VIRTUAL_ENV
+++ _OLD_VIRTUAL_PATH=/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ PATH=/opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv/bin:/opt/packages/cuda/7.5/bin:/usr/lib64/qt-3.3/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/mpi/intel64/bin:/opt/intel/compilers_and_libraries_2016.3.210/linux/bin/intel64:/opt/intel/debugger_2016/gdb/intel64_mic/bin:/opt/packages/slurm/15.08.8/bin:/usr/lib64/ccache:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/puppetlabs/puppet/bin:/opt/packages/slash2/psc/sbin:/opt/packages/allocations:/opt/packages/interact/bin:/opt/puppetlabs/bin:/home/liyunshq/.local/bin:/home/liyunshq/bin
+++ export PATH
+++ '[' -z '' ']'
+++ '[' -z '' ']'
+++ _OLD_VIRTUAL_PS1=
+++ '[' x '!=' x ']'
++++ basename /opt/packages/TensorFlow/TensorFlow_0.9.0/TensorFlowEnv
+++ PS1='(TensorFlowEnv) '
+++ export PS1
+++ alias pydoc
+++ '[' -n /bin/bash ']'
+++ hash -r
++ python segnet_train.py
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcublas.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcudnn.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcufft.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcuda.so locally
+I tensorflow/stream_executor/dso_loader.cc:108] successfully opened CUDA library libcurand.so locally
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:102] Found device 0 with properties: 
+name: Tesla K80
+major: 3 minor: 7 memoryClockRate (GHz) 0.8235
+pciBusID 0000:8b:00.0
+Total memory: 11.17GiB
+Free memory: 11.11GiB
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:126] DMA: 0 
+I tensorflow/core/common_runtime/gpu/gpu_init.cc:136] 0:   Y 
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:806] Creating TensorFlow device (/gpu:0) -> (device: 0, name: Tesla K80, pci bus id: 0000:8b:00.0)
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:244] PoolAllocator: After 3285 get requests, put_count=3277 evicted_count=1000 eviction_rate=0.305157 and unsatisfied allocation rate=0.337291
+I tensorflow/core/common_runtime/gpu/pool_allocator.cc:256] Raising pool_size_limit_ from 100 to 110
+slurmstepd: *** JOB 209789 ON gpu002 CANCELLED AT 2016-07-28T19:05:34 DUE TO TIME LIMIT ***

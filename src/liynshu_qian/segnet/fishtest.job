@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p GPU
+#SBATCH -t 02:00:00
+#SBATCH --output="fish.out"
+
+
+#echo commands to stdout
+set -x
+
+date
+#move to working directory
+module load python/2.7.11_gcc
+module load cuda
+module load tensorflow/0.8.0
+source $TENSORFLOW_ENV/bin/activate
+
+#run GPU program
+python fish_train.py
+#python fish_eval.py
+
+
+date
+
+
+#Submitted batch job 186010
