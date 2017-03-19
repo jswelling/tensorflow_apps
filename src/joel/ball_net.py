@@ -91,7 +91,7 @@ def _add_cross(inputImg):
     expandedCross = tf.tile(_gbl_cross_tensor, [batch_size, 1, 1])
     expandedMask = tf.tile(_gbl_cross_mask, [batch_size, 1, 1])
 
-    return tf.select(expandedMask, expandedCross, inputImg)
+    return tf.where(expandedMask, expandedCross, inputImg)
 
 
 def inference(feature, patternStr):
@@ -136,7 +136,6 @@ def inference(feature, patternStr):
             tf.summary.histogram(scope + 'ball_b', ball_b)
             ball_h = tf.nn.relu(tf.matmul(feature, ball_w) + ball_b)
             tf.summary.histogram(scope + 'ball_h', ball_h)
-
             skinStart = N_BALL_SAMPS - nOuterCells
             skin_feature = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
             tf.summary.image(scope + 'feature',
@@ -197,7 +196,6 @@ def loss(logits, labels):
 #         softLogits = tf.nn.softmax(logits)
         softLogits = tf.nn.l2_normalize(logits, 1)
         tf.summary.histogram(scope + 'soft_logits', softLogits)
-
 #         cross_entropy = -tf.reduce_sum(labels * tf.log(softLogits + 1.0e-9))
 #         tf.scalar_summary(scope + 'cross_entropy', cross_entropy)
 #         regularizer = tf.reduce_sum(tf.square(softLogits))
@@ -207,7 +205,6 @@ def loss(logits, labels):
         diffSqr = tf.squared_difference(softLogits, labels)
         tf.summary.histogram(scope + 'squared_difference', diffSqr)
         loss = tf.reduce_sum(diffSqr)
-
         tf.summary.histogram(scope + 'loss', loss)
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
