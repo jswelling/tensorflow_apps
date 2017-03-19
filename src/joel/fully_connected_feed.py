@@ -144,7 +144,8 @@ def run_training():
 
         # Create the graph, etc.
         # init_op = tf.initialize_all_variables()
-        init_op = tf.global_variables_initializer()
+        # init_op = tf.global_variables_initializer()
+        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
 
         # Create a saver for writing training checkpoints.
         saver = tf.train.Saver()
