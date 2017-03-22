@@ -32,6 +32,8 @@ import ball_net
 # Basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
+flags.DEFINE_string('network_pattern', 'whole_ball_1_hidden',
+                   'A network pattern recognized in ball_net.py')
 flags.DEFINE_float('learning_rate', 0.01,
                    'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 12, 'Batch size.  '
@@ -115,6 +117,7 @@ def run_training():
         num_epochs = FLAGS.num_epochs
     else:
         num_epochs = None
+
     # Tell TensorFlow that the model will be built into the default Graph.
     with tf.Graph().as_default():
         # Generate placeholders for the images and labels.
@@ -129,7 +132,7 @@ def run_training():
         feature_ph, label_ph = featureBatch, labelBatch
 
         # Build a Graph that computes predictions from the inference model.
-        logits = ball_net.inference(feature_ph, 'whole_ball_1_hidden')
+        logits = ball_net.inference(feature_ph, FLAGS.network_pattern)
 
         # Add to the Graph the Ops for loss calculation.
         loss = ball_net.loss(logits, label_ph)
