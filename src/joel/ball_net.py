@@ -38,6 +38,28 @@ from tensorflow.python.framework import dtypes
 
 from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 
+def weight_variable(shape):
+    """Generate a tensor of weight variables of dimensions `shape`.
+    Initialize them with a small amount of noise for symmetry breaking
+
+    Args:
+      shape : [...] - desired shape of the weights
+
+    """
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial)
+
+def bias_variable(shape):
+    """Generate a tensor of bias variables of dimensions `shape`.
+    Initialize them with a small positive bias to avoid dead neurons
+    (if using relu).
+
+    Args:
+      shape : [...] - desired shape of the biases
+
+    """
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial)
 
 def _add_logit_layer(input):
     """Build a single softmax layer.
@@ -48,6 +70,9 @@ def _add_logit_layer(input):
     Returns:
       softmax_linear: Output tensor with the computed logits.
     """
+
+    print("_add_logit_layer input:", input)
+
     with tf.name_scope('softmax_linear'):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nOuterCells = nRows*nCols
@@ -98,14 +123,16 @@ def inference(feature, patternStr):
     """Build the model up to where it may be used for inference.
 
     Args:
-      feature: feature placeholder, from inputs().
+      feature : [batch_size, N_BALL_SAMPS] - feature placeholder, from inputs().
 
-      patternStr: string specifying network pattern. One of:
+      patternStr : str - string specifying network pattern. One of:
                   'outer_layer_1_hidden'
 
     Returns:
       softmax_linear: Output tensor with the computed logits.
+
     """
+
     if patternStr == 'outer_layer_1_hidden':
         with tf.name_scope('hidden'):
             nRows, nCols = OUTERMOST_SPHERE_SHAPE
@@ -121,6 +148,7 @@ def inference(feature, patternStr):
                                    name='s20_b')
             skin20_h = tf.nn.relu(tf.matmul(skin20, skin20_w) + skin20_b)
         logits = _add_logit_layer(skin20_h)
+
     elif patternStr == 'whole_ball_1_hidden':
         with tf.name_scope('hidden') as scope:
             nRows, nCols = OUTERMOST_SPHERE_SHAPE
@@ -143,6 +171,108 @@ def inference(feature, patternStr):
             tf.summary.image(scope + 'hidden',
                              tf.reshape(ball_h, [batch_size, nRows, nCols, 1]))
         logits = _add_logit_layer(ball_h)
+
+    elif patternStr == 'outer_layer_cnn':
+
+        """ Apply a CNN to the outer layer of the ball.
+
+        """
+
+        with tf.name_scope('cnn'):
+            nRows, nCols = OUTERMOST_SPHERE_SHAPE
+            nOuterCells = nRows*nCols
+
+            # The layers of the ball are stored in a 1D array as
+            # [ --layer0-- , --layer1--, ... , --outermost_layer-- ]
+            skinStart = N_BALL_SAMPS - nOuterCells
+
+            # Slice the outer layer of pixels from the feature
+            # outer_skin : [batch_size, nOuterCells]
+            outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+
+            # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
+            input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
+
+            # Convolutional layer #1
+            # conv1 : [batch_size, nRows, nCols, 8]
+            conv1 = tf.contrib.layers.conv2d(
+                inputs=input_skin,
+                num_outputs=8,
+                kernel_size=[5, 5],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv1")
+
+            # Pooling layer #1
+            # pool1 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
+            pool1 = tf.contrib.layers.max_pool2d(
+                inputs=conv1,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool1")
+
+            print('pool1:', pool1)
+
+            # Convolutional layer #2
+            # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
+            conv2 = tf.contrib.layers.conv2d(
+                inputs=pool1,
+                num_outputs=16,
+                kernel_size=[5, 5],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv2")
+
+            # Pooling layer #2
+            # pool2 : [batch_size, ceil(nRows / 4), ceil(nCols / 4), 16 ]
+            pool2 = tf.contrib.layers.max_pool2d(
+                inputs=conv2,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool2")
+
+            pool2_dim = pool2.get_shape().as_list()
+            batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
+
+            num_units = pool2_height * pool2_width * pool2_filters
+
+            # Flatten pool2 into [batch_size, h * w * filters]
+            pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                    name="pool2_flat")
+
+            print('pool2_flat:', pool2_flat)
+
+            # Fully connected relu layer
+            with tf.variable_scope("dense") as scope:
+                num_neurons = nOuterCells
+
+                # Flatten pool2 into [batch_size, h * w * filters]
+                pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                        name="pool2_flat")
+
+                weights = weight_variable([num_units, num_neurons])
+                biases  = bias_variable([num_neurons])
+
+                # dense : [batch_size, nOuterCells]
+                dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
+
+
+            # Fully connected relu layer (not working in 0.12.1, use above instead)
+            # dense : [batch_size, nOuterCells]
+            # dense = tf.contrib.layers.fully_connected(
+            #     inputs=(pool2_flat, num_units),
+            #     num_outputs=nOuterCells,
+            #     activation_fn=tf.nn.relu,
+            #     scope="dense")
+
+            # Apply dropout to prevent overfitting
+            # dropout = tf.contrib.layers.dropout(
+            #     inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
+
+        logits = _add_logit_layer(dense)
+
     else:
         raise RuntimeError('Unknown inference pattern "%s"' % patternStr)
 
