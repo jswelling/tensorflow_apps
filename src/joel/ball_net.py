@@ -198,7 +198,7 @@ def inference(feature, patternStr):
             conv1 = tf.contrib.layers.conv2d(
                 inputs=input_skin,
                 num_outputs=8,
-                kernel_size=[5, 5],
+                kernel_size=[10, 10],
                 activation_fn=tf.nn.relu,
                 padding="SAME",
                 scope="conv1")
