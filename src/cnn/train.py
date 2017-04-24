@@ -13,8 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Trains and Evaluates the MNIST network using a feed dictionary."""
-# pylint: disable=missing-docstring
+"""Trains the network."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -54,7 +54,6 @@ flags.DEFINE_integer('num_examples', 12,
                      'Number of examples used in a training epoch')
 flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
-
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -137,7 +136,9 @@ def train():
 
                 # Save a checkpoint periodically.
                 if (step + 1) % 1000 == 0:
-                    saver.save(sess, FLAGS.log_dir, global_step=step)
+                    # If log_dir is /tmp/cnn/ then checkpoints are saved in that
+                    # directory, prefixed with 'cnn'.
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=step)
 
                 step += 1
 

@@ -126,53 +126,14 @@ def inference(feature, patternStr):
       feature : [batch_size, N_BALL_SAMPS] - feature placeholder, from inputs().
 
       patternStr : str - string specifying network pattern. One of:
-                  'outer_layer_1_hidden'
+                  'outer_layer_cnn'
 
     Returns:
       softmax_linear: Output tensor with the computed logits.
 
     """
 
-    if patternStr == 'outer_layer_1_hidden':
-        with tf.name_scope('hidden'):
-            nRows, nCols = OUTERMOST_SPHERE_SHAPE
-            nOuterCells = nRows*nCols
-            batch_size = tf.shape(feature)[0]
-            skinStart = N_BALL_SAMPS - nOuterCells
-            skin20 = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
-            wtStdv = 1.0 / math.sqrt(float(nOuterCells))
-            skin20_w = tf.Variable(tf.truncated_normal([nOuterCells, nOuterCells],
-                                                       stddev=wtStdv),
-                                   name='s20_w')
-            skin20_b = tf.Variable(tf.zeros([nOuterCells]),
-                                   name='s20_b')
-            skin20_h = tf.nn.relu(tf.matmul(skin20, skin20_w) + skin20_b)
-        logits = _add_logit_layer(skin20_h)
-
-    elif patternStr == 'whole_ball_1_hidden':
-        with tf.name_scope('hidden') as scope:
-            nRows, nCols = OUTERMOST_SPHERE_SHAPE
-            nOuterCells = nRows*nCols
-            batch_size = tf.shape(feature)[0]
-            wtStdv = 1.0 / math.sqrt(float(N_BALL_SAMPS))
-            ball_w = tf.Variable(tf.truncated_normal([N_BALL_SAMPS, nOuterCells],
-                                                       stddev=wtStdv),
-                                   name='s20_w')
-            tf.summary.histogram(scope + 'ball_w', ball_w)
-            ball_b = tf.Variable(tf.zeros([nOuterCells]),
-                                   name='s20_b')
-            tf.summary.histogram(scope + 'ball_b', ball_b)
-            ball_h = tf.nn.relu(tf.matmul(feature, ball_w) + ball_b)
-            tf.summary.histogram(scope + 'ball_h', ball_h)
-            skinStart = N_BALL_SAMPS - nOuterCells
-            skin_feature = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
-            tf.summary.image(scope + 'feature',
-                             tf.reshape(skin_feature, [batch_size, nRows, nCols, 1]))
-            tf.summary.image(scope + 'hidden',
-                             tf.reshape(ball_h, [batch_size, nRows, nCols, 1]))
-        logits = _add_logit_layer(ball_h)
-
-    elif patternStr == 'outer_layer_cnn':
+    if patternStr == 'outer_layer_cnn':
 
         """ Apply a CNN to the outer layer of the ball.
 
@@ -258,15 +219,6 @@ def inference(feature, patternStr):
                 # dense : [batch_size, nOuterCells]
                 dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
 
-
-            # Fully connected relu layer (not working in 0.12.1, use above instead)
-            # dense : [batch_size, nOuterCells]
-            # dense = tf.contrib.layers.fully_connected(
-            #     inputs=(pool2_flat, num_units),
-            #     num_outputs=nOuterCells,
-            #     activation_fn=tf.nn.relu,
-            #     scope="dense")
-
             # Apply dropout to prevent overfitting
             # dropout = tf.contrib.layers.dropout(
             #     inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
@@ -294,14 +246,8 @@ def loss(logits, labels):
         logits = tf.reshape(logits, [batch_size, -1])
         tf.summary.histogram(scope + 'logits', logits)
         labels = tf.reshape(labels, [batch_size, -1])
-#         softLogits = tf.nn.softmax(logits)
         softLogits = tf.nn.l2_normalize(logits, 1)
         tf.summary.histogram(scope + 'soft_logits', softLogits)
-#         cross_entropy = -tf.reduce_sum(labels * tf.log(softLogits + 1.0e-9))
-#         tf.scalar_summary(scope + 'cross_entropy', cross_entropy)
-#         regularizer = tf.reduce_sum(tf.square(softLogits))
-#         tf.scalar_summary(scope + 'regularizer', regularizer)
-#         loss = cross_entropy + regularizer
 
         diffSqr = tf.squared_difference(softLogits, labels)
         tf.summary.histogram(scope + 'squared_difference', diffSqr)
@@ -313,9 +259,6 @@ def loss(logits, labels):
                          tf.reshape(logitImg, [batch_size, nRows, nCols, 1]))
         tf.summary.image(scope + 'labels',
                          tf.reshape(labels, [batch_size, nRows, nCols, 1]))
-#         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logi    ts, labels,
-#                                                                 name='xentropy')
-#         loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
     return loss
 
 

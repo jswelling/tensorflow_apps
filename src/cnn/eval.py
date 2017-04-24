@@ -45,12 +45,12 @@ tf.app.flags.DEFINE_boolean('run_once', False,
                             """Whether to run eval only once.""")
 tf.app.flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
                             'for unit testing.')
-tf.app.flags.DEFINE_integer('batch_size', 12, 'Batch size.  '
-                            'Must divide evenly into the dataset sizes.')
 tf.app.flags.DEFINE_integer('read_threads', 2,
                             'Number of threads reading input files')
-tf.app.flags.DEFINE_integer('shuffle_size', 12,
+tf.app.flags.DEFINE_integer('shuffle_size', 8,
                             'Number of input data pairs to shuffle (min_dequeue)')
+tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
+                            'Must divide evenly into the dataset sizes.')
 
 
 def eval_once(saver, summary_writer, loss_op, summary_op):
@@ -82,31 +82,26 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
+        total_loss = 0.0
+        step = 0
+
+        # Number of examples evaluated
+        examples = 0
+
         try:
-            num_iter = int(math.ceil(FLAGS.num_examples / FLAGS.batch_size))
-
-            print('num_iter:', num_iter)
-
-            total_loss = 0.0
-            total_sample_count = num_iter * FLAGS.batch_size
-            step = 0
-            while step < num_iter and not coord.should_stop():
+            while not coord.should_stop():
                 losses = sess.run([loss_op])
-                print(losses)
                 print('loss @ step', step, '=', np.sum(losses))
                 total_loss += np.sum(losses)
                 step += 1
+                examples += FLAGS.batch_size
 
-            # Compute precision @ 1.
-            loss = total_loss / total_sample_count
-            print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
-
-            # summary = tf.Summary()
-            # summary.ParseFromString(sess.run(summary_op))
-            # summary.value.add(tag='Precision @ 1', simple_value=precision)
-            # summary_writer.add_summary(summary, global_step)
         except Exception as e:  # pylint: disable=broad-except
             coord.request_stop(e)
+
+        # Compute precision @ 1.
+        loss = total_loss / examples
+        print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
 
         coord.request_stop()
         coord.join(threads, stop_grace_period_secs=10)
