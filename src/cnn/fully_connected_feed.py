@@ -96,20 +96,9 @@ def do_eval(sess,
       feature_input, label_input: evaluation data.
     """
     print('  Some relevant eval output goes here')
-#     # And run one epoch of eval.
-#     true_count = 0  # Counts the number of correct predictions.
-#     steps_per_epoch = FLAGS.n_training_examples // FLAGS.batch_size
-#     num_examples = steps_per_epoch * FLAGS.batch_size
-#     for step in xrange(steps_per_epoch):
-#         feed_dict = {feature_ph: feature_input,
-#                      label_ph: label_input}
-#         true_count += sess.run(eval_correct, feed_dict=feed_dict)
-#     precision = true_count / num_examples
-#     print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
-#           (num_examples, true_count, precision))
 
 
-def run_training():
+def train():
     """Train fish_cubes for a number of steps."""
     # Get the sets of images and labels for training, validation, and
     # test
@@ -121,7 +110,7 @@ def run_training():
     # Tell TensorFlow that the model will be built into the default Graph.
     with tf.Graph().as_default():
         # Generate placeholders for the images and labels.
-        featureBatch, labelBatch = input_data.input_pipeline(FLAGS.train_dir,
+        images, labels = input_data.input_pipeline(FLAGS.train_dir,
                                                              FLAGS.batch_size,
                                                              fake_data=FLAGS.fake_data,
                                                              num_epochs=num_epochs,
@@ -129,19 +118,18 @@ def run_training():
                                                              shuffle_size=FLAGS.shuffle_size,
                                                              num_expected_examples=FLAGS.n_training_examples)
 #         feature_ph, label_ph = placeholder_inputs(FLAGS.batch_size)
-        feature_ph, label_ph = featureBatch, labelBatch
 
         # Build a Graph that computes predictions from the inference model.
-        logits = topology.inference(feature_ph, FLAGS.network_pattern)
+        logits = topology.inference(images, FLAGS.network_pattern)
 
         # Add to the Graph the Ops for loss calculation.
-        loss = topology.loss(logits, label_ph)
+        loss = topology.loss(logits, labels)
 
         # Add to the Graph the Ops that calculate and apply gradients.
         train_op = topology.training(loss, FLAGS.learning_rate)
 
         # Add the Op to compare the logits to the labels during evaluation.
-        eval_correct = topology.evaluation(logits, label_ph)
+        eval_correct = topology.evaluation(logits, labels)
 
         # Build the summary operation based on the TF collection of Summaries.
         summary_op = tf.summary.merge_all()
@@ -171,8 +159,6 @@ def run_training():
         coord = tf.train.Coordinator()
         threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
-        #feed_dict = {feature_ph: featureBatch, label_ph: labelBatch}
-        feed_dict = {}
         step = 0
         loss_value = -1.0  # avoid a corner case where it is unset on error
         duration = 0.0     # ditto
@@ -182,8 +168,6 @@ def run_training():
             while not coord.should_stop():
                 # Run training steps or whatever
                 start_time = time.time()
-#                 num_chk, _, loss_value = sess.run([check_numerics_op, train_op, loss],
-#                                                   feed_dict=feed_dict)
                 _, loss_value = sess.run([train_op, loss])
                 duration = time.time() - start_time
 #                 with sess.as_default():
@@ -198,7 +182,7 @@ def run_training():
                     print('Step %d: numerics = %s, loss = %.2f (%.3f sec)'
                           % (step, num_chk, loss_value, duration))
                     # Update the events file.
-                    summary_str = sess.run(summary_op, feed_dict=feed_dict)
+                    summary_str = sess.run(summary_op)
                     summary_writer.add_summary(summary_str, step)
                     summary_writer.flush()
 
@@ -209,8 +193,8 @@ def run_training():
                     print('Training Data Eval:')
                     do_eval(sess,
                             eval_correct,
-                            feature_ph,
-                            label_ph,
+                            images,
+                            labels,
                             featureBatch,
                             labelBatch)
 #                     # Evaluate against the validation set.
@@ -248,7 +232,7 @@ def run_training():
 
 
 def main(_):
-    run_training()
+    train()
 
 
 if __name__ == '__main__':
