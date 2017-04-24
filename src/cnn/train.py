@@ -55,48 +55,6 @@ flags.DEFINE_integer('n_training_examples', 12,
 flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
 
-def placeholder_inputs(batch_size):
-    """Generate placeholder variables to represent the input tensors.
-
-    These placeholders are used as inputs by the rest of the model building
-    code and will be fed from the downloaded data in the .run() loop, below.
-
-    Args:
-      batch_size: The batch size will be baked into both placeholders.
-
-    Returns:
-      images_placeholder: Images placeholder.
-      labels_placeholder: Labels placeholder.
-    """
-    # Note that the shapes of the placeholders match the shapes of the full
-    # image and label tensors, except the first dimension is now batch_size
-    # rather than the full size of the train or test data sets.
-    feature_ph = tf.placeholder(tf.float32,
-                                shape=(batch_size, N_BALL_SAMPS))
-    label_ph = tf.placeholder(tf.float32,
-                              shape=(batch_size,
-                                     OUTERMOST_SPHERE_SHAPE[0],
-                                     OUTERMOST_SPHERE_SHAPE[1]))
-    return feature_ph, label_ph
-
-
-def do_eval(sess,
-            eval_correct,
-            feature_ph,
-            label_ph,
-            feature_input,
-            label_input):
-    """Runs one evaluation against the full epoch of data.
-
-    Args:
-      sess: The session in which the model has been trained.
-      eval_correct: The Tensor that returns the number of correct predictions.
-      feature_ph: The features placeholder.
-      label_ph: The labels placeholder.
-      feature_input, label_input: evaluation data.
-    """
-    print('  Some relevant eval output goes here')
-
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -117,8 +75,6 @@ def train():
                                                              read_threads=FLAGS.read_threads,
                                                              shuffle_size=FLAGS.shuffle_size,
                                                              num_expected_examples=FLAGS.n_training_examples)
-#         feature_ph, label_ph = placeholder_inputs(FLAGS.batch_size)
-
         # Build a Graph that computes predictions from the inference model.
         logits = topology.inference(images, FLAGS.network_pattern)
 
@@ -185,32 +141,6 @@ def train():
                     summary_str = sess.run(summary_op)
                     summary_writer.add_summary(summary_str, step)
                     summary_writer.flush()
-
-                # Save a checkpoint and evaluate the model periodically.
-                if (step + 1) % 1000 == 0:
-                    saver.save(sess, FLAGS.log_dir, global_step=step)
-                    # Evaluate against the training set.
-                    print('Training Data Eval:')
-                    do_eval(sess,
-                            eval_correct,
-                            images,
-                            labels,
-                            featureBatch,
-                            labelBatch)
-#                     # Evaluate against the validation set.
-#                     print('Validation Data Eval:')
-#                     do_eval(sess,
-#                             eval_correct,
-#                             images_placeholder,
-#                             labels_placeholder,
-#                             data_sets.validation)
-#                     # Evaluate against the test set.
-#                     print('Test Data Eval:')
-#                     do_eval(sess,
-#                             eval_correct,
-#                             images_placeholder,
-#                             labels_placeholder,
-#                             data_sets.test)
 
                 step += 1
 

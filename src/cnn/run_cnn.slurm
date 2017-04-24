@@ -8,7 +8,7 @@ module load cuda/8.0 tensorflow/0.12.1
 source ${TENSORFLOW_ENV}/bin/activate
 
 cd /home/richardz/src/tensorflow_apps/src/cnn
-python ./fully_connected_feed.py \
+python ./train.py \
        --network_pattern outer_layer_cnn \
        --batch_size 100 \
        --train_dir /pylon2/pscstaff/welling/fish_cube_links \

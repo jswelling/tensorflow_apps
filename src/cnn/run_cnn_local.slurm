@@ -1,7 +1,7 @@
 #! /bin/bash -x
 
 cd /Users/richard/src/tensorflow_apps/src/cnn
-python ./fully_connected_feed.py \
+python ./train.py \
        --network_pattern outer_layer_cnn \
        --batch_size 32 \
        --train_dir /Users/richard/src/fish_cube_links_subset \
