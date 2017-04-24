@@ -27,13 +27,13 @@ import tensorflow as tf
 
 import input_data
 from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
-import ball_net
+import topology
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('network_pattern', 'whole_ball_1_hidden',
-                   'A network pattern recognized in ball_net.py')
+                   'A network pattern recognized in topology.py')
 flags.DEFINE_float('learning_rate', 0.01,
                    'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 12, 'Batch size.  '
@@ -132,16 +132,16 @@ def run_training():
         feature_ph, label_ph = featureBatch, labelBatch
 
         # Build a Graph that computes predictions from the inference model.
-        logits = ball_net.inference(feature_ph, FLAGS.network_pattern)
+        logits = topology.inference(feature_ph, FLAGS.network_pattern)
 
         # Add to the Graph the Ops for loss calculation.
-        loss = ball_net.loss(logits, label_ph)
+        loss = topology.loss(logits, label_ph)
 
         # Add to the Graph the Ops that calculate and apply gradients.
-        train_op = ball_net.training(loss, FLAGS.learning_rate)
+        train_op = topology.training(loss, FLAGS.learning_rate)
 
         # Add the Op to compare the logits to the labels during evaluation.
-        eval_correct = ball_net.evaluation(logits, label_ph)
+        eval_correct = topology.evaluation(logits, label_ph)
 
         # Build the summary operation based on the TF collection of Summaries.
         summary_op = tf.summary.merge_all()
