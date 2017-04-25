@@ -11,9 +11,9 @@ cd /home/richardz/src/tensorflow_apps/src/cnn
 python ./train.py \
        --network_pattern outer_layer_cnn \
        --batch_size 100 \
-       --data_dir /pylon2/pscstaff/welling/fish_cube_links \
-       --log_dir /pylon2/sy4s8lp/richardz/tf/logs/cnn/ \
+       --data_dir /pylon2/sy4s8lp/richardz/fish_data/train \
+       --log_dir /pylon2/sy4s8lp/richardz/tf/logs/cnn_20170424/ \
        --num_epochs 0 \
        --read_threads 3 \
        --shuffle_size 100 \
-       --num_examples 9987
+       --num_examples 9000
