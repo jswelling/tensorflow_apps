@@ -91,7 +91,7 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
         try:
             while not coord.should_stop():
                 losses = sess.run([loss_op])
-                print('loss @ step', step, '=', np.sum(losses))
+                print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
                 total_loss += np.sum(losses)
                 step += 1
                 examples += FLAGS.batch_size
