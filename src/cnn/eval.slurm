@@ -1,4 +1,8 @@
 #!/bin/bash -x
+#SBATCH -N 1
+#SBATCH -t 00:05:00
+#SBATCH -p GPU-shared
+#SBATCH --gres=gpu:p100:1
 
 module load cuda/8.0 tensorflow/0.12.1
 source ${TENSORFLOW_ENV}/bin/activate
@@ -10,7 +14,7 @@ python ./eval.py \
        --data_dir /pylon2/sy4s8lp/richardz/fish_data/eval \
        --checkpoint_dir /pylon2/sy4s8lp/richardz/tf/logs/cnn_20170424 \
        --log_dir /pylon2/sy4s8lp/richardz/tf/logs/cnn_eval_20170424/ \
-       --batch_size 32 \
+       --batch_size 141 \
        --read_threads 3 \
        --shuffle_size 10 \
        --num_examples 987
