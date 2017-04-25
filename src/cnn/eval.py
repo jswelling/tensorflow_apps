@@ -96,6 +96,11 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
                 step += 1
                 examples += FLAGS.batch_size
 
+                # Update the events file.
+                summary_str = sess.run(summary_op)
+                summary_writer.add_summary(summary_str, step)
+                summary_writer.flush()
+
         except Exception as e:  # pylint: disable=broad-except
             coord.request_stop(e)
 
