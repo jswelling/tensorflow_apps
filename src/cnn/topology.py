@@ -154,6 +154,10 @@ def inference(feature, patternStr):
             # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
             input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
 
+            tf.summary.image('input_outer_skin',
+                             tf.reshape(input_skin, [-1, nRows, nCols, 1]),
+                             max_outputs=100)
+
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]
             conv1 = tf.contrib.layers.conv2d(
