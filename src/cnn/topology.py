@@ -126,53 +126,14 @@ def inference(feature, patternStr):
       feature : [batch_size, N_BALL_SAMPS] - feature placeholder, from inputs().
 
       patternStr : str - string specifying network pattern. One of:
-                  'outer_layer_1_hidden'
+                  'outer_layer_cnn'
 
     Returns:
       softmax_linear: Output tensor with the computed logits.
 
     """
 
-    if patternStr == 'outer_layer_1_hidden':
-        with tf.name_scope('hidden'):
-            nRows, nCols = OUTERMOST_SPHERE_SHAPE
-            nOuterCells = nRows*nCols
-            batch_size = tf.shape(feature)[0]
-            skinStart = N_BALL_SAMPS - nOuterCells
-            skin20 = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
-            wtStdv = 1.0 / math.sqrt(float(nOuterCells))
-            skin20_w = tf.Variable(tf.truncated_normal([nOuterCells, nOuterCells],
-                                                       stddev=wtStdv),
-                                   name='s20_w')
-            skin20_b = tf.Variable(tf.zeros([nOuterCells]),
-                                   name='s20_b')
-            skin20_h = tf.nn.relu(tf.matmul(skin20, skin20_w) + skin20_b)
-        logits = _add_logit_layer(skin20_h)
-
-    elif patternStr == 'whole_ball_1_hidden':
-        with tf.name_scope('hidden') as scope:
-            nRows, nCols = OUTERMOST_SPHERE_SHAPE
-            nOuterCells = nRows*nCols
-            batch_size = tf.shape(feature)[0]
-            wtStdv = 1.0 / math.sqrt(float(N_BALL_SAMPS))
-            ball_w = tf.Variable(tf.truncated_normal([N_BALL_SAMPS, nOuterCells],
-                                                       stddev=wtStdv),
-                                   name='s20_w')
-            tf.summary.histogram(scope + 'ball_w', ball_w)
-            ball_b = tf.Variable(tf.zeros([nOuterCells]),
-                                   name='s20_b')
-            tf.summary.histogram(scope + 'ball_b', ball_b)
-            ball_h = tf.nn.relu(tf.matmul(feature, ball_w) + ball_b)
-            tf.summary.histogram(scope + 'ball_h', ball_h)
-            skinStart = N_BALL_SAMPS - nOuterCells
-            skin_feature = tf.slice(feature, [0, skinStart], [batch_size, nOuterCells])
-            tf.summary.image(scope + 'feature',
-                             tf.reshape(skin_feature, [batch_size, nRows, nCols, 1]))
-            tf.summary.image(scope + 'hidden',
-                             tf.reshape(ball_h, [batch_size, nRows, nCols, 1]))
-        logits = _add_logit_layer(ball_h)
-
-    elif patternStr == 'outer_layer_cnn':
+    if patternStr == 'outer_layer_cnn':
 
         """ Apply a CNN to the outer layer of the ball.
 
@@ -193,12 +154,16 @@ def inference(feature, patternStr):
             # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
             input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
 
+            tf.summary.image('input_outer_skin',
+                             tf.reshape(input_skin, [-1, nRows, nCols, 1]),
+                             max_outputs=100)
+
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]
             conv1 = tf.contrib.layers.conv2d(
                 inputs=input_skin,
                 num_outputs=8,
-                kernel_size=[10, 10],
+                kernel_size=[5, 5],
                 activation_fn=tf.nn.relu,
                 padding="SAME",
                 scope="conv1")
@@ -258,15 +223,6 @@ def inference(feature, patternStr):
                 # dense : [batch_size, nOuterCells]
                 dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
 
-
-            # Fully connected relu layer (not working in 0.12.1, use above instead)
-            # dense : [batch_size, nOuterCells]
-            # dense = tf.contrib.layers.fully_connected(
-            #     inputs=(pool2_flat, num_units),
-            #     num_outputs=nOuterCells,
-            #     activation_fn=tf.nn.relu,
-            #     scope="dense")
-
             # Apply dropout to prevent overfitting
             # dropout = tf.contrib.layers.dropout(
             #     inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
@@ -277,35 +233,6 @@ def inference(feature, patternStr):
         raise RuntimeError('Unknown inference pattern "%s"' % patternStr)
 
     return logits
-#     #
-#     # Hidden 1
-#     with tf.name_scope('hidden1'):
-#         weights = tf.Variable(
-#             tf.truncated_normal([IMAGE_PIXELS, hidden1_units],
-#                                 stddev=1.0 / math.sqrt(float(IMAGE_PIXELS))),
-#             name='weights')
-#         biases = tf.Variable(tf.zeros([hidden1_units]),
-#                              name='biases')
-#         hidden1 = tf.nn.relu(tf.matmul(images, weights) + biases)
-#     # Hidden 2
-#     with tf.name_scope('hidden2'):
-#         weights = tf.Variable(
-#             tf.truncated_normal([hidden1_units, hidden2_units],
-#                                 stddev=1.0 / math.sqrt(float(hidden1_units))),
-#             name='weights')
-#         biases = tf.Variable(tf.zeros([hidden2_units]),
-#                              name='biases')
-#         hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
-#     # Linear
-#     with tf.name_scope('softmax_linear'):
-#         weights = tf.Variable(
-#             tf.truncated_normal([hidden2_units, NUM_CLASSES],
-#                                 stddev=1.0 / math.sqrt(float(hidden2_units))),
-#             name='weights')
-#         biases = tf.Variable(tf.zeros([NUM_CLASSES]),
-#                              name='biases')
-#         logits = tf.matmul(hidden2, weights) + biases
-#     return logits
 
 
 def loss(logits, labels):
@@ -323,14 +250,8 @@ def loss(logits, labels):
         logits = tf.reshape(logits, [batch_size, -1])
         tf.summary.histogram(scope + 'logits', logits)
         labels = tf.reshape(labels, [batch_size, -1])
-#         softLogits = tf.nn.softmax(logits)
         softLogits = tf.nn.l2_normalize(logits, 1)
         tf.summary.histogram(scope + 'soft_logits', softLogits)
-#         cross_entropy = -tf.reduce_sum(labels * tf.log(softLogits + 1.0e-9))
-#         tf.scalar_summary(scope + 'cross_entropy', cross_entropy)
-#         regularizer = tf.reduce_sum(tf.square(softLogits))
-#         tf.scalar_summary(scope + 'regularizer', regularizer)
-#         loss = cross_entropy + regularizer
 
         diffSqr = tf.squared_difference(softLogits, labels)
         tf.summary.histogram(scope + 'squared_difference', diffSqr)
@@ -339,12 +260,11 @@ def loss(logits, labels):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
         tf.summary.image(scope + 'logits',
-                         tf.reshape(logitImg, [batch_size, nRows, nCols, 1]))
+                         tf.reshape(logitImg, [batch_size, nRows, nCols, 1]),
+                         max_outputs=100)
         tf.summary.image(scope + 'labels',
-                         tf.reshape(labels, [batch_size, nRows, nCols, 1]))
-#         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logi    ts, labels,
-#                                                                 name='xentropy')
-#         loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
+                         tf.reshape(labels, [batch_size, nRows, nCols, 1]),
+                         max_outputs=100)
     return loss
 
 
@@ -375,25 +295,3 @@ def training(loss, learning_rate):
     # (and also increment the global step counter) as a single training step.
     train_op = optimizer.minimize(loss, global_step=global_step)
     return train_op
-
-
-def evaluation(logits, labels):
-    """Evaluate the quality of the logits at predicting the label.
-
-    Args:
-      logits: Logits tensor, float - [batch_size, NUM_CLASSES].
-      labels: Labels tensor, int32 - [batch_size], with values in the
-        range [0, NUM_CLASSES).
-
-    Returns:
-      A scalar int32 tensor with the number of examples (out of batch_size)
-      that were predicted correctly.
-    """
-    return loss(logits, labels)
-#     # For a classifier model, we can use the in_top_k Op.
-#     # It returns a bool tensor with shape [batch_size] that is true for
-#     # the examples where the label is in the top k (here k=1)
-#     # of all logits for that example.
-#     correct = tf.nn.in_top_k(logits, labels, 1)
-#     # Return the number of true entries.
-#     return tf.reduce_sum(tf.cast(correct, tf.int32))
