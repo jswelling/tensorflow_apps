@@ -160,43 +160,43 @@ def inference(feature, patternStr):
 
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]
-            conv1 = tf.contrib.layers.conv2d(
-                inputs=input_skin,
-                num_outputs=8,
-                kernel_size=[5, 5],
-                activation_fn=tf.nn.relu,
-                padding="SAME",
-                scope="conv1")
+            conv1 = tf.layers.conv2d(
+                input_skin,     # inputs
+                8,              # number of filters
+                [5, 5],         # kernel size
+                activation=tf.nn.relu,
+                padding="same",
+                name="conv1")
 
             # Pooling layer #1
             # pool1 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
-            pool1 = tf.contrib.layers.max_pool2d(
-                inputs=conv1,
-                kernel_size=[2, 2],
-                stride=2,
-                padding="SAME",
-                scope="pool1")
+            pool1 = tf.layers.max_pooling2d(
+                conv1,          # inputs
+                [2, 2],         # pool size
+                2,              # strides
+                padding="same",
+                name="pool1")
 
             print('pool1:', pool1)
 
             # Convolutional layer #2
             # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
-            conv2 = tf.contrib.layers.conv2d(
-                inputs=pool1,
-                num_outputs=16,
-                kernel_size=[5, 5],
-                activation_fn=tf.nn.relu,
-                padding="SAME",
-                scope="conv2")
+            conv2 = tf.layers.conv2d(
+                pool1,          # inputs
+                16,             # number of filters
+                [5, 5],         # kernel size
+                activation=tf.nn.relu,
+                padding="same",
+                name="conv2")
 
             # Pooling layer #2
             # pool2 : [batch_size, ceil(nRows / 4), ceil(nCols / 4), 16 ]
-            pool2 = tf.contrib.layers.max_pool2d(
-                inputs=conv2,
-                kernel_size=[2, 2],
-                stride=2,
-                padding="SAME",
-                scope="pool2")
+            pool2 = tf.layers.max_pooling2d(
+                conv2,          # inputs
+                [2, 2],         # kernel size
+                2,              # strides
+                padding="same",
+                name="pool2")
 
             pool2_dim = pool2.get_shape().as_list()
             batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
@@ -228,6 +228,102 @@ def inference(feature, patternStr):
             #     inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
 
         logits = _add_logit_layer(dense)
+
+    # end outer_layer_cnn
+
+    elif patternStr == '3D_cnn':
+
+        with tf.name_scope('cnn'):
+            nRows, nCols = OUTERMOST_SPHERE_SHAPE
+            nOuterCells = nRows*nCols
+
+            # The layers of the ball are stored in a 1D array as
+            # [ --layer0-- , --layer1--, ... , --outermost_layer-- ]
+            skinStart = N_BALL_SAMPS - nOuterCells
+
+            # Slice the outer layer of pixels from the feature
+            # outer_skin : [batch_size, nOuterCells]
+            outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+
+            # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
+            input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
+
+            tf.summary.image('input_outer_skin',
+                             tf.reshape(input_skin, [-1, nRows, nCols, 1]),
+                             max_outputs=100)
+
+            # Convolutional layer #1
+            # conv1 : [batch_size, nRows, nCols, 8]
+            conv1 = tf.layers.conv2d(
+                input_skin,     # inputs
+                8,              # number of filters
+                [5, 5],         # kernel size
+                activation=tf.nn.relu,
+                padding="same",
+                name="conv1")
+
+            # Pooling layer #1
+            # pool1 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
+            pool1 = tf.layers.max_pooling2d(
+                conv1,          # inputs
+                [2, 2],         # pool size
+                2,              # strides
+                padding="same",
+                name="pool1")
+
+            print('pool1:', pool1)
+
+            # Convolutional layer #2
+            # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
+            conv2 = tf.layers.conv2d(
+                pool1,          # inputs
+                16,             # number of filters
+                [5, 5],         # kernel size
+                activation=tf.nn.relu,
+                padding="same",
+                name="conv2")
+
+            # Pooling layer #2
+            # pool2 : [batch_size, ceil(nRows / 4), ceil(nCols / 4), 16 ]
+            pool2 = tf.layers.max_pooling2d(
+                conv2,          # inputs
+                [2, 2],         # kernel size
+                2,              # strides
+                padding="same",
+                name="pool2")
+
+            pool2_dim = pool2.get_shape().as_list()
+            batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
+
+            num_units = pool2_height * pool2_width * pool2_filters
+
+            # Flatten pool2 into [batch_size, h * w * filters]
+            pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                    name="pool2_flat")
+
+            print('pool2_flat:', pool2_flat)
+
+            # Fully connected relu layer
+            with tf.variable_scope("dense") as scope:
+                num_neurons = nOuterCells
+
+                # Flatten pool2 into [batch_size, h * w * filters]
+                pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                        name="pool2_flat")
+
+                weights = weight_variable([num_units, num_neurons])
+                biases  = bias_variable([num_neurons])
+
+                # dense : [batch_size, nOuterCells]
+                dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
+
+            # Apply dropout to prevent overfitting
+            # dropout = tf.contrib.layers.dropout(
+            #     inputs=dense, rate=0.4, training=mode == learn.ModeKeys.TRAIN)
+
+        logits = _add_logit_layer(dense)
+
+    # end 3D_cnn
 
     else:
         raise RuntimeError('Unknown inference pattern "%s"' % patternStr)

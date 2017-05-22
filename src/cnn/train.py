@@ -164,4 +164,5 @@ def main(_):
     train()
 
 if __name__ == '__main__':
+    print('Tensorflow version:', tf.__version__)
     tf.app.run()
