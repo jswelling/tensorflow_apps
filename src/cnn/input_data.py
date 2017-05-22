@@ -74,6 +74,19 @@ ball_shells = {0: (0, 0),
                42: (21.0, 48)
                }
 
+def get_sphere_shapes():
+    '''Return a list of tuples (nRows, nCols) of the shells in increasing order.
+    '''
+
+    layers = ball_shells.keys()
+    layers.sort()
+
+    def getDimensions(shell_idx):
+        r, l = ball_shells[shell_idx]
+        return (l + 1, 2 * l + 1)
+
+    return list(map(getDimensions, layers))
+
 def get_data_queues(train_dir, fake_data=False, shuffle=True, num_epochs=None,
                     num_expected_examples=None):
 

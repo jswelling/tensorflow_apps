@@ -36,7 +36,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 
-from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE, get_sphere_shapes
+
+SPHERE_SHAPES = get_sphere_shapes()
 
 def weight_variable(shape):
     """Generate a tensor of weight variables of dimensions `shape`.
@@ -234,7 +236,7 @@ def inference(feature, patternStr):
     elif patternStr == '3D_cnn':
 
         with tf.name_scope('cnn'):
-            nRows, nCols = OUTERMOST_SPHERE_SHAPE
+            nRows, nCols = SPHERE_SHAPES[-1]
             nOuterCells = nRows*nCols
 
             # The layers of the ball are stored in a 1D array as
@@ -244,6 +246,8 @@ def inference(feature, patternStr):
             # Slice the outer layer of pixels from the feature
             # outer_skin : [batch_size, nOuterCells]
             outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+
+
 
             # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
             input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
