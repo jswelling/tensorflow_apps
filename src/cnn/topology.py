@@ -236,6 +236,11 @@ def inference(feature, patternStr):
     elif patternStr == '3D_cnn':
 
         with tf.name_scope('cnn'):
+
+            ####################################################################
+            # Slice the outer skin
+            ####################################################################
+
             nRows, nCols = SPHERE_SHAPES[-1]
             nOuterCells = nRows*nCols
 
@@ -245,63 +250,81 @@ def inference(feature, patternStr):
 
             # Slice the outer layer of pixels from the feature
             # outer_skin : [batch_size, nOuterCells]
-            outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+            raw_outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+            outer_skin = tf.reshape(raw_outer_skin, [-1, nRows, nCols, 1])
 
+            ####################################################################
+            # Slice the next inner skin
+            ####################################################################
 
+            # TODO: Use more layers than just the outer and next inner
+            width, height = SPHERE_SHAPES[-2]
+            nextSkinStart = skinStart - (width * height)
+            raw_next_skin = tf.slice(feature, [0, nextSkinStart], [-1, width * height])
+            reshaped_next_skin = tf.reshape(raw_next_skin, [-1, height, width, 1])
 
-            # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
-            input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
+            # Resize up to outer skin's scale
+            next_skin = tf.image.resize_bilinear(
+                reshaped_next_skin,
+                [nRows, nCols])
+
+            # How many layers used
+            depth = 2
+            nChannels = 1
+
+            # Stack layers into [batch_size, depth, nRows, nCols, nChannels]
+            inputs = tf.stack([next_skin, outer_skin], axis=1, name="stack")
 
             tf.summary.image('input_outer_skin',
-                             tf.reshape(input_skin, [-1, nRows, nCols, 1]),
+                             outer_skin,
                              max_outputs=100)
 
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]
-            conv1 = tf.layers.conv2d(
-                input_skin,     # inputs
+            conv1 = tf.layers.conv3d(
+                inputs,         # inputs
                 8,              # number of filters
-                [5, 5],         # kernel size
+                [depth, 5, 5],  # kernel size
                 activation=tf.nn.relu,
                 padding="same",
                 name="conv1")
 
             # Pooling layer #1
-            # pool1 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
-            pool1 = tf.layers.max_pooling2d(
+            # pool1 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), 8]
+            pool1 = tf.layers.max_pooling3d(
                 conv1,          # inputs
-                [2, 2],         # pool size
-                2,              # strides
+                [depth, 2, 2],  # pool size
+                [1,     2, 2],  # strides
                 padding="same",
                 name="pool1")
 
             print('pool1:', pool1)
 
             # Convolutional layer #2
-            # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
-            conv2 = tf.layers.conv2d(
+            # conv2 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), 8]
+            conv2 = tf.layers.conv3d(
                 pool1,          # inputs
                 16,             # number of filters
-                [5, 5],         # kernel size
+                [depth, 5, 5],  # kernel size
                 activation=tf.nn.relu,
                 padding="same",
                 name="conv2")
 
             # Pooling layer #2
-            # pool2 : [batch_size, ceil(nRows / 4), ceil(nCols / 4), 16 ]
-            pool2 = tf.layers.max_pooling2d(
+            # pool2 : [batch_size, depth, ceil(nRows / 4), ceil(nCols / 4), 16 ]
+            pool2 = tf.layers.max_pooling3d(
                 conv2,          # inputs
-                [2, 2],         # kernel size
-                2,              # strides
+                [depth, 2, 2],  # kernel size
+                [1,     2, 2],  # strides
                 padding="same",
                 name="pool2")
 
             pool2_dim = pool2.get_shape().as_list()
-            batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
+            batch_size, pool2_depth, pool2_height, pool2_width, pool2_filters = pool2_dim
 
-            num_units = pool2_height * pool2_width * pool2_filters
+            num_units = pool2_depth * pool2_height * pool2_width * pool2_filters
 
-            # Flatten pool2 into [batch_size, h * w * filters]
+            # Flatten pool2 into [batch_size, d* h * w * filters]
             pool2_flat = tf.reshape(pool2, [-1, num_units],
                                     name="pool2_flat")
 
