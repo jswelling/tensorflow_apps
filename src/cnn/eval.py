@@ -105,7 +105,10 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
             coord.request_stop(e)
 
         # Compute precision @ 1.
-        loss = total_loss / examples
+        if examples != 0:
+            loss = total_loss / examples
+        else:
+            loss = total_loss
         print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
 
         coord.request_stop()
