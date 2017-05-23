@@ -120,6 +120,60 @@ def _add_cross(inputImg):
 
     return tf.where(expandedMask, expandedCross, inputImg)
 
+def input_block(feature):
+    '''Build a rectangular block by stacking layers together.
+
+    Returns:
+        inputs, depth, nRows, nCols
+
+        Where inputs is a tensor of the shape
+
+            [batch_size, depth, nRows, nCols, nChannels]
+
+    '''
+
+    ####################################################################
+    # Slice the outer skin
+    ####################################################################
+
+    nRows, nCols = SPHERE_SHAPES[-1]
+    nOuterCells = nRows*nCols
+
+    # The layers of the ball are stored in a 1D array as
+    # [ --layer0-- , --layer1--, ... , --outermost_layer-- ]
+    skinStart = N_BALL_SAMPS - nOuterCells
+
+    # Slice the outer layer of pixels from the feature
+    # outer_skin : [batch_size, nOuterCells]
+    raw_outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
+    outer_skin = tf.reshape(raw_outer_skin, [-1, nRows, nCols, 1])
+
+    ####################################################################
+    # Slice the next inner skin
+    ####################################################################
+
+    # TODO: Use more layers than just the outer and next inner
+    width, height = SPHERE_SHAPES[-2]
+    nextSkinStart = skinStart - (width * height)
+    raw_next_skin = tf.slice(feature, [0, nextSkinStart], [-1, width * height])
+    reshaped_next_skin = tf.reshape(raw_next_skin, [-1, height, width, 1])
+
+    # Resize up to outer skin's scale
+    next_skin = tf.image.resize_bilinear(
+        reshaped_next_skin,
+        [nRows, nCols])
+
+    # How many layers used
+    nChannels = 1
+    depth = 2
+
+    inputs = tf.stack([next_skin, outer_skin], axis=1, name="stack")
+
+    tf.summary.image('input_outer_skin',
+                        outer_skin,
+                        max_outputs=100)
+
+    return inputs, depth, nRows, nCols, nChannels
 
 def inference(feature, patternStr):
     """Build the model up to where it may be used for inference.
@@ -237,47 +291,8 @@ def inference(feature, patternStr):
 
         with tf.name_scope('cnn'):
 
-            ####################################################################
-            # Slice the outer skin
-            ####################################################################
-
-            nRows, nCols = SPHERE_SHAPES[-1]
-            nOuterCells = nRows*nCols
-
-            # The layers of the ball are stored in a 1D array as
-            # [ --layer0-- , --layer1--, ... , --outermost_layer-- ]
-            skinStart = N_BALL_SAMPS - nOuterCells
-
-            # Slice the outer layer of pixels from the feature
-            # outer_skin : [batch_size, nOuterCells]
-            raw_outer_skin = tf.slice(feature, [0, skinStart], [-1, nOuterCells])
-            outer_skin = tf.reshape(raw_outer_skin, [-1, nRows, nCols, 1])
-
-            ####################################################################
-            # Slice the next inner skin
-            ####################################################################
-
-            # TODO: Use more layers than just the outer and next inner
-            width, height = SPHERE_SHAPES[-2]
-            nextSkinStart = skinStart - (width * height)
-            raw_next_skin = tf.slice(feature, [0, nextSkinStart], [-1, width * height])
-            reshaped_next_skin = tf.reshape(raw_next_skin, [-1, height, width, 1])
-
-            # Resize up to outer skin's scale
-            next_skin = tf.image.resize_bilinear(
-                reshaped_next_skin,
-                [nRows, nCols])
-
-            # How many layers used
-            depth = 2
-            nChannels = 1
-
             # Stack layers into [batch_size, depth, nRows, nCols, nChannels]
-            inputs = tf.stack([next_skin, outer_skin], axis=1, name="stack")
-
-            tf.summary.image('input_outer_skin',
-                             outer_skin,
-                             max_outputs=100)
+            inputs, depth, nRows, nCols , nChannels = input_block(feature)
 
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]
@@ -332,7 +347,7 @@ def inference(feature, patternStr):
 
             # Fully connected relu layer
             with tf.variable_scope("dense") as scope:
-                num_neurons = nOuterCells
+                num_neurons = nRows * nCols
 
                 # Flatten pool2 into [batch_size, h * w * filters]
                 pool2_flat = tf.reshape(pool2, [-1, num_units],
