@@ -74,8 +74,21 @@ ball_shells = {0: (0, 0),
                42: (21.0, 48)
                }
 
+def accumulate(iterator):
+    total = 0
+    for item in iterator:
+        total += item
+        yield total
+
 def get_sphere_shapes():
-    '''Return a list of tuples (nRows, nCols) of the shells in increasing order.
+    '''Returns
+
+        shapes, sizes, idxs
+
+    where shapes is a list of tuples (nRows, nCols) in increasing
+    sphere radius, sizes is a list of nRows * nCols scalars, and idxs
+    is a list s.t. idxs[i] is the index of the first element of sphere
+    i.
     '''
 
     layers = ball_shells.keys()
@@ -85,7 +98,13 @@ def get_sphere_shapes():
         r, l = ball_shells[shell_idx]
         return (l + 1, 2 * l + 1)
 
-    return list(map(getDimensions, layers))
+    shapes = list(map(getDimensions, layers))
+
+    sizes = list(map(lambda (x, y) : x * y, shapes))
+
+    prefixSizes = list(accumulate(sizes))
+
+    return shapes, sizes, [0] + prefixSizes[:-1]
 
 def get_data_queues(train_dir, fake_data=False, shuffle=True, num_epochs=None,
                     num_expected_examples=None):
