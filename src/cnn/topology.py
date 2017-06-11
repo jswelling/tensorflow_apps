@@ -301,17 +301,17 @@ def inference(feature, patternStr):
             kernelStrideHeight = min(depth, 2)
 
             # Convolutional layer #1
-            # conv1 : [batch_size, nRows, nCols, 8]
+            # conv1 : [batch_size, nRows, nCols, nFilters]
             conv1 = tf.layers.conv3d(
                 inputs,               # inputs
-                8,                    # number of filters
+                16,                   # number of filters
                 [kernelHeight, 5, 5], # kernel size
                 activation=tf.nn.relu,
                 padding="same",
                 name="conv1")
 
             # Pooling layer #1
-            # pool1 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), 8]
+            # pool1 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), nFilters]
             pool1 = tf.layers.max_pooling3d(
                 conv1,                      # inputs
                 [kernelHeight,       2, 2], # pool size
@@ -322,10 +322,10 @@ def inference(feature, patternStr):
             print('pool1:', pool1)
 
             # Convolutional layer #2
-            # conv2 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), 8]
+            # conv2 : [batch_size, depth, ceil(nRows / 2), ceil(nCols / 2), nFilters]
             conv2 = tf.layers.conv3d(
                 pool1,                # inputs
-                16,                   # number of filters
+                32,                   # number of filters
                 [kernelHeight, 5, 5], # kernel size
                 activation=tf.nn.relu,
                 padding="same",
@@ -340,30 +340,45 @@ def inference(feature, patternStr):
                 padding="same",
                 name="pool2")
 
-            pool2_dim = pool2.get_shape().as_list()
-            batch_size, pool2_depth, pool2_height, pool2_width, pool2_filters = pool2_dim
+            # Convolutional layer #3
+            # conv3 : [batch_size, depth, ceil(nRows / 4), ceil(nCols / 4), nFilters]
+            conv3 = tf.layers.conv3d(
+                pool2,                # inputs
+                64,                   # number of filters
+                [kernelHeight, 5, 5], # kernel size
+                activation=tf.nn.relu,
+                padding="same",
+                name="conv3")
 
-            num_units = pool2_depth * pool2_height * pool2_width * pool2_filters
+            # Pooling layer #3
+            # pool3 : [batch_size, depth, ceil(nRows / 4), ceil(nCols / 4), nFilters]
+            pool3 = tf.layers.max_pooling3d(
+                conv3,                      # inputs
+                [kernelHeight,       2, 2], # kernel size
+                [kernelStrideHeight, 2, 2], # strides
+                padding="same",
+                name="pool3")
 
-            # Flatten pool2 into [batch_size, d* h * w * filters]
-            pool2_flat = tf.reshape(pool2, [-1, num_units],
-                                    name="pool2_flat")
+            final = pool3
 
-            print('pool2_flat:', pool2_flat)
+            final_dim = final.get_shape().as_list()
+            batch_size, final_depth, final_height, final_width, final_filters = final_dim
+
+            nUnits = final_depth * final_height * final_width * final_filters
 
             # Fully connected relu layer
             with tf.variable_scope("dense") as scope:
-                num_neurons = nRows * nCols
+                nNeurons = nRows * nCols
 
                 # Flatten pool2 into [batch_size, h * w * filters]
-                pool2_flat = tf.reshape(pool2, [-1, num_units],
-                                        name="pool2_flat")
+                final_flat = tf.reshape(final, [-1, nUnits],
+                                        name="final_flat")
 
-                weights = weight_variable([num_units, num_neurons])
-                biases  = bias_variable([num_neurons])
+                weights = weight_variable([nUnits, nNeurons])
+                biases  = bias_variable([nNeurons])
 
                 # dense : [batch_size, nOuterCells]
-                dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
+                dense = tf.nn.relu(tf.matmul(final_flat, weights) + biases, name=scope.name)
 
             # Apply dropout to prevent overfitting
             # dropout = tf.contrib.layers.dropout(
