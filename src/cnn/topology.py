@@ -100,7 +100,7 @@ def _add_cross(inputImg):
 #         maskArr = np.array(shape=OUTERMOST_SPHERE_SHAPE, dtype=np.bool)
         maskArr.fill(False)
         sR = float(nCols)/float(nRows)
-        for i in xrange(nRows):
+        for i in range(nRows):
             j = int(math.floor(i * sR))
             arr[i:j] = 0.01
             arr[nRows - (i+1), j] = 0.01
@@ -154,9 +154,9 @@ def inference(feature, patternStr):
             # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
             input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
 
-            tf.summary.image('input_outer_skin',
-                             tf.reshape(input_skin, [-1, nRows, nCols, 1]),
-                             max_outputs=100)
+          #  tf.summary.image('input_outer_skin',
+           #                  tf.reshape(input_skin, [-1, nRows, nCols, 1]),
+            #                 max_outputs=100)
 
             # Convolutional layer #1
             # conv1 : [batch_size, nRows, nCols, 8]

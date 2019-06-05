@@ -75,6 +75,7 @@ def train():
                                                    shuffle_size=FLAGS.shuffle_size,
                                                    num_expected_examples=FLAGS.num_examples)
 
+        print("images in train",images)
         # Build a Graph that computes predictions from the inference model.
         logits = topology.inference(images, FLAGS.network_pattern)
 
