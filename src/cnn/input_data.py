@@ -17,10 +17,8 @@ N_BALL_SAMPS = 71709
 OUTERMOST_SPHERE_SHAPE = [49, 97]
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-def get_data_pairs(train_dir, fake_data=False, shuffle=True, num_epochs=None,
-                    num_expected_examples=None):
-
-    print('get_data_queues: num_epochs =', num_epochs, type(num_epochs))
+def get_data_pairs(train_dir, fake_data=False, num_epochs=None,
+                    num_expected_examples=None, seed=None):
 
     yamlRE = re.compile(r'.+_.+_[0123456789]+\.yaml')
     featureFList = []
@@ -49,13 +47,15 @@ def get_data_pairs(train_dir, fake_data=False, shuffle=True, num_epochs=None,
                                                    % (len(labelFList),
                                                       len(featureFList)))
 
-    print('get_data_queues: len(featureFList) =', len(featureFList))
-    print('get_data_queues: featureList[:5] =', featureFList[:5])
-    print('get_data_queues: labelList[:5] =', labelFList[:5])
+    print('get_data_pairs: num_epochs =', num_epochs, type(num_epochs))
+    print('get_data_pairs: len(featureFList) =', len(featureFList))
+    print('get_data_pairs: featureList[:5] =', featureFList[:5])
+    print('get_data_pairs: labelList[:5] =', labelFList[:5])
 
+    with tf.control_dependencies([tf.print('get_data_pairs: New SEED: ', seed)]):
+        ds = tf.data.Dataset.from_tensor_slices((featureFList, labelFList))
+        ds = ds.shuffle(num_expected_examples, seed=seed)
 
-    ds = tf.data.Dataset.from_tensor_slices((featureFList, labelFList))
-    ds = ds.shuffle(num_expected_examples).repeat(num_epochs)
     return ds 
 
 def load_and_preprocess_image(image_path, label_path):
@@ -81,24 +81,26 @@ def load_and_preprocess_image(image_path, label_path):
                     lambda: tf.nn.l2_normalize(lVals, 0))
     lVals = tf.reshape(lVals, OUTERMOST_SPHERE_SHAPE)
 
-    print('read_pair_of_files: fVals, lVals =', fVals, lVals)
-
-    return fVals, lVals
+    return image_path, label_path, fVals, lVals
 
 def return_pair(image,label):
     return (image,label)
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
-                   read_threads=1, shuffle_size=100, num_expected_examples=None):
-    ds = get_data_pairs(train_dir, shuffle= True, num_epochs=num_epochs,num_expected_examples=num_expected_examples)
+                   read_threads=1, shuffle_size=100, num_expected_examples=None,
+                   seed=None):
+    ds = get_data_pairs(train_dir,
+                        num_epochs=num_epochs,
+                        num_expected_examples=num_expected_examples,
+                        seed=seed
+                        )
     image_label_ds = ds.map(load_and_preprocess_image)
     image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
-    image_label_ds = image_label_ds.repeat()
+    #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.
     #image_label_ds = image_label_ds.prefetch(buffer_size=AUTOTUNE)
     #keras_ds = image_label_ds.map(return_pair)
-    iter = image_label_ds.make_one_shot_iterator()
-    image_batch, label_batch = iter.get_next()
-    return image_batch, label_batch 
+    iter = image_label_ds.make_initializable_iterator()
+    return iter
     
