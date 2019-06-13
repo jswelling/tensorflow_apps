@@ -255,7 +255,7 @@ def loss(logits, labels):
 
         diffSqr = tf.squared_difference(softLogits, labels)
         tf.summary.histogram(scope + 'squared_difference', diffSqr)
-        loss = tf.reduce_sum(diffSqr)
+        loss = tf.reduce_sum(diffSqr, 1)
         tf.summary.histogram(scope + 'loss', loss)
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
@@ -286,7 +286,7 @@ def training(loss, learning_rate):
       train_op: The Op for training.
     """
     # Add a scalar summary for the snapshot loss.
-    tf.summary.scalar('training_loss', loss)
+    tf.summary.scalar('mean_training_loss_this_batch', tf.reduce_mean(loss))
     # Create the gradient descent optimizer with the given learning rate.
     optimizer = tf.train.GradientDescentOptimizer(learning_rate)
     # Create a variable to track the global step.

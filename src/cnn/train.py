@@ -27,6 +27,8 @@ import tensorflow as tf
 
 import input_data
 from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+#import input_data_from_list as input_data
+#from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
 
 # Basic model parameters as external flags.
@@ -146,8 +148,8 @@ def train():
                 # Write the summaries and print an overview fairly often.
                 if ((step + 1) % 100 == 0 or step < 10):
                     # Print status to stdout.
-                    print('Step %d: numerics = %s, loss = %.2f (%.3f sec)'
-                          % (step, num_chk, loss_value, duration))
+                    print('Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
+                          % (step, num_chk, loss_value.mean(), duration))
                     # Update the events file.
                     summary_str = sess.run(summary_op)
                     summary_writer.add_summary(summary_str, step)
@@ -175,8 +177,8 @@ def train():
         # Wait for threads to finish.
 #        coord.join(threads, stop_grace_period=10)
 
-    print('Final Step %d: numerics = %s, loss = %.2f (%.3f sec)'
-          % (step, num_chk, loss_value, duration))
+    print('Final Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
+          % (step, num_chk, loss_value.mean(), duration))
     try:
         summary_str = sess.run(summary_op)
         summary_writer.add_summary(summary_str, step)
