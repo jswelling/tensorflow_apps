@@ -103,13 +103,14 @@ def load_and_preprocess_image(image_path, label_path):
 #     return (image,label)
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
-                   read_threads=1, shuffle_size=100, num_expected_examples=None,
-                   seed=None):
+                   read_threads=1, shuffle_size=100,
+                   num_expected_examples=None, seed=None):
     ds = get_data_pairs(train_dir, FLAGS.file_list,
                         num_expected_examples=num_expected_examples,
                         seed=seed
                         )
-    image_label_ds = ds.map(load_and_preprocess_image)
+    image_label_ds = ds.map(load_and_preprocess_image,
+                            num_parallel_calls=read_threads)
     image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
     #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)

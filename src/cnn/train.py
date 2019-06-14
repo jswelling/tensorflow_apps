@@ -25,10 +25,10 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 #import tensorflow.python.debug as tf_debug
 
-import input_data
-from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
-#import input_data_from_list as input_data
-#from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+#import input_data
+#from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+import input_data_from_list as input_data
+from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
 
 # Basic model parameters as external flags.

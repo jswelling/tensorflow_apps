@@ -12,7 +12,7 @@ WORK=/pylon5/${groupid}/${myname}
 srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
 
-file_list=${datadir}/../fish_cube_files_all.txt
+file_list=${datadir}/../fish_cube_files_train_2.txt
 nepochs=100
 
 nexamples=`cat $file_list | wc -l`
@@ -27,6 +27,7 @@ cd $srcdir
 python ./train.py \
        --network_pattern outer_layer_cnn \
        --batch_size 40 \
+       --read_threads 3 \
        --data_dir $datadir \
        --file_list $file_list \
        --log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
