@@ -47,10 +47,10 @@ def get_data_pairs(train_dir, fake_data=False, num_epochs=None,
                                                    % (len(labelFList),
                                                       len(featureFList)))
 
-    print('get_data_pairs: num_epochs =', num_epochs, type(num_epochs))
-    print('get_data_pairs: len(featureFList) =', len(featureFList))
-    print('get_data_pairs: featureList[:5] =', featureFList[:5])
-    print('get_data_pairs: labelList[:5] =', labelFList[:5])
+    #print('get_data_pairs: num_epochs =', num_epochs, type(num_epochs))
+    #print('get_data_pairs: len(featureFList) =', len(featureFList))
+    ##print('get_data_pairs: featureList[:5] =', featureFList[:5])
+    #print('get_data_pairs: labelList[:5] =', labelFList[:5])
 
     with tf.control_dependencies([tf.print('get_data_pairs: New SEED: ', seed)]):
         ds = tf.data.Dataset.from_tensor_slices((featureFList, labelFList))

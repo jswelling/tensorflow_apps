@@ -142,7 +142,7 @@ def train():
             while True:            
                 # Run training steps or whatever
                 start_time = time.time()
-                _, _, loss_value, num_chk = sess.run([print_op, train_op, loss, check_numerics_op])
+                _, loss_value, num_chk = sess.run([train_op, loss, check_numerics_op])
                 duration = time.time() - start_time
 
                 # Write the summaries and print an overview fairly often.
