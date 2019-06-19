@@ -25,10 +25,10 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 #import tensorflow.python.debug as tf_debug
 
-import input_data
-from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
-#import input_data_from_list as input_data
-#from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+#import input_data
+#from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+import input_data_from_list as input_data
+from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
 
 # Basic model parameters as external flags.
@@ -57,6 +57,7 @@ flags.DEFINE_integer('num_examples', 12,
 flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
 flags.DEFINE_boolean('check_numerics', False, 'If true, add and run check_numerics ops.')
+flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -85,7 +86,10 @@ def train():
                                          seed=seed)
     image_path, label_path, images, labels = iterator.get_next()
 
-    print_op = tf.print("images and labels this batch: ", image_path, label_path)
+    if FLAGS.verbose:
+        print_op = tf.print("images and labels this batch: ", image_path, label_path)
+    else:
+        print_op = tf.constant('No printing')
 
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
