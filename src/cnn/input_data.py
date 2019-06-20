@@ -1,3 +1,4 @@
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -17,25 +18,34 @@ N_BALL_SAMPS = 71709
 OUTERMOST_SPHERE_SHAPE = [49, 97]
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-def get_data_pairs(train_dir, fake_data=False, num_epochs=None,
-                    num_expected_examples=None, seed=None):
+# loop over all the file in the directory and return a shuffled list of file indices 
+def get_data_pairs(train_dir, fake_data=False, shuffle=True, num_epochs=None,
+                    num_expected_examples=None):
+
+    print('get_data_queues: num_epochs =', num_epochs, type(num_epochs))
 
     yamlRE = re.compile(r'.+_.+_[0123456789]+\.yaml')
     featureFList = []
     labelFList = []
+    idx_list = []
     if not fake_data:
         for fn in os.listdir(train_dir):
             if yamlRE.match(fn):
                 words = fn[:-5].split('_')
                 base = words[0]
                 idx = int(words[2])
-                featureFName = os.path.join(train_dir,
-                                            '%s_rotBallSamp_%d.doubles' % (base, idx))
-                labelFName = os.path.join(train_dir,
-                                          '%s_rotEdgeSamp_%d.doubles' % (base, idx))
+                idx_list.append(idx)
+    print("1",idx_list)
+    idx_list = np.array(idx_list)
+    print("2",idx_list,idx_list[0])
+    np.random.shuffle(idx_list)
+    print("3",idx_list,type(idx_list))
+    
 
-                featureFList.append('%s' % (featureFName))
-                labelFList.append('%s' % (labelFName))
+    featureFList = list(map(map_image, idx_list))
+    labelFList = list(map(map_label, idx_list))
+    print("image list", len(featureFList),featureFList, "label list",len(labelFList),labelFList)
+                
 
     assert len(featureFList) == num_expected_examples, ('Found %s examples, expected %d'
                                                    % (len(featureFList),
@@ -47,17 +57,15 @@ def get_data_pairs(train_dir, fake_data=False, num_epochs=None,
                                                    % (len(labelFList),
                                                       len(featureFList)))
 
-    #print('get_data_pairs: num_epochs =', num_epochs, type(num_epochs))
-    #print('get_data_pairs: len(featureFList) =', len(featureFList))
-    ##print('get_data_pairs: featureList[:5] =', featureFList[:5])
-    #print('get_data_pairs: labelList[:5] =', labelFList[:5])
+    print('get_data_queues: len(featureFList) =', len(featureFList))
+    print('get_data_queues: featureList[:5] =', featureFList[:5])
+    print('get_data_queues: labelList[:5] =', labelFList[:5])
 
-    with tf.control_dependencies([tf.print('get_data_pairs: New SEED: ', seed)]):
-        ds = tf.data.Dataset.from_tensor_slices((featureFList, labelFList))
-        ds = ds.shuffle(num_expected_examples, seed=seed)
 
+    ds = tf.data.Dataset.from_tensor_slices((featureFList, labelFList))
+    ds = ds.shuffle(num_expected_examples).repeat(num_epochs)
     return ds 
-
+    
 def load_and_preprocess_image(image_path, label_path):
     # read and preprocess feature file
     fString = tf.read_file(image_path, name='featureReadFile')
@@ -66,41 +74,29 @@ def load_and_preprocess_image(image_path, label_path):
                                      name='featureDecode'),
                                    [N_BALL_SAMPS]),
                         name='featureToFloat')
-    # read and preprocess label file
-    lString = tf.read_file(label_path, name='labelReadFile')
-    lVals = tf.to_float(tf.decode_raw(lString, dtypes.float64,
-                                      name='labelDecode'),
-                        name='labelToFloat')
-    # normalize label
-    nRows, nCols = OUTERMOST_SPHERE_SHAPE
-    nOuterSphere = nRows * nCols
-    lVals = tf.cond(tf.less(tf.reduce_max(lVals), 1.0e-12),
-                    lambda: tf.constant(1.0/float(nOuterSphere),
-                                        dtype=dtypes.float32,
-                                        shape=[nOuterSphere]),
-                    lambda: tf.nn.l2_normalize(lVals, 0))
-    lVals = tf.reshape(lVals, OUTERMOST_SPHERE_SHAPE)
+    
+    # return label based on image type 
+    if 'empty' in image_path: 
+        lVals = 0 
+    else:
+        lVals = 1
 
-    return image_path, label_path, fVals, lVals
+    print('read_pair_of_files: fVals, lVals =', fVals, lVals)
 
-def return_pair(image,label):
-    return (image,label)
+    return fVals, lVals
+
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
-                   read_threads=1, shuffle_size=100, num_expected_examples=None,
-                   seed=None):
-    ds = get_data_pairs(train_dir,
-                        num_epochs=num_epochs,
-                        num_expected_examples=num_expected_examples,
-                        seed=seed
-                        )
+                   read_threads=1, shuffle_size=100, num_expected_examples=None):
+    ds = get_data_pairs(train_dir, shuffle= True, num_epochs=num_epochs,num_expected_examples=num_expected_examples)
     image_label_ds = ds.map(load_and_preprocess_image)
     image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
-    #image_label_ds = image_label_ds.repeat()
+    image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.
     #image_label_ds = image_label_ds.prefetch(buffer_size=AUTOTUNE)
     #keras_ds = image_label_ds.map(return_pair)
-    iter = image_label_ds.make_initializable_iterator()
-    return iter
+    iter = image_label_ds.make_one_shot_iterator()
+    image_batch, label_batch = iter.get_next()
+    return image_batch, label_batch 
     
