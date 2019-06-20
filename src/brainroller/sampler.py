@@ -33,7 +33,7 @@ class RandomArraySampler(Sampler):
         """
         Targetcoords is ignored.
         """
-        print self.edgeLen
+        print(self.edgeLen)
         return self.rng.rand(self.edgeLen, self.edgeLen, self.edgeLen)
 
 
@@ -63,11 +63,11 @@ class CylinderSampler(Sampler):
                            targetCoords['axisZ']]]).T
         axis /= np.linalg.norm(axis)
         sx, sy, sz = self.sig
-        for i in xrange(self.edgeLen):
+        for i in range(self.edgeLen):
             x = sx * (float(i) - xCtr)
-            for j in xrange(self.edgeLen):
+            for j in range(self.edgeLen):
                 y = sy * (float(j) - yCtr)
-                for k in xrange(self.edgeLen):
+                for k in range(self.edgeLen):
                     z = sz * (float(k) - zCtr)
                     xVec = np.matrix([[x, y, z]]).transpose()
                     rVec = xVec - (axis.T.dot(xVec)[0, 0] * axis)
@@ -99,9 +99,9 @@ class CheckerboardSampler(Sampler):
         rslt = np.zeros((self.edgeLen, self.edgeLen, self.edgeLen),
                         dtype=np.uint8)
         modulus = targetCoords['spacing']
-        for i in xrange(self.edgeLen):
-            for j in xrange(self.edgeLen):
-                for k in xrange(self.edgeLen):
+        for i in range(self.edgeLen):
+            for j in range(self.edgeLen):
+                for k in range(self.edgeLen):
                     if (i % modulus == 0) or (j % modulus == 0):
                         rslt[i, j, k] = 255
                     else:
@@ -115,7 +115,7 @@ class ArraySampler(Sampler):
         super(ArraySampler, self).__init__(edgeLen)
         rawData = np.fromfile(fname, dtype=np.uint8, 
                               count=(blockX * blockY * blockZ))
-        print 'loaded %s' % fname
+        print('loaded %s' % fname)
         self.data = np.reshape(rawData, (blockX, blockY, blockZ),
                                order='F')
 

@@ -15,11 +15,11 @@ sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
 
-from traceneighbors import UsefulVtx
+from .traceneighbors import UsefulVtx
 # from transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
 # from writegeom import writeBOV, plotSphere, writeVtkPolylines
 # from sampler import ArraySampler
-from yamlblocks import BlockGenerator
+from .yamlblocks import BlockGenerator
 
 radPixels = 20
 baseName = 'block'
@@ -46,7 +46,7 @@ def main():
         with open(skipFile, 'r') as skipF:
             usefulVtxDict = UsefulVtx.load(pklF, 10000, skipF)
 #             usefulVtxDict = UsefulVtx.load(pklF, 10000, None)
-    print 'Loaded %d useful vertices' % len(usefulVtxDict)
+    print('Loaded %d useful vertices' % len(usefulVtxDict))
 
     blockGen = BlockGenerator(rMax, edgeLen, maxL, 
                               usefulVtxDict, fishCoreFile,
@@ -56,19 +56,19 @@ def main():
     #sampleVtx = usefulVtxDict[6985]
     #sampleVtx = usefulVtxDict.values()[17]
     random.seed(1234)
-    indexList = usefulVtxDict.keys()[:]
+    indexList = list(usefulVtxDict.keys())[:]
     indexList.sort()
     for idx, sampleId in enumerate(random.sample(indexList, 5000)):
         if (idx >= 4968):
             try:
-                print 'starting sample %s' % sampleId
+                print('starting sample %s' % sampleId)
                 blockGen.writeBlock(sampleId, 
                                     {'xOffset': fishCoreXOffset,
                                      'yOffset': fishCoreYOffset,
                                      'zOffset': fishCoreZOffset})
-            except Exception, e:
-                print 'Sample id %s failed: %s' % (sampleId, e)
-    print 'completed main loop'
+            except Exception as e:
+                print('Sample id %s failed: %s' % (sampleId, e))
+    print('completed main loop')
 
 if __name__ == '__main__':
     main()

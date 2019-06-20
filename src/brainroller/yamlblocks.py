@@ -26,11 +26,11 @@ def calcMomentTensor(dCube, sig=(1.0, 1.0, 1.0)):
     iT = np.zeros((3, 3))  # moment of inertia tensor
     xCtr = yCtr = zCtr = 0.5 * float(edgeLen - 1)
     rMax = 2.0 * xCtr
-    for i in xrange(edgeLen):
+    for i in range(edgeLen):
         x = sig[0]*(float(i) - xCtr)
-        for j in xrange(edgeLen):
+        for j in range(edgeLen):
             y = sig[1]*(float(j) - yCtr)
-            for k in xrange(edgeLen):
+            for k in range(edgeLen):
                 z = sig[2]*(float(k) - zCtr)
                 rSqr = x*x + y*y + z*z
                 if rSqr <= rMax * rMax:
@@ -100,7 +100,7 @@ def calcAligningEulerZYZ(dCube, sig=(+1.0, +1.0, +1.0)):
     # print eVals
     # print eVecs
     sL = []
-    for i in xrange(eVals.shape[0]):
+    for i in range(eVals.shape[0]):
         sL.append((eVals[i], i))
     sL.sort(reverse=True)
     sortedEVecs = [np.matrix(eVecs[:, i]) for a, i in sL]  # @UnusedVariable

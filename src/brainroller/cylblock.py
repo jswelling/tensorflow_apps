@@ -15,7 +15,7 @@ sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
 
-from yamlblocks import SynthBlockGenerator
+from .yamlblocks import SynthBlockGenerator
 
 radPixels = 20
 # radPixels = 100
@@ -28,7 +28,7 @@ def main():
     blockGen = SynthBlockGenerator(rMax, edgeLen, maxL,
                                    sig=(1.0, -1.0, 1.0))
 
-    for i in xrange(1):
+    for i in range(1):
         axX, axY, axZ = (1.0, 1.0, 1.0)
 #         radius = 18.0
         radius = 10
@@ -36,8 +36,8 @@ def main():
         try:
             blockGen.writeBlock(i, {'radius': radius, 'thickness': thickness,
                                     'axisX': axX, 'axisY': axY, 'axisZ': axZ})
-        except Exception, e:
-            print 'Sample id %s failed: %s' % (i, e)
+        except Exception as e:
+            print('Sample id %s failed: %s' % (i, e))
 
 if __name__ == '__main__':
     main()

@@ -106,7 +106,7 @@ class SHTransformer(object):
             self.lChain = {}  # maps edge -> (r, L) where 0 <= edge <= edgeLen+1
             self.lChain[0] = (0, 0)
             self.lChain[(self.edgeLen+1)] = (self.rMax, self.maxL)
-            for edge in xrange(1, self.edgeLen+1):
+            for edge in range(1, self.edgeLen+1):
                 r = 0.5 * edge
                 l = int(math.ceil((edge * self.maxL)/ float(self.edgeLen + 1)))
                 self.lChain[edge] = (r, l)
@@ -118,7 +118,7 @@ class SHTransformer(object):
     def _getSortedFullChain(self):
         if self.lChain is None:
             self.initLChain()
-        fullChain = [(e, r, l) for e, (r, l) in self.lChain.items()]
+        fullChain = [(e, r, l) for e, (r, l) in list(self.lChain.items())]
         fullChain.sort()
         return fullChain
 
