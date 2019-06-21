@@ -95,7 +95,7 @@ def train():
     logits = topology.inference(images, FLAGS.network_pattern)
     
     # Add to the Graph the Ops for loss calculation.
-    loss = topology.loss(logits, labels)
+    loss = topology.binary_loss(logits, labels)
 
     # Add to the Graph the Ops that calculate and apply gradients.
     train_op = topology.training(loss, FLAGS.learning_rate)
