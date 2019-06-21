@@ -274,7 +274,7 @@ def build_filter(input, pattern_str):
             kernel_size=[5, 5],
             activation_fn=tf.nn.relu,
             padding="SAME",
-            scope="conv1")
+            scope="conv1_binary")
         print('conv1: ', conv1)
 
         pool1 = tf.contrib.layers.max_pool2d(
@@ -282,7 +282,7 @@ def build_filter(input, pattern_str):
             kernel_size=[2, 2],
             stride=2,
             padding="SAME",
-            scope="pool1")
+            scope="pool1_binary")
         print('pool1:', pool1)
 
         conv2 = tf.contrib.layers.conv2d(
@@ -291,7 +291,7 @@ def build_filter(input, pattern_str):
             kernel_size=[5, 5],
             activation_fn=tf.nn.relu,
             padding="SAME",
-            scope="conv2")
+            scope="conv2_binary")
         print('conv2: ', conv2)
 
         pool2 = tf.contrib.layers.max_pool2d(
@@ -299,7 +299,7 @@ def build_filter(input, pattern_str):
             kernel_size=[2, 2],
             stride=2,
             padding="SAME",
-            scope="pool2")
+            scope="pool2_binary")
         print('pool2: ', pool2)
 
         batch_size, pool2_height, pool2_width, pool2_channels = pool2.get_shape().as_list()
@@ -307,19 +307,19 @@ def build_filter(input, pattern_str):
         num_units = pool2_height * pool2_width * pool2_channels
 
         # Fully connected relu layer
-        with tf.variable_scope("dense") as scope:
+        with tf.variable_scope("dense_binary") as scope:
             num_neurons = 1024
 
             # Flatten pool2 into [batch_size, h * w * channels]
             pool2_flat = tf.reshape(pool2, [-1, num_units],
-                                    name="pool2_flat")
+                                    name="pool2_flat_binary")
             print('pool2_flat:', pool2_flat)
 
             weights = weight_variable([num_units, num_neurons])
             biases  = bias_variable([num_neurons])
 
             # dense : [batch_size, num_neurons]
-            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=scope.name)
+            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=dense_binary_relu)
             print('dense: ', dense)
         
         logits = _add_dense_linear_layer(dense, 2)
@@ -426,12 +426,14 @@ def binary_loss(logits, labels):
       loss: Loss tensor of type float. - []
     """
     with tf.name_scope('binary_loss') as scope:
+        tf.summary.histogram(scope+'logits', logits)
         cross_entropy=tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
-                                                                 labels=labels)
+                                                                 labels=labels,
+                                                                 name=scope+'cross_entropy')
 
     #now minize the above error
     #calculate the total mean of all the errors from all the nodes
-    cost=tf.reduce_mean(cross_entropy)
+    #cost=tf.reduce_mean(cross_entropy)
 
     #Now backpropagate to minimise the cost in the network.
 
@@ -454,7 +456,8 @@ def binary_loss(logits, labels):
 #         tf.summary.image(scope + 'labels',
 #                          tf.reshape(labels, [batch_size, nRows, nCols, 1]),
 #                          max_outputs=100)
-    return cost
+    #return cost
+    return cross_entropy
 
 
 def training(loss, learning_rate):
