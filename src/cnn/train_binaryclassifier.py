@@ -76,18 +76,19 @@ def train():
     seed = tf.placeholder(tf.int64, shape=())
     
     # Generate placeholders for the images and labels.
-    iterator = input_data.input_pipeline(FLAGS.data_dir,
-                                         FLAGS.batch_size,
-                                         fake_data=FLAGS.fake_data,
-                                         num_epochs=num_epochs,
-                                         read_threads=FLAGS.read_threads,
-                                         shuffle_size=FLAGS.shuffle_size,
-                                         num_expected_examples=FLAGS.num_examples,
-                                         seed=seed)
+    iterator = input_data.input_pipeline_binary(FLAGS.data_dir,
+                                                FLAGS.batch_size,
+                                                fake_data=FLAGS.fake_data,
+                                                num_epochs=num_epochs,
+                                                read_threads=FLAGS.read_threads,
+                                                shuffle_size=FLAGS.shuffle_size,
+                                                num_expected_examples=FLAGS.num_examples,
+                                                seed=seed)
     image_path, label_path, images, labels = iterator.get_next()
 
     if FLAGS.verbose:
-        print_op = tf.print("images and labels this batch: ", image_path, label_path)
+        print_op = tf.print("images and labels this batch: ", 
+                            image_path, label_path, labels)
     else:
         print_op = tf.constant('No printing')
 
@@ -146,7 +147,7 @@ def train():
             while True:            
                 # Run training steps or whatever
                 start_time = time.time()
-                _, loss_value, num_chk = sess.run([train_op, loss, check_numerics_op])
+                _, loss_value, num_chk, _ = sess.run([train_op, loss, check_numerics_op, print_op])
                 duration = time.time() - start_time
 
                 # Write the summaries and print an overview fairly often.

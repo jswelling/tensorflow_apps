@@ -23,6 +23,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 
+LABEL_TRUE = tf.constant([0.0, 1.0])
+LABEL_FALSE = tf.constant([1.0, 0.0])
 
 def data_fnames_from_yaml_fname(yaml_path):
     dir_path, fn = os.path.split(yaml_path)
@@ -99,8 +101,21 @@ def load_and_preprocess_image(image_path, label_path):
 
     return image_path, label_path, fVals, lVals
 
-# def return_pair(image,label):
-#     return (image,label)
+def load_and_preprocess_image_binary(image_path, label_path):
+    # read and preprocess feature file
+    fString = tf.read_file(image_path, name='featureReadFile')
+    fVals = tf.cast(tf.reshape(tf.decode_raw(fString, dtypes.float64,
+                                             name='featureDecode'),
+                               [N_BALL_SAMPS]),
+                    tf.float32, 
+                    name='featureToFloat')
+    regex = '.*empty[^\/]*'   # Must match the full string, end-to-end!
+    flagVals = tf.strings.regex_full_match(label_path, regex)
+    lVals = tf.where(flagVals,
+                     #tf.constant([1.0, 0.0]), tf.constant([0.0, 1.0]))
+                     LABEL_FALSE, LABEL_TRUE)
+
+    return image_path, flagVals, fVals, lVals
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                    read_threads=1, shuffle_size=100,
@@ -110,6 +125,24 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                         seed=seed
                         )
     image_label_ds = ds.map(load_and_preprocess_image,
+                            num_parallel_calls=read_threads)
+    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
+    #image_label_ds = image_label_ds.repeat()
+    image_label_ds = image_label_ds.batch(batch_size)
+    # `prefetch` lets the dataset fetch batches, in the background while the model is training.
+    #image_label_ds = image_label_ds.prefetch(buffer_size=AUTOTUNE)
+    #keras_ds = image_label_ds.map(return_pair)
+    iter = image_label_ds.make_initializable_iterator()
+    return iter
+    
+def input_pipeline_binary(train_dir, batch_size, fake_data=False, num_epochs=None,
+                          read_threads=1, shuffle_size=100,
+                          num_expected_examples=None, seed=None):
+    ds = get_data_pairs(train_dir, FLAGS.file_list,
+                        num_expected_examples=num_expected_examples,
+                        seed=seed
+                        )
+    image_label_ds = ds.map(load_and_preprocess_image_binary,
                             num_parallel_calls=read_threads)
     image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
     #image_label_ds = image_label_ds.repeat()
