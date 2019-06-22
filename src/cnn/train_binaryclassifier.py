@@ -68,9 +68,6 @@ def train():
     else:
         num_epochs = None
 
-    # Create a saver for writing training checkpoints.
-    saver = tf.train.Saver()
-
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -116,6 +113,9 @@ def train():
 
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
+
+    # Create a saver for writing training checkpoints.
+    saver = tf.train.Saver()
 
     # Optionally restore from a checkpoint.  The right file to load seems to be
     # the one with extension '.index'
