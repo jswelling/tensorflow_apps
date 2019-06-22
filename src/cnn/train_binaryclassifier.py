@@ -108,9 +108,6 @@ def train():
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
 
-    # Instantiate a SummaryWriter to output summaries and the Graph.
-    summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
-
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver()
 
@@ -123,6 +120,9 @@ def train():
         sess.run(init_op)
     else:
         saver.restore(sess, FLAGS.starting_snapshot)
+
+    # Instantiate a SummaryWriter to output summaries and the Graph.
+    summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
     # Start input enqueue threads.
     #coord = tf.train.Coordinator()
