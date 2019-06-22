@@ -33,5 +33,5 @@ tf.app.flags.DEFINE_string('checkpoint_filename', None,
 
 if FLAGS.checkpoint_filename is None:
     sys.exit('The --checkpoint_filename option is required')
-print_tensors_in_checkpoint_file(file_name=FLAGS_checkpoint_filename,tensor_name="",all_tensors=True)
+print_tensors_in_checkpoint_file(file_name=FLAGS.checkpoint_filename,tensor_name="",all_tensors=True)
 
