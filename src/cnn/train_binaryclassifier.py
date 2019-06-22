@@ -68,10 +68,9 @@ def train():
     else:
         num_epochs = None
 
-    # Tell TensorFlow that the model will be built into the default Graph.
-    # I don't think this is necessary any more
-    #with tf.Graph().as_default():
-    
+    # Create a saver for writing training checkpoints.
+    saver = tf.train.Saver()
+
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -112,16 +111,14 @@ def train():
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
 
-    # Create a saver for writing training checkpoints.
-    saver = tf.train.Saver()
-
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
-    # Initialize the variables (like the epoch counter).
+    # Optionally restore from a checkpoint.  The right file to load seems to be
+    # the one with extension '.index'
     if len(FLAGS.starting_snapshot) == 0:
         sess.run(init_op)
     else:
