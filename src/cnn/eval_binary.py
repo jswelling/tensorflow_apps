@@ -90,8 +90,11 @@ def eval_once(sess, iterator, saver, summary_writer, seed, loss_op, summary_op):
     try:
         sess.run(iterator.initializer, feed_dict={seed: 1234})
         while True:
-            losses = sess.run([loss_op])
+            losses, accuracy, predicted = sess.run([loss_op, accuracy, predicted])
             print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
+            # Test model and check accuracy
+            print('Test Accuracy:', accuracy, predicted)
+
             total_loss += np.sum(losses)
             step += 1
             examples += FLAGS.batch_size
@@ -137,6 +140,11 @@ def evaluate():
     
     # Add to the Graph the Ops for loss calculation.
     loss = topology.binary_loss(logits, labels)
+    
+    # Set up some prediction statistics
+    predicted = tf.round(tf.nn.sigmoid(logits))
+    correct_pred = tf.equal(predicted, labels)
+    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     saver = tf.train.Saver()
 
