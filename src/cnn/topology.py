@@ -319,7 +319,7 @@ def build_filter(input, pattern_str):
             biases  = bias_variable([num_neurons])
 
             # dense : [batch_size, num_neurons]
-            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name=dense_binary_relu)
+            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
         
         logits = _add_dense_linear_layer(dense, 2)
