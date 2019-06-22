@@ -108,14 +108,14 @@ def train():
     init_op = tf.group(tf.global_variables_initializer(),
                        tf.local_variables_initializer())
 
-    # Create a session for running operations in the Graph.
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver()
+
+    # Create a session for running operations in the Graph.
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     # Optionally restore from a checkpoint.  The right file to load seems to be
     # the one with extension '.index'
@@ -158,10 +158,10 @@ def train():
                     summary_writer.flush()
 
                 # Save a checkpoint periodically.
-                if (step + 1) % 4 == 0:
+                if (epoch + 1) % 50 == 0:
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
-                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=step)
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=epoch)
 
                 step += 1
 
