@@ -54,7 +54,7 @@ tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
 tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
 
 
-def eval_once(sess, iterator, saver, summary_writer, seed, loss_op, summary_op):
+def eval_once(sess, iterator, saver, summary_writer, seed, label_op, loss_op, summary_op, accuracy_op, predicted_op):
     """Run Eval once.
 
     Args:
@@ -81,23 +81,42 @@ def eval_once(sess, iterator, saver, summary_writer, seed, loss_op, summary_op):
     #     return
 
     total_loss = 0.0
+    n_true_pos = 0
+    n_false_pos = 0
+    n_true_neg = 0
+    n_false_neg = 0
     step = 0
 
     # Number of examples evaluated
     examples = 0
 
-
     try:
         sess.run(iterator.initializer, feed_dict={seed: 1234})
         while True:
-            losses, accuracy, predicted = sess.run([loss_op, accuracy, predicted])
+            losses, accuracy, labels, predicted = sess.run([loss_op, accuracy_op, label_op, predicted_op])
             print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
             # Test model and check accuracy
-            print('Test Accuracy:', accuracy, predicted)
+            print('Test Accuracy:', accuracy)
 
             total_loss += np.sum(losses)
             step += 1
-            examples += FLAGS.batch_size
+            examples += labels.shape[0]
+
+            #print('predicted:')
+            #print(predicted[0:5,:])
+            #print('labels:')
+            #print(labels[0:5,:])
+            for idx in range(labels.shape[0]):
+                if labels[idx, 1]:  # label true
+                    if predicted[idx, 1]:
+                        n_true_pos += 1
+                    else:
+                        n_false_neg += 1
+                else:               # label false
+                    if predicted[idx, 1]:
+                        n_false_pos += 1
+                    else:
+                        n_true_neg += 1
 
             # Update the events file.
             summary_str = sess.run(summary_op)
@@ -109,7 +128,13 @@ def eval_once(sess, iterator, saver, summary_writer, seed, loss_op, summary_op):
 
     # Compute precision @ 1.
     loss = total_loss / examples
+    print('%s: total examples @ 1 = %d' % (datetime.now(), examples))
     print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
+    print('%s: true positive @ 1 = %d' % (datetime.now(), n_true_pos))
+    print('%s: false positive @ 1 = %d' % (datetime.now(), n_false_pos))
+    print('%s: true negative @ 1 = %d' % (datetime.now(), n_true_neg))
+    print('%s: false negative @ 1 = %d' % (datetime.now(), n_false_neg))
+
 
 
 def evaluate():
@@ -155,7 +180,7 @@ def evaluate():
         summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
     
         while True:
-            eval_once(sess, iterator, saver, summary_writer, seed, loss, summary_op)
+            eval_once(sess, iterator, saver, summary_writer, seed, labels, loss, summary_op, accuracy, predicted)
             if FLAGS.run_once:
                 break
             time.sleep(FLAGS.eval_interval_secs)
