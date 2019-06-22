@@ -35,8 +35,8 @@ tf.app.flags.DEFINE_string('log_dir', '/tmp/eval',
                            """Directory where to write event logs.""")
 tf.app.flags.DEFINE_string('data_dir', '',
                            """Directory for evaluation data""")
-tf.app.flags.DEFINE_string('checkpoint_dir', '/tmp/train',
-                           """Directory where to read model checkpoints.""")
+tf.app.flags.DEFINE_string('starting_snapshot', None,
+                    'Snapshot to evaluate')
 tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
                             """How often to run the eval.""")
 tf.app.flags.DEFINE_integer('num_examples', 10000,
@@ -54,7 +54,7 @@ tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
 tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
 
 
-def eval_once(saver, summary_writer, loss_op, summary_op):
+def eval_once(sess, iterator, saver, summary_writer, seed, loss_op, summary_op):
     """Run Eval once.
 
     Args:
@@ -66,17 +66,19 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
     init_op = tf.local_variables_initializer()
     sess.run(init_op)
 
-    ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
-    if ckpt and ckpt.model_checkpoint_path:
-        # Restores from checkpoint
-        saver.restore(sess, ckpt.model_checkpoint_path)
-        # Assuming model_checkpoint_path looks something like:
-        #   /my-favorite-path/cifar10_train/model.ckpt-0,
-        # extract global_step from it.
-        global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
-    else:
-        print('No checkpoint file found')
-        return
+    saver.restore(sess, FLAGS.starting_snapshot)
+    global_step = FLAGS.starting_snapshot.split('/')[-1].split('-')[-1]
+    # ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
+    # if ckpt and ckpt.model_checkpoint_path:
+    #     # Restores from checkpoint
+    #     saver.restore(sess, ckpt.model_checkpoint_path)
+    #     # Assuming model_checkpoint_path looks something like:
+    #     #   /my-favorite-path/cifar10_train/model.ckpt-0,
+    #     # extract global_step from it.
+    #     global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
+    # else:
+    #     print('No checkpoint file found')
+    #     return
 
     total_loss = 0.0
     step = 0
@@ -84,24 +86,28 @@ def eval_once(saver, summary_writer, loss_op, summary_op):
     # Number of examples evaluated
     examples = 0
 
+
     try:
-        losses = sess.run([loss_op])
-        print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
-        total_loss += np.sum(losses)
-        step += 1
-        examples += FLAGS.batch_size
+        sess.run(iterator.initializer, feed_dict={seed: 1234})
+        while True:
+            losses = sess.run([loss_op])
+            print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
+            total_loss += np.sum(losses)
+            step += 1
+            examples += FLAGS.batch_size
 
-        # Update the events file.
-        summary_str = sess.run(summary_op)
-        summary_writer.add_summary(summary_str, step)
-        summary_writer.flush()
+            # Update the events file.
+            summary_str = sess.run(summary_op)
+            summary_writer.add_summary(summary_str, step)
+            summary_writer.flush()
 
-    except Exception as e:  # pylint: disable=broad-except
-        coord.request_stop(e)
+    except tf.errors.OutOfRangeError as e:
+        print('Finished evaluation {}'.format(step))
 
     # Compute precision @ 1.
     loss = total_loss / examples
     print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
+
 
 def evaluate():
     """Instantiate the network, then eval for a number of steps."""
@@ -141,7 +147,7 @@ def evaluate():
         summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
     
         while True:
-            eval_once(saver, summary_writer, loss, summary_op)
+            eval_once(sess, iterator, saver, summary_writer, seed, loss, summary_op)
             if FLAGS.run_once:
                 break
             time.sleep(FLAGS.eval_interval_secs)

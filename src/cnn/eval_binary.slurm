@@ -12,8 +12,7 @@ WORK=/pylon5/${groupid}/${myname}
 srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
 
-file_list=${datadir}/../fish_cube_files_train_2.txt
-nepochs=100
+file_list=${datadir}/../fish_cube_files_test_2.txt
 
 nexamples=`cat $file_list | wc -l`
 
