@@ -488,5 +488,7 @@ def training(loss, learning_rate):
     # (and also increment the global step counter) as a single training step.
 #    train_op = optimizer.minimize(loss, global_step=global_step)
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
-                                               'Adam')
+                                               'Adam',
+                                               summaries=['loss', 'gradients',
+                                                          'gradient_norm'])
     return train_op
