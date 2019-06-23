@@ -112,7 +112,7 @@ def train():
                        tf.local_variables_initializer())
 
     # Create a saver for writing training checkpoints.
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(max_to_keep=10)
 
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
@@ -161,7 +161,7 @@ def train():
                     summary_writer.flush()
 
                 # Save a checkpoint periodically.
-                if (epoch + 1) % 50 == 0:
+                if (epoch + 1) % 100 == 0:
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
                     saver.save(sess, FLAGS.log_dir + 'cnn', global_step=epoch)
