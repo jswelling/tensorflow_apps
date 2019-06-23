@@ -426,11 +426,11 @@ def binary_loss(logits, labels):
       loss: Loss tensor of type float. - []
     """
     with tf.name_scope('binary_loss') as scope:
-        tf.summary.histogram(scope+'logits', logits)
-        cross_entropy=tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
-                                                                 labels=labels,
-                                                                 name=scope+'cross_entropy')
-
+        cross_entropy = tf.losses.softmax_cross_entropy(logits=logits,
+                                                        onehot_labels=labels,
+                                                        weights=1.0,
+                                                        scope=scope
+                                                        )
     #now minize the above error
     #calculate the total mean of all the errors from all the nodes
     #cost=tf.reduce_mean(cross_entropy)
@@ -480,10 +480,13 @@ def training(loss, learning_rate):
     # Add a scalar summary for the snapshot loss.
     tf.summary.scalar('mean_training_loss_this_batch', tf.reduce_mean(loss))
     # Create the gradient descent optimizer with the given learning rate.
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+    #optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+#    optimizer = tf.train.AdamOptimizer(learning_rate)
     # Create a variable to track the global step.
     global_step = tf.Variable(0, name='global_step', trainable=False)
     # Use the optimizer to apply the gradients that minimize the loss
     # (and also increment the global step counter) as a single training step.
-    train_op = optimizer.minimize(loss, global_step=global_step)
+#    train_op = optimizer.minimize(loss, global_step=global_step)
+    train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
+                                               'Adam')
     return train_op
