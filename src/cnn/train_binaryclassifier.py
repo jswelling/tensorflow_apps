@@ -93,9 +93,12 @@ def train():
     
     # Add to the Graph the Ops for loss calculation.
     loss = topology.binary_loss(logits, labels)
+    print('loss: ', loss)
 
     # Add to the Graph the Ops that calculate and apply gradients.
     train_op = topology.training(loss, FLAGS.learning_rate)
+    print('train (optimizer): ', train_op)
+    
     if FLAGS.check_numerics:
         check_numerics_op = tf.add_check_numerics_ops()
     else:
@@ -138,8 +141,8 @@ def train():
     # Loop through training epochs
     for epoch in range(num_epochs):
         try:
-            #while not coord.should_stop():
             sess.run(iterator.initializer, feed_dict={seed: epoch})
+            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=0)
 
             while True:            
                 # Run training steps or whatever
