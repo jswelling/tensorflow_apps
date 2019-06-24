@@ -14,16 +14,17 @@ from writegeom import plotSphere
 from sampler import ArraySampler, BlockSampler
 from yamlblocks import parseBlock
 
-sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
-                 '/home/welling/shtools/SHTOOLS-3.2'])
+sys.path.extend(['/home/welling/git/Fiasco/src/fmri'])
+# sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
+#                  '/home/welling/shtools/SHTOOLS-3.2'])
 # sys.path.extend(['/home/welling/Fiasco/Fiasco_final/src/fmri',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
 
 import pyshtools as psh
 import fiasco_numpy as fiasco
-from shtransform import SHTransformer
-from sampler import Sampler
+from .shtransform import SHTransformer
+from .sampler import Sampler
 
 radPixels = 20
 maxL = 48

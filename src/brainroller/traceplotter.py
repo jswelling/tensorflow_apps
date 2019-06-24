@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-import cPickle
+import pickle
 import numpy as np
-from writegeom import plotLines
+from .writegeom import plotLines
 
 traceIn = 'traces.pkl'
 vtkOut = 'trace_lines.vtk'
@@ -43,7 +43,7 @@ class Vtx(object):
 
 def gather(vtxDict):
     tails = []
-    for vtx in vtxDict.values():
+    for vtx in list(vtxDict.values()):
         culledKids = [k for k in vtx.kids if k in vtxDict]
         if not culledKids:
             tails.append(vtx.copyNoKids())
@@ -66,12 +66,12 @@ def gather(vtxDict):
 
 def main():
     with open(traceIn, 'r') as f:
-        vtxDict, objDict = cPickle.load(f)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+        vtxDict, objDict = pickle.load(f)
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
 
     segList = gather(vtxDict)
     for seg in segList:
-        print [v.id for v in seg]
+        print([v.id for v in seg])
     #plotLines(vtkOut, lineList)
 
 if __name__ == '__main__':

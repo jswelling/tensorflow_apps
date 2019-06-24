@@ -14,9 +14,9 @@ import yaml
 sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
                  '/home/welling/shtools/SHTOOLS-3.2'])
 
-from yamlblocks import loadFieldEntry
-from writegeom import plotSphere
-from shtransform import SHTransformer
+from .yamlblocks import loadFieldEntry
+from .writegeom import plotSphere
+from .shtransform import SHTransformer
 
 srcDirs = ['/pylon2/pscstaff/welling/fish_cubes_new_group1',
            '/pylon2/pscstaff/welling/fish_cubes_new_group2'
@@ -50,10 +50,10 @@ def main():
                     rotSumArr = rotEdgeArr
                     sumArr = edgeArr
                 count += 1
-                print fname
+                print(fname)
     rotSumArr /= count
     sumArr /= count
-    print 'loaded %d samples' % count
+    print('loaded %d samples' % count)
     np.save('mean_rotEdge.npy', rotSumArr)
     os.chdir(baseDir)
     transformer = SHTransformer(edgeLen, maxL)

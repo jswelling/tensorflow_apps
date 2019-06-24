@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import os
-import cPickle
+import pickle
 
 #srcDir = '/pylon1/pscstaff/awetzel/ZF-test-files/60nm-remapped-traces'
 srcDir = '/pylon1/pscstaff/awetzel/ZF-test-files/60nm-July01-remapped-traces'
@@ -22,7 +22,7 @@ def main():
     vtxDict = {}
     objDict = {}
     for path in os.listdir(srcDir):
-        print path
+        print(path)
         if path.endswith('.re'):
             with open(os.path.join(srcDir, path), 'rU') as f:
                 for line in f:
@@ -42,9 +42,9 @@ def main():
                     if parent in vtxDict:
                         vtxDict[parent].addChild(vId)
 
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
     with open('traces.pkl', 'w') as f:
-        cPickle.dump((vtxDict, objDict), f)
+        pickle.dump((vtxDict, objDict), f)
 
 if __name__ == '__main__':
     main()

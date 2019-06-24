@@ -15,7 +15,7 @@ def checkDots(lbl, qTrans, vec, basisX, basisY, basisZ):
     for b in (basisX, basisY, basisZ):
         rVec = qTrans * vec
         dots.append(rVec.transpose().dot(b))
-    print "%s: %f %f %f " % (lbl, dots[0], dots[1], dots[2])
+    print("%s: %f %f %f " % (lbl, dots[0], dots[1], dots[2]))
 
 
 class Quaternion(object):
@@ -255,40 +255,40 @@ def testCase(phiIn, thetaIn, alphaIn, testThis, testThat, hush=True):
     try:
         t1 = testThis(phiIn, thetaIn, alphaIn)
         if not hush:
-            print 'generated transform'
-            print t1
+            print('generated transform')
+            print(t1)
 
         phi, theta, alpha = testThat(t1)
         t3 = testThis(phi, theta, alpha)
         if not hush:
-            print 'recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha)
-            print 'reconstruction:'
-            print t3
+            print('recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha))
+            print('reconstruction:')
+            print(t3)
 
         if np.allclose(t1, t3):
-            print 'OK for %s %s %s' % (phiIn, thetaIn, alphaIn)
+            print('OK for %s %s %s' % (phiIn, thetaIn, alphaIn))
         else:
-            print 'TEST FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta,
-                                                          alpha)
-    except ValueError, e:
-        print 'FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn)
+            print('TEST FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta,
+                                                          alpha))
+    except ValueError as e:
+        print('FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn))
 
 
 def main():
     allAngles = [0.0, 0.25*math.pi, 0.5*math.pi, 0.75*math.pi, 1.0*math.pi, 1.25*math.pi,
                  1.5*math.pi, 1.75*math.pi, 2.0*math.pi]
 
-    print 'Testing RzRyRz <-> Trans'
+    print('Testing RzRyRz <-> Trans')
     for phi in allAngles:
         for theta in allAngles:
             for alpha in allAngles:
                 testCase(phi, theta, alpha, eulerRzRyRzToTrans, transToEulerRzRyRz)
-    print 'Testing RxRyRz <-> Trans'
+    print('Testing RxRyRz <-> Trans')
     for phi in allAngles:
         for theta in allAngles:
             for alpha in allAngles:
                 testCase(phi, theta, alpha, eulerRzRyRxToTrans, transToEulerRzRyRx)
-    print 'Done with tests'
+    print('Done with tests')
 
 if __name__ == '__main__':
     main()

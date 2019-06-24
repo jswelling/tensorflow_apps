@@ -46,7 +46,7 @@ def writeVtkPolylines(fname, vtxListList,
             f.write('%d %s\n'
                     % (len(vL),
                        ' '.join(['%d' % i for i
-                                 in xrange(offset, offset+len(vL))])))
+                                 in range(offset, offset+len(vL))])))
             offset += len(vL)
         f.write('\n')
         f.write('POINT_DATA %d\n' % sum([len(l) for l in vtxListList]))
@@ -126,7 +126,7 @@ def writeVtkPolygons(fname, vtxList, polyList, ptArrayDict,
             f.write('%d %s\n' % (len(ply), ' '.join(['%d' % idx for idx in ply])))
         f.write('\n')
         ptArrayLen = None
-        for nm, ptArray in ptArrayDict.items():
+        for nm, ptArray in list(ptArrayDict.items()):
             if ptArrayLen is None:
                 ptArrayLen = len(ptArray)
                 f.write("POINT_DATA %d\n" % ptArrayLen)
@@ -149,22 +149,22 @@ def plotSphere(thetaVec, phiVec, magArrayDict, fname='test.vtk'):
     polyList = []
     rowStride = len(phiVec)
     rowOffset = 0
-    topCapVerts = range(rowStride)  # top end cap
+    topCapVerts = list(range(rowStride))  # top end cap
     polyList.append(topCapVerts)
-    for j in xrange(len(thetaVec) - 1):
+    for j in range(len(thetaVec) - 1):
         rowOffset = j * rowStride
         offset = rowOffset
-        for i in xrange(len(phiVec) - 1):  # @UnusedVariable
+        for i in range(len(phiVec) - 1):  # @UnusedVariable
             polyList.append([offset + rowStride, offset + 1 + rowStride, offset+1, offset])
             offset += 1
         offset = rowOffset + len(phiVec) - 1
         polyList.append([offset + rowStride, rowOffset + rowStride, rowOffset, offset])
     rowOffset = (len(thetaVec) - 1) * rowStride
-    botCapVerts = range(rowOffset, rowOffset+rowStride)  # bottom end cap
+    botCapVerts = list(range(rowOffset, rowOffset+rowStride))  # bottom end cap
     botCapVerts.reverse()  # for right hand rule
     polyList.append(botCapVerts)
     flatMagArrayDict = {}
-    for nm, arr in magArrayDict.items():
+    for nm, arr in list(magArrayDict.items()):
         flatMagArrayDict[nm] = arr.flatten('F')
     writeVtkPolygons(fname, vtxList, polyList, flatMagArrayDict)
 
@@ -190,12 +190,12 @@ def plotBall(layerList, magArrayDict, fname='test.vtk'):
         rowStride = len(phiVec)
         rowOffset = 0
         lclPolyList = []
-        topCapVerts = range(rowStride)  # top end cap
+        topCapVerts = list(range(rowStride))  # top end cap
         lclPolyList.append(topCapVerts)
-        for j in xrange(len(thetaVec) - 1):
+        for j in range(len(thetaVec) - 1):
             rowOffset = j * rowStride
             offset = rowOffset
-            for i in xrange(len(phiVec) - 1):  # @UnusedVariable
+            for i in range(len(phiVec) - 1):  # @UnusedVariable
                 lclPolyList.append([offset + rowStride,
                                     offset + 1 + rowStride,
                                     offset+1, offset])
@@ -205,14 +205,14 @@ def plotBall(layerList, magArrayDict, fname='test.vtk'):
                                 rowOffset + rowStride,
                                 rowOffset, offset])
         rowOffset = (len(thetaVec) - 1) * rowStride
-        botCapVerts = range(rowOffset, rowOffset+rowStride)  # bottom end cap
+        botCapVerts = list(range(rowOffset, rowOffset+rowStride))  # bottom end cap
         botCapVerts.reverse()  # for right hand rule
         lclPolyList.append(botCapVerts)
         for lclSubList in lclPolyList:
             subList = [idx + vtxBase for idx in lclSubList]
             polyList.append(subList)
     flatMagArrayDict = {}
-    for nm, arr in magArrayDict.items():
+    for nm, arr in list(magArrayDict.items()):
         flatMagArrayDict[nm] = arr.flatten('F')
     writeVtkPolygons(fname, vtxList, polyList, flatMagArrayDict)
 

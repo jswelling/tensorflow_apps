@@ -2,7 +2,7 @@
 
 import math
 import numpy as np
-from main import transToEulerRzRyRz, eulerRzRyRzToTrans, transToEulerRxRyRz, eulerRxRyRzToTrans
+from .main import transToEulerRzRyRz, eulerRzRyRzToTrans, transToEulerRxRyRz, eulerRxRyRzToTrans
 
 
 dToR = np.pi/180.0
@@ -25,56 +25,56 @@ def testCase(phiIn, thetaIn, alphaIn, hush=True):
     try:
         t1 = eulerRzRyRzToTrans(phiIn, thetaIn, alphaIn)
         if not hush:
-            print 'from main.eulerRzRyRzToTrans'
-            print t1
+            print('from main.eulerRzRyRzToTrans')
+            print(t1)
 
         t2 = faker(phiIn, thetaIn, alphaIn)
         if not hush:
-            print 'from faker'
-            print t2
+            print('from faker')
+            print(t2)
 
 #         phi, theta, alpha = transToEulerRzRyRz(t1)
         phi, theta, alpha = transToEulerRzRyRz(t2)
         t3 = eulerRzRyRzToTrans(phi, theta, alpha)
         if not hush:
-            print 'recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha)
-            print 'reconstruction:'
-            print t3
+            print('recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha))
+            print('reconstruction:')
+            print(t3)
 
         if not np.allclose(t1, t2):
             if not np.allclose(t1, t3):
-                print 'BOTH FAIL for %s %s %s' % (phiIn, thetaIn, alphaIn)
+                print('BOTH FAIL for %s %s %s' % (phiIn, thetaIn, alphaIn))
             else:
-                print 'TEST! FAIL for %s %s %s' % (phiIn, thetaIn, alphaIn)
+                print('TEST! FAIL for %s %s %s' % (phiIn, thetaIn, alphaIn))
         elif not np.allclose(t1, t3):
-            print 'TEST2 FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta, alpha)
+            print('TEST2 FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta, alpha))
         else:
-            print 'OK for %s %s %s' % (phiIn, thetaIn, alphaIn)
-    except ValueError, e:
-        print 'FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn)
+            print('OK for %s %s %s' % (phiIn, thetaIn, alphaIn))
+    except ValueError as e:
+        print('FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn))
 
 
 def testCase2(phiIn, thetaIn, alphaIn, hush=True):
     try:
         t1 = eulerRxRyRzToTrans(phiIn, thetaIn, alphaIn)
         if not hush:
-            print 'from main.eulerRxRyRzToTrans'
-            print t1
+            print('from main.eulerRxRyRzToTrans')
+            print(t1)
 
         phi, theta, alpha = transToEulerRxRyRz(t1)
         t3 = eulerRxRyRzToTrans(phi, theta, alpha)
         if not hush:
-            print 'recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha)
-            print 'reconstruction:'
-            print t3
+            print('recovered phi=%s, theta=%s, alpha=%s' % (phi, theta, alpha))
+            print('reconstruction:')
+            print(t3)
 
         if not np.allclose(t1, t3):
-            print 'TEST FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta,
-                                                          alpha)
+            print('TEST FAIL for %s %s %s -> %s %s %s' % (phiIn, thetaIn, alphaIn, phi, theta,
+                                                          alpha))
         else:
-            print 'OK for %s %s %s' % (phiIn, thetaIn, alphaIn)
-    except ValueError, e:
-        print 'FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn)
+            print('OK for %s %s %s' % (phiIn, thetaIn, alphaIn))
+    except ValueError as e:
+        print('FAIL: ValueError: %s for %s %s %s' % (e, phiIn, thetaIn, alphaIn))
 
 
 def main():

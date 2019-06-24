@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import cPickle
+import pickle
 import numpy as np
 
 traceIn = 'traces.pkl'
@@ -30,13 +30,13 @@ class Vtx(object):
 
 def main():
     with open(traceIn, 'r') as f:
-        vtxDict, objDict = cPickle.load(f)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+        vtxDict, objDict = pickle.load(f)
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
 
     locs = np.zeros((len(vtxDict), 3))
     vIds = np.zeros((len(vtxDict)), dtype=np.int_)
     offset = 0
-    for vId, vtx in vtxDict.items():
+    for vId, vtx in list(vtxDict.items()):
         x, y, z = vtx.absCoords
         locs[offset, :] = (x, y, z)
         vIds[offset] = vId
@@ -51,12 +51,12 @@ def main():
         keepVtxDict[vId] = vtx
         if vtx.objId in keepObjDict:
             keepObjDict[vtx.objId].append(vtx)
-    for vId, vtx in keepVtxDict.items():
+    for vId, vtx in list(keepVtxDict.items()):
         if vtx.parent in keepVtxDict:
             keepVtxDict[vtx.parent].addChild(vId)
 
     with open(traceOut, 'w') as f:
-        cPickle.dump((keepVtxDict, keepObjDict), f)
+        pickle.dump((keepVtxDict, keepObjDict), f)
 
 if __name__ == '__main__':
     main()

@@ -9,7 +9,7 @@ Created on May 31, 2016
 import sys
 import random
 import os.path
-import cPickle
+import pickle
 import math
 
 import spilltree3D
@@ -20,7 +20,7 @@ sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
 
-from traceneighbors import UsefulVtx, Vtx, loadSkipTable
+from .traceneighbors import UsefulVtx, Vtx, loadSkipTable
 # from transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
 # from writegeom import writeBOV, plotSphere, writeVtkPolylines
 # from sampler import ArraySampler
@@ -104,23 +104,23 @@ def main():
 #             usefulVtxDict = UsefulVtx.load(pklF, 30000, skipF)
 
     with open(traceFile, 'r') as f:
-        vtxDict, objDict = cPickle.load(f)
+        vtxDict, objDict = pickle.load(f)
     with open(skipFile, 'rU') as skipF:
         skipTbl = loadSkipTable(skipF, 30000)
-    for v in vtxDict.values():
+    for v in list(vtxDict.values()):
         v.setSkipTable(skipTbl)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
 #     print 'Loaded %d useful vertices' % len(usefulVtxDict)
 
     ptSampler = BoundedRandomSampler(rMax)
     testPts = []
-    for v in vtxDict.values():
+    for v in list(vtxDict.values()):
         if ptSampler.outerClip(v):
             x, y, z = v.getLoc()
             testPts.append(PlainPt(x, y, z))
-    print '%d useful trace points' % len(testPts)
+    print('%d useful trace points' % len(testPts))
     spilltree = spilltree3D.SpTree(testPts)
-    print 'spilltree created'
+    print('spilltree created')
     
     random.seed(1234)
     samplePts = []
@@ -138,12 +138,12 @@ def main():
             ct += 1
         tryCt += 1
         if tryCt % 1000 == 1:
-            print '%d samples in %d tries' % (ct, tryCt)
+            print('%d samples in %d tries' % (ct, tryCt))
         if ct >= 5000:
             break
         
     with open('emptySamps.pkl', 'w') as f:
-        cPickle.dump(samplePts, f)
+        pickle.dump(samplePts, f)
 
 #     blockGen = BlockGenerator(rMax, edgeLen, maxL, 
 #                               usefulVtxDict, fishCoreFile,
@@ -165,7 +165,7 @@ def main():
 #                                      'zOffset': fishCoreZOffset})
 #             except Exception, e:
 #                 print 'Sample id %s failed: %s' % (sampleId, e)
-    print 'completed main loop'
+    print('completed main loop')
 
 if __name__ == '__main__':
     main()

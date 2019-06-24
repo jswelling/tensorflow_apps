@@ -8,7 +8,7 @@ Created on May 31, 2016
 
 import sys
 import random
-import cPickle
+import pickle
 
 sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
                  '/home/welling/shtools/SHTOOLS-3.2'])
@@ -16,11 +16,11 @@ sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
 
-from traceneighbors import Vtx, UsefulVtx, loadSkipTable
+from .traceneighbors import Vtx, UsefulVtx, loadSkipTable
 # from transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
 # from writegeom import writeBOV, plotSphere, writeVtkPolylines
 # from sampler import ArraySampler
-from yamlblocks import BlockGenerator
+from .yamlblocks import BlockGenerator
 
 radPixels = 20
 baseName = 'empty'
@@ -63,8 +63,8 @@ def main():
 #    transformer = SHTransformer(edgeLen, maxL)
 
     with open(emptyLocFile, 'r') as f:
-        emptyLocs = cPickle.load(f)
-    print 'loaded %d empty locations' % len(emptyLocs)
+        emptyLocs = pickle.load(f)
+    print('loaded %d empty locations' % len(emptyLocs))
     fakeVtxDict = {}
     for idx, (x, y, z) in enumerate(emptyLocs):
         fakeVtxDict[idx] = FakeVtx(idx, x, y, z)
@@ -82,19 +82,19 @@ def main():
     #sampleVtx = usefulVtxDict[6985]
     #sampleVtx = usefulVtxDict.values()[17]
     random.seed(1234)
-    indexList = fakeVtxDict.keys()[:]
+    indexList = list(fakeVtxDict.keys())[:]
     indexList.sort()
     for sampleId in indexList:
         if sampleId > 3468:
             try:
-                print 'starting sample %s' % sampleId
+                print('starting sample %s' % sampleId)
                 blockGen.writeBlock(sampleId, 
                                     {'xOffset': fishCoreXOffset,
                                      'yOffset': fishCoreYOffset,
                                      'zOffset': fishCoreZOffset})
-            except Exception, e:
-                print 'Sample id %s failed: %s' % (sampleId, e)
-    print 'completed main loop'
+            except Exception as e:
+                print('Sample id %s failed: %s' % (sampleId, e))
+    print('completed main loop')
 
 if __name__ == '__main__':
     main()

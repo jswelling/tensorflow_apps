@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import cPickle
+import pickle
 import numpy as np
 
 traceIn = 'traces_clipped_tight.pkl'
@@ -23,7 +23,7 @@ def writeVTKLines(fname, vtxListList):
             f.write('%d %s\n'
                     % (len(vL),
                        ' '.join(['%d' % i for i
-                                 in xrange(offset, offset+len(vL))])))
+                                 in range(offset, offset+len(vL))])))
             offset += len(vL)
         f.write('\n')
         f.write('POINT_DATA %d\n' % sum([len(l) for l in vtxListList]))
@@ -70,11 +70,11 @@ class Vtx(object):
 
 def main():
     with open(traceIn, 'r') as f:
-        vtxDict, objDict = cPickle.load(f)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+        vtxDict, objDict = pickle.load(f)
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
 
     heads = set()
-    for v in vtxDict.values():
+    for v in list(vtxDict.values()):
         if not v.kids or all([(kId not in vtxDict) for kId in v.kids]):
             while (v.parent is not None and v.parent != 0 
                    and v.parent in vtxDict):
@@ -100,7 +100,7 @@ def main():
             else:
                 break
         vtxListList.append(vL)
-        print 'seg %s has %s verts' % (len(vtxListList), len(vL))
+        print('seg %s has %s verts' % (len(vtxListList), len(vL)))
         
     writeVTKLines('traces.vtk', vtxListList)
 

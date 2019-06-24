@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import cPickle
+import pickle
 import math
 import numpy as np
 
@@ -69,7 +69,7 @@ def loadSkipTable(skipF, maxSlice):
         skipS = set(skipL)
         skipTbl = {}
         offset = 0
-        for i in xrange(maxSlice + 1):
+        for i in range(maxSlice + 1):
             if i in skipS:
                 offset += 1
             skipTbl[i] = offset
@@ -82,9 +82,9 @@ def loadSkipTable(skipF, maxSlice):
 class UsefulVtx(Vtx):
     @classmethod
     def load(cls, pklF, maxSlice, skipF):
-        usefulVtxDict = cPickle.load(pklF)
+        usefulVtxDict = pickle.load(pklF)
         skipTbl = loadSkipTable(skipF, maxSlice)
-        for v in usefulVtxDict.values():
+        for v in list(usefulVtxDict.values()):
             v.setSkipTable(skipTbl)
         return usefulVtxDict
         
@@ -115,7 +115,7 @@ class UsefulVtx(Vtx):
                 dy /= norm
                 dz /= norm
             else:
-                print 'zero length edge'
+                print('zero length edge')
             self.edges.append((dx, dy, dz))
             
 
@@ -190,17 +190,17 @@ def countKids(v, vtxDict):
 
 def main():
     with open(traceIn, 'r') as f:
-        vtxDict, objDict = cPickle.load(f)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+        vtxDict, objDict = pickle.load(f)
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
     with open(skipsIn, 'rU') as skipF:
         skipTbl = loadSkipTable(skipF, 10000)
-    for v in vtxDict.values():
+    for v in list(vtxDict.values()):
         v.setSkipTable(skipTbl)
 
     locs = np.zeros((len(vtxDict), 3))
     vIds = np.zeros((len(vtxDict)), dtype=np.int_)
     offset = 0
-    for vId, vtx in vtxDict.items():
+    for vId, vtx in list(vtxDict.items()):
         x, y, z = (vtx.x, vtx.y, vtx.z)
         locs[offset, :] = (x, y, z)
         vIds[offset] = vId
@@ -226,19 +226,19 @@ def main():
             usefulVtxDict[vId] = uVtx
         
     nbrCtHisto = {}
-    for n in nbrCtDict.values():
+    for n in list(nbrCtDict.values()):
         if n in nbrCtHisto:
             nbrCtHisto[n] += 1
         else:
             nbrCtHisto[n] = 1
 
-    pairL = nbrCtHisto.items()[:]
+    pairL = list(nbrCtHisto.items())[:]
     pairL.sort()
     for n, ct in pairL:
-        print '%d: %d' % (n, ct)
+        print('%d: %d' % (n, ct))
 
     with open(traceOut, 'w') as f:
-        cPickle.dump(usefulVtxDict, f)
+        pickle.dump(usefulVtxDict, f)
 
 if __name__ == '__main__':
     main()
