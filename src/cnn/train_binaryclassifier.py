@@ -153,8 +153,8 @@ def train():
                 # Write the summaries and print an overview fairly often.
                 if ((step + 1) % 100 == 0 or step < 10):
                     # Print status to stdout.
-                    print('Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
-                          % (step, num_chk, loss_value.mean(), duration))
+                    print('Step %d epoch %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
+                          % (step, epoch, num_chk, loss_value.mean(), duration))
                     # Update the events file.
                     summary_str = sess.run(summary_op)
                     summary_writer.add_summary(summary_str, step)
