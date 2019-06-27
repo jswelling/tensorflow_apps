@@ -49,7 +49,7 @@ def weight_variable(shape):
 
     """
     initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name='weight')
 
 def bias_variable(shape):
     """Generate a tensor of bias variables of dimensions `shape`.
@@ -61,7 +61,7 @@ def bias_variable(shape):
 
     """
     initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name='bias')
 
 def _add_dense_linear_layer(input, n_outer_cells):
     """Build a single densely connected layer with no activation component
