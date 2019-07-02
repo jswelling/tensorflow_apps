@@ -349,7 +349,7 @@ def inference(feature, pattern_str):
 
         """
 
-        with tf.name_scope('cnn'):
+        with tf.variable_scope('cnn'):
             
             outer_layer = build_filter(feature, 'strip_outer_layer')
 
