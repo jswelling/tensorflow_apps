@@ -494,6 +494,7 @@ def training(loss, learning_rate):
 #    train_op = optimizer.minimize(loss, global_step=global_step)
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
                                                'Adam',
-                                               summaries=['loss', 'gradients',
+                                               summaries=['loss', 'learning_rate',
+                                                          'gradients',
                                                           'gradient_norm'])
     return train_op
