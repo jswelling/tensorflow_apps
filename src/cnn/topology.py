@@ -406,12 +406,17 @@ def loss(logits, labels):
         tf.summary.histogram(scope + 'loss', loss)
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
-        tf.summary.image(scope + 'logits',
-                         tf.reshape(logitImg, [batch_size, nRows, nCols, 1]),
+        tf.summary.image(scope + 'image_pairs',
+                         tf.concat([tf.reshape(labels, [batch_size, nRows, nCols, 1]),
+                                    tf.reshape(logitImg, [batch_size, nRows, nCols, 1])
+                                    ], 2),
                          max_outputs=100)
-        tf.summary.image(scope + 'labels',
-                         tf.reshape(labels, [batch_size, nRows, nCols, 1]),
-                         max_outputs=100)
+#         tf.summary.image(scope + 'logits',
+#                          tf.reshape(logitImg, [batch_size, nRows, nCols, 1]),
+#                          max_outputs=100)
+#         tf.summary.image(scope + 'labels',
+#                          tf.reshape(labels, [batch_size, nRows, nCols, 1]),
+#                          max_outputs=100)
     return loss
 
 
