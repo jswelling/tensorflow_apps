@@ -98,7 +98,7 @@ def train():
     loss = topology.loss(logits, labels)
 
     # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate)
+    train_op = topology.training(tf.reduce_mean(loss), FLAGS.learning_rate)
     if FLAGS.check_numerics:
         check_numerics_op = tf.add_check_numerics_ops()
     else:
