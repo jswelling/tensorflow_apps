@@ -324,6 +324,14 @@ def build_filter(input, pattern_str):
         
         logits = _add_dense_linear_layer(dense, 2)
         return logits
+    
+    elif pattern_str == 'l2_norm':
+        nRows, nCols = OUTERMOST_SPHERE_SHAPE
+        nChan = 1
+        
+        feature = tf.nn.l2_normalize(input, 1)
+        feature = tf.reshape(feature, [-1, nRows, nCols, nChan])
+        return feature
 
     else:
         raise RuntimeError('Unknown inference pattern "%s"' % pattern_str)
@@ -376,6 +384,28 @@ def inference(feature, pattern_str):
         with tf.variable_scope('image_binary_classifier') as scope:
             
             output = build_filter(dense, 'image_binary_classifier')
+            tf.summary.histogram(scope.name+'output', output)
+            print('output: ', output)
+            return output
+
+    elif pattern_str == 'outer_layer_logits_to_binary':
+        nRows, nCols = OUTERMOST_SPHERE_SHAPE
+        nChan = 1
+        with tf.variable_scope('cnn') as scope:
+            outer_layer = build_filter(feature, 'strip_outer_layer')
+
+            dense = build_filter(outer_layer, 'outer_layer_cnn')
+            tf.summary.image(scope.name + 'dense', 
+                             tf.reshape(dense, [-1, nRows, nCols, nChan]))
+            
+            logits = build_filter(dense, 'dense_linear')
+            logits = build_filter(logits, 'l2_norm')
+            tf.summary.image(scope.name + 'logits', 
+                             tf.reshape(logits, [-1, nRows, nCols, nChan]))
+            
+        with tf.variable_scope('image_binary_classifier') as scope:
+            
+            output = build_filter(logits, 'image_binary_classifier')
             tf.summary.histogram(scope.name+'output', output)
             print('output: ', output)
             return output
