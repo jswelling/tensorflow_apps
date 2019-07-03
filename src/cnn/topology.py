@@ -365,16 +365,18 @@ def inference(feature, pattern_str):
             return logits
 
     elif pattern_str == 'outer_layer_cnn_to_binary':
-        with tf.variable_scope('cnn'):
+        with tf.variable_scope('cnn') as scope:
             
             outer_layer = build_filter(feature, 'strip_outer_layer')
 
             dense = build_filter(outer_layer, 'outer_layer_cnn')
             print('dense: ', dense)
+            tf.summary.image(scope.name + 'dense', dense)
             
-        with tf.variable_scope('image_binary_classifier'):
+        with tf.variable_scope('image_binary_classifier') as scope:
             
             output = build_filter(dense, 'image_binary_classifier')
+            tf.summary.histogram(scope.name+'output', output)
             print('output: ', output)
             return output
 
