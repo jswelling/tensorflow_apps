@@ -58,6 +58,7 @@ flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
 flags.DEFINE_boolean('check_numerics', False, 'If true, add and run check_numerics ops.')
 flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
+flags.DEFINE_boolean('snapshot_is_partial', False, 'If true, initialize only some vars from starting snapshot.')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -95,43 +96,49 @@ def train():
     loss = topology.binary_loss(logits, labels)
     print('loss: ', loss)
 
-    # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate)
-    print('train (optimizer): ', train_op)
-    
     if FLAGS.check_numerics:
         check_numerics_op = tf.add_check_numerics_ops()
     else:
         check_numerics_op = tf.constant('not checked')
 
-    # Build the summary operation based on the TF collection of Summaries.
-    summary_op = tf.summary.merge_all()
-
-    # Create the graph, etc.
-    init_op = tf.group(tf.global_variables_initializer(),
-                       tf.local_variables_initializer())
-
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver(max_to_keep=10)
 
+    if len(FLAGS.starting_snapshot) and FLAGS.snapshot_is_partial:
+        vars_to_load = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                        if v.name.startswith('cnn/')]
+    else:
+        vars_to_load = []
+
+    # Add to the Graph the Ops that calculate and apply gradients.
+    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_load)
+    print('train (optimizer): ', train_op)
+
+    # Build the summary operation based on the TF collection of Summaries.
+    summary_op = tf.summary.merge_all()
+
     # Create a session for running operations in the Graph.
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.verbose))
 
     # Optionally restore from a checkpoint.  The right file to load seems to be
     # the one with extension '.index'
     if len(FLAGS.starting_snapshot) == 0:
-        sess.run(init_op)
+        pass
+    elif FLAGS.snapshot_is_partial:
+        print('loading from checkpoint: %s' % [v.name for v in vars_to_load])
+        partial_saver = tf.train.Saver(vars_to_load)
+        partial_saver.restore(sess, FLAGS.starting_snapshot)
     else:
         saver.restore(sess, FLAGS.starting_snapshot)
 
+    # Create the graph, etc.
+    vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                          if v not in vars_to_load]
+    init_op = tf.initialize_variables(vars_to_initialize)
+    sess.run(init_op)
+
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
-
-    # Start input enqueue threads.
-    #coord = tf.train.Coordinator()
-    
-    # This isn't needed now that we no longer use input queues
-    #threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
     step = 0
     loss_value = -1.0  # avoid a corner case where it is unset on error
