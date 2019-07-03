@@ -465,7 +465,7 @@ def binary_loss(logits, labels):
     return cross_entropy
 
 
-def training(loss, learning_rate):
+def training(loss, learning_rate, exclude=None):
     """Sets up the training Ops.
 
     Creates a summarizer to track the loss over time in TensorBoard.
@@ -482,6 +482,8 @@ def training(loss, learning_rate):
     Returns:
       train_op: The Op for training.
     """
+    if exclude is None:
+        exclude = []
     # Add a scalar summary for the snapshot loss.
     tf.summary.scalar('mean_training_loss_this_batch', tf.reduce_mean(loss))
     # Create the gradient descent optimizer with the given learning rate.
@@ -492,9 +494,11 @@ def training(loss, learning_rate):
     # Use the optimizer to apply the gradients that minimize the loss
     # (and also increment the global step counter) as a single training step.
 #    train_op = optimizer.minimize(loss, global_step=global_step)
+    train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
                                                'Adam',
                                                summaries=['loss', 'learning_rate',
                                                           'gradients',
-                                                          'gradient_norm'])
+                                                          'gradient_norm'],
+                                               variables=train_these_vars)
     return train_op
