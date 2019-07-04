@@ -183,7 +183,8 @@ def train():
     for epoch in range(num_epochs):
         try:
             sess.run(iterator.initializer, feed_dict={seed: epoch})
-            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=0)
+            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=gstp)
+            last_save_epoch = 0
 
             while True:            
                 # Run training steps or whatever
@@ -203,11 +204,12 @@ def train():
                     summary_writer.flush()
 
                 # Save a checkpoint periodically.
-                if (epoch + 1) % 100 == 0:
+                if (epoch + 1) % 100 == 0 and epoch != last_save_epoch:
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
-                    print('saving checkpoint at global step %d' % gstp)
+                    print('saving checkpoint at global step %d, epoch %s' % (gstp, epoch))
                     saver.save(sess, FLAGS.log_dir + 'cnn', global_step=gstp)
+                    last_save_epoch = epoch
 
         except tf.errors.OutOfRangeError as e:
             print('Finished epoch {}'.format(epoch))
