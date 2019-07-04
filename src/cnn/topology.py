@@ -70,7 +70,7 @@ def _add_dense_linear_layer(input, n_outer_cells):
       input: The upstream tensor. float - [batch_size, dim1, dim2, 1] (last 2 dims optional)
 
     Returns:
-      logits: Output tensor with the computed logits. - [batch_size, OUTERMOST_SPHERE_N]
+      logits: Output tensor with the computed logits. - [batch_size, n_outer_cells]
     """
 
     with tf.name_scope('dense_linear'):
@@ -176,7 +176,7 @@ def build_filter(input, pattern_str):
         """ 
         Strip the outer layer of the ball as an array.
         The expected input shape is [batch_size, N_BALL_SAMPS].
-        Output shape is [batch_size, nRows, nCols]
+        Output shape is [batch_size, nRows, nCols, 1]
         """
 
         # The layers of the ball are stored in a 1D array as
@@ -196,7 +196,9 @@ def build_filter(input, pattern_str):
     
     elif pattern_str == 'outer_layer_cnn':
         """
-        Apply a CNN to the outer layer of the ball.  The expected input shape is [batch_size, N_BALL_SAMPS]
+        Apply a CNN to the outer layer of the ball.
+        input shape: [batch_size, nRows, nCols, 1]
+        output shape: [batch_size, nRows, nCols, 1]
 
         """
         assert input.get_shape()[1:] == [nRows, nCols, 1], "wrong input shape %s" % input.get_shape()
@@ -265,9 +267,20 @@ def build_filter(input, pattern_str):
 
         return tf.reshape(dense, [-1, nRows, nCols, 1])
     elif pattern_str == 'dense_linear':
+        """
+        Add a dense linear layer (no relu component)
+        input shape: [batch_size, dim1, dim2, 1]  with last two columns
+        output shape: [batch_size, OUTERMOST_SPHERE_N]
+        """
         return _add_dense_linear_layer(input, OUTERMOST_SPHERE_N)
 
     elif pattern_str == 'image_binary_classifier':
+        """
+        Classify an image into 1 of 2 categories.
+        input shape: [batch_size, nRows, nCols, 1]
+        output shape: [batch_size, 2]
+        """
+        
         conv1 = tf.contrib.layers.conv2d(
             inputs=input,
             num_outputs=8,
@@ -326,6 +339,11 @@ def build_filter(input, pattern_str):
         return logits
     
     elif pattern_str == 'l2_norm':
+        """
+        input shape: [batch_size, nRows*nCols, nChan]  # last dim optional
+        output shape: [batch_size, nRows, nCols, nChan
+        
+        """
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
         
@@ -361,7 +379,7 @@ def inference(feature, pattern_str):
             
             outer_layer = build_filter(feature, 'strip_outer_layer')
 
-            dense = build_filter(outer_layer, pattern_str)
+            dense = build_filter(outer_layer, 'outer_layer_cnn')
             print('dense: ', dense)
             
             # Apply dropout to prevent overfitting
@@ -373,13 +391,16 @@ def inference(feature, pattern_str):
             return logits
 
     elif pattern_str == 'outer_layer_cnn_to_binary':
+        nRows, nCols = OUTERMOST_SPHERE_SHAPE
+        nChan = 1
         with tf.variable_scope('cnn') as scope:
             
             outer_layer = build_filter(feature, 'strip_outer_layer')
 
             dense = build_filter(outer_layer, 'outer_layer_cnn')
             print('dense: ', dense)
-            tf.summary.image(scope.name + 'dense', dense)
+            tf.summary.image(scope.name + 'dense',
+                             tf.reshape(dense, [-1, nRows, nCols, nChan]))
             
         with tf.variable_scope('image_binary_classifier') as scope:
             
@@ -393,13 +414,17 @@ def inference(feature, pattern_str):
         nChan = 1
         with tf.variable_scope('cnn') as scope:
             outer_layer = build_filter(feature, 'strip_outer_layer')
+            print('outer_layer: %s' % outer_layer.get_shape().as_list())
 
             dense = build_filter(outer_layer, 'outer_layer_cnn')
+            print('dense: %s' % dense.get_shape().as_list())
             tf.summary.image(scope.name + 'dense', 
                              tf.reshape(dense, [-1, nRows, nCols, nChan]))
             
             logits = build_filter(dense, 'dense_linear')
+            print('logits: %s' % logits.get_shape().as_list())
             logits = build_filter(logits, 'l2_norm')
+            print('logits: %s' % logits.get_shape().as_list())
             tf.summary.image(scope.name + 'logits', 
                              tf.reshape(logits, [-1, nRows, nCols, nChan]))
             

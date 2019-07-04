@@ -58,7 +58,12 @@ flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
 flags.DEFINE_boolean('check_numerics', False, 'If true, add and run check_numerics ops.')
 flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
-flags.DEFINE_boolean('snapshot_is_partial', False, 'If true, initialize only some vars from starting snapshot.')
+flags.DEFINE_string('snapshot_load', 'all',
+                    'A comma-separated list of variable name prefixes to load from the snapshot.'
+                    ' One or more of "all", "cnn", "classifier"')
+flags.DEFINE_string('hold_constant', None,
+                    'A comma-separated list of variable name prefixes to exclude from learning.'
+                    ' One or more of "cnn", "classifier"')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -104,14 +109,32 @@ def train():
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver(max_to_keep=10)
 
-    if len(FLAGS.starting_snapshot) and FLAGS.snapshot_is_partial:
-        vars_to_load = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-                        if v.name.startswith('cnn/')]
-    else:
-        vars_to_load = []
+    var_pfx_map = {'cnn' : 'cnn/',
+                   'classifier' : 'image_binary_classifier/'}
+
+    vars_to_load = []  # empty list means load all
+    if len(FLAGS.starting_snapshot) and FLAGS.snapshot_load:
+        keys = FLAGS.snapshot_load.split(',')
+        keys = [k.strip() for k in keys]
+        if 'all' not in keys:
+            assert all([k in var_pfx_map for k in keys]), 'unknown key to load: %s' % key
+            for k in keys:
+                vars_to_load.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                                     if v.name.startswith(var_pfx_map[k])])
+
+    vars_to_hold_constant = []
+    if FLAGS.hold_constant is not None:
+        keys = FLAGS.hold_constant.split(',')
+        keys = [k.strip() for k in keys]
+        assert all([k in var_pfx_map for k in keys]), 'unknown key to hold constant: %s' % key
+        for k in keys:
+            vars_to_hold_constant.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                                          if v.name.startswith(var_pfx_map[k])])
+    print('not subject to training: %s' % [v.name for v in vars_to_hold_constant])
+        
 
     # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_load)
+    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant)
     print('train (optimizer): ', train_op)
 
     # Build the summary operation based on the TF collection of Summaries.
@@ -124,17 +147,19 @@ def train():
     # the one with extension '.index'
     if len(FLAGS.starting_snapshot) == 0:
         pass
-    elif FLAGS.snapshot_is_partial:
+    elif FLAGS.snapshot_load and vars_to_load:
         print('loading from checkpoint: %s' % [v.name for v in vars_to_load])
         partial_saver = tf.train.Saver(vars_to_load)
         partial_saver.restore(sess, FLAGS.starting_snapshot)
     else:
+        print('loading all variables from checkpoint ')
         saver.restore(sess, FLAGS.starting_snapshot)
 
     # Create the graph, etc.
     vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
                           if v not in vars_to_load]
-    init_op = tf.initialize_variables(vars_to_initialize)
+    print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
+    init_op = tf.variables_initializer(vars_to_initialize)
     sess.run(init_op)
 
     # Instantiate a SummaryWriter to output summaries and the Graph.
