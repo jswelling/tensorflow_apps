@@ -488,6 +488,7 @@ def binary_loss(logits, labels):
       loss: Loss tensor of type float. - []
     """
     with tf.name_scope('binary_loss') as scope:
+        labels = tf.stop_gradient(labels)
         cross_entropy = tf.losses.softmax_cross_entropy(logits=logits,
                                                         onehot_labels=labels,
                                                         weights=1.0,
@@ -547,10 +548,11 @@ def training(loss, learning_rate, exclude=None):
     #optimizer = tf.train.GradientDescentOptimizer(learning_rate)
 #    optimizer = tf.train.AdamOptimizer(learning_rate)
     # Create a variable to track the global step.
-    global_step = tf.Variable(0, name='global_step', trainable=False)
     # Use the optimizer to apply the gradients that minimize the loss
     # (and also increment the global step counter) as a single training step.
 #    train_op = optimizer.minimize(loss, global_step=global_step)
+    with tf.variable_scope('control', reuse=True):
+        global_step = tf.get_variable('global_step', dtype=tf.int32)
     train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
                                                'Adam',
