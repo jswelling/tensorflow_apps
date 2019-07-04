@@ -114,9 +114,6 @@ def train():
     else:
         check_numerics_op = tf.constant('not checked')
 
-    # Create a saver for writing training checkpoints.
-    saver = tf.train.Saver(max_to_keep=10)
-
     var_pfx_map = {'cnn' : 'cnn/',
                    'classifier' : 'image_binary_classifier/'}
 
@@ -146,6 +143,9 @@ def train():
     # Add to the Graph the Ops that calculate and apply gradients.
     train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant)
     print('train (optimizer): ', train_op)
+
+    # Create a saver for writing training checkpoints.
+    saver = tf.train.Saver(max_to_keep=10)
 
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.summary.merge_all()
