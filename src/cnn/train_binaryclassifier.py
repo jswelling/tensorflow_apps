@@ -64,6 +64,7 @@ flags.DEFINE_string('snapshot_load', 'all',
 flags.DEFINE_string('hold_constant', None,
                     'A comma-separated list of variable name prefixes to exclude from learning.'
                     ' One or more of "cnn", "classifier"')
+flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -74,6 +75,13 @@ def train():
     else:
         num_epochs = None
 
+    # Track global step across multiple iterations.  This is updated in
+    # the optimizer.
+    with tf.variable_scope('control'):
+        global_step = tf.get_variable('global_step', 
+                                      dtype=tf.int32, initializer=0, 
+                                      trainable=False)
+    
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -121,6 +129,8 @@ def train():
             for k in keys:
                 vars_to_load.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
                                      if v.name.startswith(var_pfx_map[k])])
+            if not FLAGS.reset_global_step:
+                vars_to_load.append(global_step)
 
     vars_to_hold_constant = []
     if FLAGS.hold_constant is not None:
@@ -165,7 +175,6 @@ def train():
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
-    step = 0
     loss_value = -1.0  # avoid a corner case where it is unset on error
     duration = 0.0     # ditto
     num_chk = None     # ditto
@@ -179,26 +188,26 @@ def train():
             while True:            
                 # Run training steps or whatever
                 start_time = time.time()
-                _, loss_value, num_chk, _ = sess.run([train_op, loss, check_numerics_op, print_op])
+                _, loss_value, num_chk, _, gstp = sess.run([train_op, loss, check_numerics_op,
+                                                            print_op, global_step])
                 duration = time.time() - start_time
 
                 # Write the summaries and print an overview fairly often.
-                if ((step + 1) % 100 == 0 or step < 10):
+                if ((gstp + 1) % 100 == 0 or gstp < 10):
                     # Print status to stdout.
-                    print('Step %d epoch %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
-                          % (step, epoch, num_chk, loss_value.mean(), duration))
+                    print('Global step %d epoch %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
+                          % (gstp, epoch, num_chk, loss_value.mean(), duration))
                     # Update the events file.
                     summary_str = sess.run(summary_op)
-                    summary_writer.add_summary(summary_str, step)
+                    summary_writer.add_summary(summary_str, gstp)
                     summary_writer.flush()
 
                 # Save a checkpoint periodically.
                 if (epoch + 1) % 100 == 0:
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
-                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=epoch)
-
-                step += 1
+                    print('saving checkpoint at global step %d' % gstp)
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=gstp)
 
         except tf.errors.OutOfRangeError as e:
             print('Finished epoch {}'.format(epoch))
@@ -215,7 +224,7 @@ def train():
 #        coord.join(threads, stop_grace_period=10)
 
     print('Final Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
-          % (step, num_chk, loss_value.mean(), duration))
+          % (gstp, num_chk, loss_value.mean(), duration))
     try:
         summary_str = sess.run(summary_op)
         summary_writer.add_summary(summary_str, step)
