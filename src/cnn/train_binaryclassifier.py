@@ -144,6 +144,11 @@ def train():
     train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant)
     print('train (optimizer): ', train_op)
 
+    # Try making histograms of *everything*
+    for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+        if var.name.startswith('cnn') or var.name.startswith('image_binary_classifier'):
+            tf.summary.histogram(var.name, var)
+
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver(max_to_keep=10)
 
