@@ -169,12 +169,18 @@ def train():
     if vars_to_load:
         vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
                               if v not in vars_to_load]
+        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
+        init_op = tf.variables_initializer(vars_to_initialize)
+    elif len(FLAGS.starting_snapshot) == 0:
+        # initialize everything
+        print('initalizing all globals')
+        init_op = tf.variables_initializer(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
     else:
         vars_to_initialize = []
         if FLAGS.reset_global_step:
             vars_to_initialize.append(global_step)
-    print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
-    init_op = tf.variables_initializer(vars_to_initialize)
+        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
+        init_op = tf.variables_initializer(vars_to_initialize)
     sess.run(init_op)
 
     # Instantiate a SummaryWriter to output summaries and the Graph.
