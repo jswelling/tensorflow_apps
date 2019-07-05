@@ -182,6 +182,7 @@ def train():
     # Loop through training epochs
     for epoch in range(num_epochs):
         try:
+            gstp = sess.run([global_step])
             sess.run(iterator.initializer, feed_dict={seed: epoch})
             saver.save(sess, FLAGS.log_dir + 'cnn', global_step=gstp)
             last_save_epoch = 0
