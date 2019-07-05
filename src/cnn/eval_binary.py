@@ -127,7 +127,7 @@ def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predi
     accuracyV = np.asarray(accuracy_samples)
     print('%s: total examples @ 1 = %d' % (datetime.now(), examples))
     print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
-    print('%s: overall accuracy %s +- %s' % (np.mean(accuracyV),
+    print('%s: overall accuracy %s +- %s' % (datetime.now(), np.mean(accuracyV),
                                              np.std(accuracyV, ddof=1)))
     print('%s: true positive @ 1 = %d' % (datetime.now(), n_true_pos))
     print('%s: false positive @ 1 = %d' % (datetime.now(), n_false_pos))
