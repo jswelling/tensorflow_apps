@@ -166,8 +166,13 @@ def train():
         saver.restore(sess, FLAGS.starting_snapshot)
 
     # Create the graph, etc.
-    vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-                          if v not in vars_to_load]
+    if vars_to_load:
+        vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                              if v not in vars_to_load]
+    else:
+        vars_to_initialize = []
+        if FLAGS.reset_global_step:
+            vars_to_initialize.append(global_step)
     print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
     init_op = tf.variables_initializer(vars_to_initialize)
     sess.run(init_op)
@@ -208,7 +213,7 @@ def train():
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
                     print('saving checkpoint at global step %d, epoch %s' % (gstp, epoch))
-                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=gstp)
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=global_step)
                     last_save_epoch = epoch
 
         except tf.errors.OutOfRangeError as e:
