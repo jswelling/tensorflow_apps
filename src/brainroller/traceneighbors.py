@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import cPickle
+import pickle
 import math
 import numpy as np
 
@@ -115,7 +115,7 @@ class UsefulVtx(Vtx):
                 dy /= norm
                 dz /= norm
             else:
-                print 'zero length edge'
+                print('zero length edge')
             self.edges.append((dx, dy, dz))
             
 
@@ -191,7 +191,7 @@ def countKids(v, vtxDict):
 def main():
     with open(traceIn, 'r') as f:
         vtxDict, objDict = cPickle.load(f)
-    print '%d vertices in %d objects' % (len(vtxDict), len(objDict))
+    print('%d vertices in %d objects' % (len(vtxDict), len(objDict)))
     with open(skipsIn, 'rU') as skipF:
         skipTbl = loadSkipTable(skipF, 10000)
     for v in vtxDict.values():
@@ -235,7 +235,7 @@ def main():
     pairL = nbrCtHisto.items()[:]
     pairL.sort()
     for n, ct in pairL:
-        print '%d: %d' % (n, ct)
+        print('%d: %d' % (n, ct))
 
     with open(traceOut, 'w') as f:
         cPickle.dump(usefulVtxDict, f)

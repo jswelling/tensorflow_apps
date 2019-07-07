@@ -33,7 +33,7 @@ class RandomArraySampler(Sampler):
         """
         Targetcoords is ignored.
         """
-        print self.edgeLen
+        print(self.edgeLen)
         return self.rng.rand(self.edgeLen, self.edgeLen, self.edgeLen)
 
 
@@ -115,7 +115,7 @@ class ArraySampler(Sampler):
         super(ArraySampler, self).__init__(edgeLen)
         rawData = np.fromfile(fname, dtype=np.uint8, 
                               count=(blockX * blockY * blockZ))
-        print 'loaded %s' % fname
+        print('loaded %s' % fname)
         self.data = np.reshape(rawData, (blockX, blockY, blockZ),
                                order='F')
 

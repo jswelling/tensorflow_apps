@@ -12,12 +12,12 @@ import math
 import numpy as np
 import yaml
 
-from traceneighbors import Vtx, UsefulVtx
-from transforms import transToEulerRzRyRz, makeAligningRotation
-from writegeom import writeBOV, plotSphere, writeVtkPolylines, plotBall
-from writegeom import dtypeToExt, extToDtype
-from sampler import CylinderSampler, ArraySampler
-from shtransform import SHTransformer
+from brainroller.traceneighbors import Vtx, UsefulVtx
+from brainroller.transforms import transToEulerRzRyRz, makeAligningRotation
+from brainroller.writegeom import writeBOV, plotSphere, writeVtkPolylines, plotBall
+from brainroller.writegeom import dtypeToExt, extToDtype
+from brainroller.sampler import CylinderSampler, ArraySampler
+from brainroller.shtransform import SHTransformer
 
 
 def calcMomentTensor(dCube, sig=(1.0, 1.0, 1.0)):
@@ -26,11 +26,11 @@ def calcMomentTensor(dCube, sig=(1.0, 1.0, 1.0)):
     iT = np.zeros((3, 3))  # moment of inertia tensor
     xCtr = yCtr = zCtr = 0.5 * float(edgeLen - 1)
     rMax = 2.0 * xCtr
-    for i in xrange(edgeLen):
+    for i in range(edgeLen):
         x = sig[0]*(float(i) - xCtr)
-        for j in xrange(edgeLen):
+        for j in range(edgeLen):
             y = sig[1]*(float(j) - yCtr)
-            for k in xrange(edgeLen):
+            for k in range(edgeLen):
                 z = sig[2]*(float(k) - zCtr)
                 rSqr = x*x + y*y + z*z
                 if rSqr <= rMax * rMax:
@@ -100,7 +100,7 @@ def calcAligningEulerZYZ(dCube, sig=(+1.0, +1.0, +1.0)):
     # print eVals
     # print eVecs
     sL = []
-    for i in xrange(eVals.shape[0]):
+    for i in range(eVals.shape[0]):
         sL.append((eVals[i], i))
     sL.sort(reverse=True)
     sortedEVecs = [np.matrix(eVecs[:, i]) for a, i in sL]  # @UnusedVariable
@@ -301,7 +301,7 @@ def addFieldEntry(yamlDict, matrix, baseName, fieldName, sampId,
         matrix.tofile(matFName)
 
 
-def loadFieldEntry(yamlDict, baseName, fieldName):
+def loadFieldEntry(yamlDict, baseName, fieldName, dataDir=None):
     sampId = yamlDict['vtxId']
     fname = yamlDict[fieldName + 'File']
     shape = yamlDict[fieldName + 'Shape']
@@ -310,7 +310,8 @@ def loadFieldEntry(yamlDict, baseName, fieldName):
     count = 1
     for dim in yamlDict[fieldName + 'Shape']:
         count *= dim
-    rawData = np.fromfile(fname, dtype=dtype, count=count)
+    fullFName = fname if dataDir is None else os.path.join(dataDir, fname)
+    rawData = np.fromfile(fullFName, dtype=dtype, count=count)
     if isFtnOrder:
         order = 'F'
     else:
