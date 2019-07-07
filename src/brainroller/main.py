@@ -9,10 +9,10 @@ Created on May 31, 2016
 import sys
 import numpy as np
 
-from transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
-from writegeom import plotSphere
-from sampler import ArraySampler, BlockSampler
-from yamlblocks import parseBlock
+from .transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
+from .writegeom import plotSphere
+from .sampler import ArraySampler, BlockSampler
+from .yamlblocks import parseBlock
 
 sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
                  '/home/welling/shtools/SHTOOLS-3.2'])
@@ -22,8 +22,8 @@ sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 
 import pyshtools as psh
 import fiasco_numpy as fiasco
-from shtransform import SHTransformer
-from sampler import Sampler
+from .shtransform import SHTransformer
+from .sampler import Sampler
 
 radPixels = 20
 maxL = 48
