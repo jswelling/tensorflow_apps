@@ -84,16 +84,10 @@ class SHTransformer(object):
     def rotateHarmonics(self, harmonics, thetaZ0, thetaY, thetaZ1, maxL=None):
         if maxL is None:
             maxL = self.maxL
-        # The copy() operations below is necessary to avoid an obscure memory management
-        # bug when calling this method from TensorFlow.
-#        rotMatrix = psh.djpi2(maxL).copy()
-#         rotHarm = psh.SHRotateRealCoef(harmonics,
-#                                        np.array([-thetaZ1, -thetaY, -thetaZ0]),
-#                                        rotMatrix).copy()
-#        rotHarm = psh.SHRotateRealCoef(harmonics,
-#                                       np.array([-thetaZ1, -thetaY, -thetaZ0]),
-#                                       psh.djpi2(maxL)).copy()
-        rotHarm = harmonics.copy()
+        rotMatrix = psh.djpi2(maxL).copy()
+        rotHarm = psh.SHRotateRealCoef(harmonics,
+                                       np.array([-thetaZ1, -thetaY, -thetaZ0]),
+                                       rotMatrix)
         return rotHarm
 
     def reconstructSamples(self, harmonics, maxL=None):
@@ -216,8 +210,10 @@ class SHTransformer(object):
             blkSz = dim0 * dim1 * dim2
             thisBlk = np.zeros(blkSz)
             thisBlk[:] = ballExpansion[offset: offset+blkSz]
-            thisRotBlk = self.rotateHarmonics(thisBlk.reshape((dim0, dim1, dim2)),
-                                              thetaZ0, thetaY, thetaZ1, maxL = l)
+            thisBlk = thisBlk.reshape((dim0, dim1, dim2))
+            thetaArr = np.array([-thetaZ1, -thetaY, -thetaZ0])
+            thisRotBlk = psh.SHRotateRealCoef(thisBlk,
+                                              thetaArr, psh.djpi2(l))
             result[offset: offset+blkSz] = thisRotBlk.flat
             offset += blkSz
         return result
