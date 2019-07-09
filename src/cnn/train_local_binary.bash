@@ -2,6 +2,8 @@
 
 #source activate py3Env
 
+export LD_PRELOAD="/usr/lib/libtcmalloc_minimal.so.4"
+
 cd ${HOME}/git/tensorflow_apps/src/cnn
 python ./train_binaryclassifier.py \
 	--network_pattern outer_layer_logits_to_binary \
@@ -14,9 +16,11 @@ python ./train_binaryclassifier.py \
 	--file_list /home/welling/data/fish_cubes_train_gp0.txt	\
 	--verbose=False \
 	--check_numerics=True \
-	--starting_snapshot=${HOME}/git/tensorflow_apps/log/train_local_logcnn-7 \
-	--snapshot_load='cnn' \
-	--hold_constant='cnn' \
-	--reset_global_step
+	--reset_global_step \
+	--random_rotation
+	
+	#--starting_snapshot=${HOME}/git/tensorflow_apps/log/train_local_logcnn-7 \
+	#--snapshot_load='cnn' \
+	#--hold_constant='cnn' \
 	#--starting_snapshot=${HOME}/sshfshook/logs/cnn_train_5951751cnn-4439 \
 		
