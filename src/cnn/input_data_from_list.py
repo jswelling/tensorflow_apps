@@ -9,12 +9,20 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
+import numpy as np
+
+from brainroller.transforms import transToEulerRzRyRz, Quaternion
+from brainroller.shtransform import SHTransformer
 
 #tf.enable_eager_execution()
 
 # initiate constant 
-N_BALL_SAMPS = 71709
-OUTERMOST_SPHERE_SHAPE = [49, 97]
+N_BALL_SAMPS = 71709  # Total number of GLQ samples in a full ball of samples
+OUTERMOST_SPHERE_SHAPE = [49, 97]  # Number of GLQ samples in outermost shells
+RAD_PIXELS = 20   # radius of outermost shell in pixels
+MAX_L = 48  # maximum L value for outermost shell harmonic expansion
+SH_TRANSFORMER = None
+
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 #module-specific command line flags
@@ -22,6 +30,8 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
+flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                     ' rotations to each data sample')
 
 LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
@@ -31,8 +41,12 @@ def data_fnames_from_yaml_fname(yaml_path):
     words = fn[:-5].split('_')
     base = words[0]
     idx = int(words[2])
-    feature_fn = os.path.join(dir_path,'%s_rotBallSamp_%d.doubles' % (base, idx))
-    label_fn = os.path.join(dir_path,'%s_rotEdgeSamp_%d.doubles' % (base, idx))
+    if FLAGS.random_rotation:
+        feature_fn = os.path.join(dir_path,'%s_ballSamp_%d.doubles' % (base, idx))
+        label_fn = os.path.join(dir_path,'%s_edgeSamp_%d.doubles' % (base, idx))
+    else:
+        feature_fn = os.path.join(dir_path,'%s_rotBallSamp_%d.doubles' % (base, idx))
+        label_fn = os.path.join(dir_path,'%s_rotEdgeSamp_%d.doubles' % (base, idx))
     return feature_fn, label_fn
     
 
@@ -101,14 +115,46 @@ def load_and_preprocess_image(image_path, label_path):
 
     return image_path, label_path, fVals, lVals
 
+
+def random_rotate_ball_data(vals_to_rotate):
+    r0, r1, r2 = np.random.random(size=3)
+    theta = np.arccos((2.0 * r0) - 1.0)
+    phi = 2.0 * np.pi * r1
+    alpha = 2.0 * np.pi * r2
+    z = np.cos(theta)
+    x = np.sin(theta) * np.cos(phi)
+    y = np.sin(theta) * np.sin(phi)
+    vecM = np.asarray([x, y, z]).reshape((3,1))
+    rot = Quaternion.fromAxisAngle(vecM, alpha).toTransform()
+    theta0, theta1, theta2 = transToEulerRzRyRz(rot)
+    print('### vals to rotate type %s dtype %s shape %s' % (type(vals_to_rotate),
+                                                            vals_to_rotate.dtype,
+                                                            vals_to_rotate.shape))
+    print('### rotating %f %f %f -> %f %f %f' % (r0, r1, r2, theta0, theta1, theta2))
+    harmonics = SH_TRANSFORMER.expandBall(vals_to_rotate.numpy().copy())
+    rotHarmonics = SH_TRANSFORMER.rotateBall(harmonics, theta0, theta1, theta2)
+    rslt = SH_TRANSFORMER.reconstructBall(rotHarmonics)
+    return tf.convert_to_tensor(rslt.copy())
+
+
 def load_and_preprocess_image_binary(image_path, label_path):
     # read and preprocess feature file
     fString = tf.read_file(image_path, name='featureReadFile')
-    fVals = tf.cast(tf.reshape(tf.decode_raw(fString, dtypes.float64,
-                                             name='featureDecode'),
-                               [N_BALL_SAMPS]),
-                    tf.float32, 
-                    name='featureToFloat')
+    if FLAGS.random_rotation:
+        fVals = tf.reshape(tf.decode_raw(fString, dtypes.float64,
+                                         name='featureDecode'),
+                           [N_BALL_SAMPS])
+        fVals = tf.py_function(random_rotate_ball_data,
+                           [fVals],
+                           dtypes.float64,
+                           name='shtrasform_random_rot')
+        fVals = tf.cast(fVals, tf.float32, name='featureToFloat')
+    else:
+        fVals = tf.cast(tf.reshape(tf.decode_raw(fString, dtypes.float64,
+                                                 name='featureDecode'),
+                                   [N_BALL_SAMPS]),
+                        tf.float32, 
+                        name='featureToFloat')
     regex = '.*empty[^\/]*'   # Must match the full string, end-to-end!
     flagVals = tf.strings.regex_full_match(label_path, regex)
     lVals = tf.where(flagVals,
@@ -126,7 +172,8 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                         )
     image_label_ds = ds.map(load_and_preprocess_image,
                             num_parallel_calls=read_threads)
-    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
+    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples,
+                                            seed=seed)
     #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.
@@ -138,13 +185,27 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
 def input_pipeline_binary(train_dir, batch_size, fake_data=False, num_epochs=None,
                           read_threads=1, shuffle_size=100,
                           num_expected_examples=None, seed=None):
+    global SH_TRANSFORMER
+    if SH_TRANSFORMER is None:
+        edge_len = 2 * RAD_PIXELS + 1
+        r_max = float(RAD_PIXELS)
+        shT = SHTransformer(edge_len, MAX_L)
+        shT.prepL(MAX_L)
+        SH_TRANSFORMER = shT
+        
     ds = get_data_pairs(train_dir, FLAGS.file_list,
                         num_expected_examples=num_expected_examples,
                         seed=seed
                         )
-    image_label_ds = ds.map(load_and_preprocess_image_binary,
-                            num_parallel_calls=read_threads)
-    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
+    if FLAGS.random_rotation:
+        # The SHTOOLS library doesn't seem to be reentrant?
+        image_label_ds = ds.map(load_and_preprocess_image_binary,
+                                num_parallel_calls=1)
+    else:
+        image_label_ds = ds.map(load_and_preprocess_image_binary,
+                                num_parallel_calls=read_threads)
+    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples,
+                                            seed=seed)
     #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.
