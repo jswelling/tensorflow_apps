@@ -127,13 +127,12 @@ def random_rotate_ball_data(vals_to_rotate):
     vecM = np.asarray([x, y, z]).reshape((3,1))
     rot = Quaternion.fromAxisAngle(vecM, alpha).toTransform()
     theta0, theta1, theta2 = transToEulerRzRyRz(rot)
-    print('### vals to rotate type %s dtype %s shape %s' % (type(vals_to_rotate),
-                                                            vals_to_rotate.dtype,
-                                                            vals_to_rotate.shape))
-    print('### rotating %f %f %f -> %f %f %f' % (r0, r1, r2, theta0, theta1, theta2))
-    harmonics = SH_TRANSFORMER.expandBall(vals_to_rotate.numpy().copy())
-    rotHarmonics = SH_TRANSFORMER.rotateBall(harmonics, theta0, theta1, theta2)
-    rslt = SH_TRANSFORMER.reconstructBall(rotHarmonics)
+    shT = SHTransformer(2 * RAD_PIXELS + 1, MAX_L)
+    shT.prepL(MAX_L)
+    fullChain = shT._getSortedFullChain()
+    harmonics = shT.expandBall(vals_to_rotate.numpy().copy())
+    rotHarmonics = shT.rotateBall(harmonics, theta0, theta1, theta2)
+    rslt = shT.reconstructBall(rotHarmonics)
     return tf.convert_to_tensor(rslt.copy())
 
 
@@ -185,13 +184,6 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
 def input_pipeline_binary(train_dir, batch_size, fake_data=False, num_epochs=None,
                           read_threads=1, shuffle_size=100,
                           num_expected_examples=None, seed=None):
-    global SH_TRANSFORMER
-    if SH_TRANSFORMER is None:
-        edge_len = 2 * RAD_PIXELS + 1
-        r_max = float(RAD_PIXELS)
-        shT = SHTransformer(edge_len, MAX_L)
-        shT.prepL(MAX_L)
-        SH_TRANSFORMER = shT
         
     ds = get_data_pairs(train_dir, FLAGS.file_list,
                         num_expected_examples=num_expected_examples,
