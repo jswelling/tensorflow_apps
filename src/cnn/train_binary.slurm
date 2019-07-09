@@ -1,6 +1,7 @@
 #!/bin/bash -x
 #SBATCH -N 1
 #SBATCH -t 4:00:00  # running time is about 20 min per hundred epochs
+#SBATCH -t 2:00:00  # running time is about 20 min per hundred epochs
 #SBATCH -p GPU-small   # used to be GPU-shared, but that doesn't seem to work any more
 #SBATCH --gres=gpu:p100:1
 #SBATCH --ntasks-per-node 7
@@ -32,4 +33,14 @@ python ./train_binaryclassifier.py \
        --num_epochs $nepochs \
        --shuffle_size $nexamples \
        --num_examples $nexamples \
-       --starting_snapshot $WORK/tf/logs/cnn_train_5909294cnn-99
+       #--starting_snapshot $WORK/tf/logs/cnn_train_5909294cnn-99
+       --learning_rate 0.1 \
+       --starting_snapshot /pylon5/syr54jp/welling/tf/logs/cnn_train_5962735cnn-4448 \
+       --snapshot_load cnn,classifier \
+       --hold_constant classifier
+
+#       --starting_snapshot $WORK/tf/logs/cnn_train_5962882cnn-8817 \
+#       --hold_constant classifier \
+#       --reset_global_step
+#       --snapshot_load cnn,classifier \
+
