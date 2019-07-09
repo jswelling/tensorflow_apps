@@ -84,10 +84,16 @@ class SHTransformer(object):
     def rotateHarmonics(self, harmonics, thetaZ0, thetaY, thetaZ1, maxL=None):
         if maxL is None:
             maxL = self.maxL
-        rotMatrix = psh.djpi2(maxL)
-        rotHarm = psh.SHRotateRealCoef(harmonics,
-                                       np.array([-thetaZ1, -thetaY, -thetaZ0]),
-                                       rotMatrix)
+        # The copy() operations below is necessary to avoid an obscure memory management
+        # bug when calling this method from TensorFlow.
+#        rotMatrix = psh.djpi2(maxL).copy()
+#         rotHarm = psh.SHRotateRealCoef(harmonics,
+#                                        np.array([-thetaZ1, -thetaY, -thetaZ0]),
+#                                        rotMatrix).copy()
+#        rotHarm = psh.SHRotateRealCoef(harmonics,
+#                                       np.array([-thetaZ1, -thetaY, -thetaZ0]),
+#                                       psh.djpi2(maxL)).copy()
+        rotHarm = harmonics.copy()
         return rotHarm
 
     def reconstructSamples(self, harmonics, maxL=None):
