@@ -30,6 +30,7 @@ import tensorflow as tf
 import input_data_from_list as input_data
 from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
+import rotations
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -65,6 +66,8 @@ flags.DEFINE_string('hold_constant', None,
                     'A comma-separated list of variable name prefixes to exclude from learning.'
                     ' One or more of "cnn", "classifier"')
 flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
+flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                     ' rotations to each data sample')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -102,6 +105,9 @@ def train():
     else:
         print_op = tf.constant('No printing')
 
+    if FLAGS.random_rotation:
+        images, labels = rotations.apply_random_rotation(images, labels)
+
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
     
@@ -110,6 +116,8 @@ def train():
     print('loss: ', loss)
 
     if FLAGS.check_numerics:
+        if FLAGS.random_rotation:
+            sys.exit('check_numerics is not compatible with random_rotation')
         check_numerics_op = tf.add_check_numerics_ops()
     else:
         check_numerics_op = tf.constant('not checked')
