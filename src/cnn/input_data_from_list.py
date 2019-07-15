@@ -12,10 +12,6 @@ from tensorflow.python.framework import dtypes
 import numpy as np
 from math import ceil
 
-from brainroller.transforms import transToEulerRzRyRz, Quaternion
-from brainroller.shtransform import latToTheta, lonToPhi
-import pyshtools.shtools as psh
-
 #tf.enable_eager_execution()
 
 # initiate constant 
@@ -32,8 +28,6 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
-flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
-                     ' rotations to each data sample')
 
 LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
@@ -117,63 +111,6 @@ def load_and_preprocess_image(image_path, label_path):
 
     return image_path, label_path, fVals, lVals
 
-FULL_CHAIN = None
-L_DICT = None
-
-
-def prep_rotations(edgeLen, maxL, rMax):
-    global FULL_CHAIN
-    global L_DICT
-    fullChain = [(0, 0, 0)]
-    for edge in range(1, edgeLen+1):
-        r = 0.5 * edge
-        l = int(ceil((edge * maxL)/ float(edgeLen + 1)))
-        fullChain.append((edge, r, l))
-    fullChain.append(((edgeLen+1), rMax, maxL))
-    FULL_CHAIN = fullChain
-    
-    lDict = {}
-    for _, _, l in fullChain:
-        nodes, weights = psh.SHGLQ(l)
-        lDict[l] = (nodes, weights, psh.djpi2(l))
-    L_DICT = lDict
-    print('##### Completed prep_rotations')
-
-def random_rotate_ball_data(vals_to_rotate):
-    r0, r1, r2 = np.random.random(size=3)
-    theta = np.arccos((2.0 * r0) - 1.0)
-    phi = 2.0 * np.pi * r1
-    alpha = 2.0 * np.pi * r2
-    z = np.cos(theta)
-    x = np.sin(theta) * np.cos(phi)
-    y = np.sin(theta) * np.sin(phi)
-    vecM = np.asarray([x, y, z]).reshape((3,1))
-    rot = Quaternion.fromAxisAngle(vecM, alpha).toTransform()
-    theta0, theta1, theta2 = transToEulerRzRyRz(rot)
-    thetaArr = np.array([-theta2, -theta1, -theta0])
-    edgeLen = 2 * RAD_PIXELS + 1
-    maxL = MAX_L
-    rMax = 0.5*float(edgeLen + 1)
-    
-    if FULL_CHAIN is None:
-        prep_rotations(edgeLen, maxL, rMax)
-        
-    sampOffset = 0
-    rslt = np.zeros_like(vals_to_rotate)
-    for _, _, l in FULL_CHAIN:
-        sampDim1 = l + 1
-        sampDim2 = (2 * l) + 1
-        sampBlkSz = sampDim1 * sampDim2
-        sampBlk = np.zeros(sampBlkSz)
-        sampBlk[:] = vals_to_rotate[sampOffset: sampOffset+sampBlkSz]
-        nodes, weights, rotMtx = L_DICT[l]
-        hrmBlk = psh.SHExpandGLQ(sampBlk.reshape((sampDim1, sampDim2)), weights, nodes)
-        hrmRotBlk = psh.SHRotateRealCoef(hrmBlk, thetaArr, rotMtx)
-        sampRotBlk = psh.MakeGridGLQ(hrmRotBlk, nodes)
-        rslt[sampOffset: sampOffset + sampBlkSz] = sampRotBlk.flat
-        sampOffset += sampBlkSz
-    return tf.convert_to_tensor(rslt)
-
 
 def load_and_preprocess_image_binary(image_path, label_path):
     # read and preprocess feature file
@@ -183,11 +120,6 @@ def load_and_preprocess_image_binary(image_path, label_path):
                                      name='featureDecode'
                                      ),
                        [N_BALL_SAMPS])
-    if FLAGS.random_rotation:
-        fVals = tf.py_function(random_rotate_ball_data,
-                           [fVals],
-                           dtypes.float64,
-                           name='shtrasform_random_rot')
     fVals = tf.cast(fVals, tf.float32, name='featureToFloat')
     regex = '.*empty[^\/]*'   # Must match the full string, end-to-end!
     flagVals = tf.strings.regex_full_match(label_path, regex)
@@ -196,6 +128,7 @@ def load_and_preprocess_image_binary(image_path, label_path):
                      LABEL_FALSE, LABEL_TRUE)
 
     return image_path, flagVals, fVals, lVals
+
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                    read_threads=1, shuffle_size=100,
