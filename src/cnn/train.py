@@ -28,7 +28,7 @@ import tensorflow as tf
 #import input_data
 #from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import input_data_from_list as input_data
-from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+from constants import *
 import topology
 
 # Basic model parameters as external flags.
