@@ -555,7 +555,7 @@ def training(loss, learning_rate, exclude=None):
         global_step = tf.get_variable('global_step', dtype=tf.int32)
     train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
-                                               'Adam',
+                                               'Adam',   # 'SGD',
                                                summaries=['loss', 'learning_rate',
                                                           'gradients',
                                                           'gradient_norm'],
