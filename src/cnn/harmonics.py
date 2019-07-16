@@ -136,8 +136,7 @@ def extract_and_pair_single(images, full_chain, l_dict, top_l, layers):
         sampBlkSz = sampDim1 * sampDim2
         if l in layers:
             sampBlk = images[sampOffset: sampOffset+sampBlkSz]
-            #if l == top_l:
-            if False:
+            if l == top_l:
                 rslt[layerOffset, :, :] = sampBlk.reshape((sampDim1, sampDim2))
             else:
                 nodes, weights, rotMtx = l_dict[l]
@@ -178,7 +177,9 @@ def extract_and_pair(images, layer_list):
     rslt = tf.py_function(extract_and_pair_op, [images, tf.constant(layer_list)],
                           dtypes.float32, name='extract_and_pair')
     nRows, nCols = OUTERMOST_SPHERE_SHAPE
-    return tf.reshape(rslt, [-1, n_layers, dim1, dim2, 1])
+    rslt = tf.reshape(rslt, [-1, n_layers, dim1, dim2, 1])
+    tf.summary.image('scaledlayers', tf.reshape(rslt, [-1, n_layers*dim1, dim2, 1]), max_outputs=100)
+    return rslt
 
                                                         
     
