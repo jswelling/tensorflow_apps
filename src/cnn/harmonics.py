@@ -124,15 +124,13 @@ def apply_random_rotation(images, labels):
 
 
 def extract_and_pair_single(images, full_chain, l_dict, top_l, layers):
-    outDim1 = top_l + 1
-    outDim2 = (2 * top_l) + 1
+    outDim1, outDim2 = dims_from_l(top_l)
     top_nodes, top_weights, _ = l_dict[top_l]
     sampOffset = 0
     layerOffset = 0
     rslt = np.zeros((len(layers), outDim1, outDim2))
     for _, _, l in full_chain:
-        sampDim1 = l + 1
-        sampDim2 = (2 * l) + 1
+        sampDim1, sampDim2 = dims_from_l(l)
         sampBlkSz = sampDim1 * sampDim2
         if l in layers:
             sampBlk = images[sampOffset: sampOffset+sampBlkSz]
@@ -141,9 +139,9 @@ def extract_and_pair_single(images, full_chain, l_dict, top_l, layers):
             else:
                 nodes, weights, rotMtx = l_dict[l]
                 hrmBlk = psh.SHExpandGLQ(sampBlk.reshape((sampDim1, sampDim2)), weights, nodes)
-                padHrmBlk = np.zeros_like(top_weights)
-                hrmD1, hrmD2 = hrmBlk.shape
-                padHrmBlk[:hrmD1, :hrmD2] = hrmBlk
+                padHrmBlk = np.zeros((2, top_l+1, top_l+1))
+                hrmD0, hrmD1, hrmD2 = hrmBlk.shape
+                padHrmBlk[:, :hrmD1, :hrmD2] = hrmBlk
                 padSampBlk = psh.MakeGridGLQ(padHrmBlk, top_nodes)
                 rslt[layerOffset, :, :] = padSampBlk
             layerOffset += 1
@@ -156,9 +154,11 @@ def extract_and_pair_op(images, layer_list):
     r_max = 0.5*float(edge_len + 1)
     full_chain, l_dict = prep_rotations(edge_len, MAX_L, r_max)
 
+    # layer_list is currently a tensor; we want an actual list
+    layer_list = [layer_list[offset].numpy() for offset in range(len(layer_list))]
     rslt = np.apply_along_axis(extract_and_pair_single, 1, images,
                                full_chain=full_chain, l_dict=l_dict,
-                               top_l=max(layer_list).numpy(), layers=layer_list)
+                               top_l=max(layer_list), layers=layer_list)
     blk_sz, layers, rows, cols  = rslt.shape
     return tf.convert_to_tensor(rslt.reshape((blk_sz, layers, rows, cols, 1)).astype(np.float32))
     
