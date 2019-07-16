@@ -144,9 +144,9 @@ def extract_and_pair_single(images, full_chain, l_dict, top_l, layers):
                 padHrmBlk = np.zeros_like(top_weights)
                 hrmD1, hrmD2 = hrmBlk.shape
                 padHrmBlk[:hrmD1, :hrmD2] = hrmBlk
-                padSampBlk = psh.MakeGridGLQ(hrmRotBlk, top_nodes)
+                padSampBlk = psh.MakeGridGLQ(padHrmBlk, top_nodes)
                 rslt[layerOffset, :, :] = padSampBlk
-                layerOffset += 1
+            layerOffset += 1
         sampOffset += sampBlkSz
     return rslt
 
