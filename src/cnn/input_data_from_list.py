@@ -12,14 +12,8 @@ from tensorflow.python.framework import dtypes
 import numpy as np
 from math import ceil
 
+from constants import *
 #tf.enable_eager_execution()
-
-# initiate constant 
-N_BALL_SAMPS = 71709  # Total number of GLQ samples in a full ball of samples
-OUTERMOST_SPHERE_SHAPE = [49, 97]  # Number of GLQ samples in outermost shells
-RAD_PIXELS = 20   # radius of outermost shell in pixels
-MAX_L = 48  # maximum L value for outermost shell harmonic expansion
-SH_TRANSFORMER = None
 
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
 

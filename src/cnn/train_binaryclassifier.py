@@ -28,9 +28,9 @@ import tensorflow as tf
 #import input_data
 #from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import input_data_from_list as input_data
-from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
-import rotations
+import harmonics
+from constants import *
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -106,7 +106,7 @@ def train():
         print_op = tf.constant('No printing')
 
     if FLAGS.random_rotation:
-        images, labels = rotations.apply_random_rotation(images, labels)
+        images, labels = harmonics.apply_random_rotation(images, labels)
 
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
