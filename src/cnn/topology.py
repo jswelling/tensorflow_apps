@@ -394,7 +394,7 @@ def build_filter(input, pattern_str):
             num_neurons = n_outer_cells
 
             # Flatten pool2 into [batch_size, h * w * filters]
-            pool2_flat = tf.reshape(dropped22, [-1, num_units],
+            pool2_flat = tf.reshape(dropped2, [-1, num_units],
                                     name="pool2_flat")
             print('pool2_flat:', pool2_flat)
 
