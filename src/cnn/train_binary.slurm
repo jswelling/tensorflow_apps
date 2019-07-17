@@ -24,7 +24,7 @@ source activate /pylon5/pscstaff/welling/conda/envs/tfEnv
 cd $srcdir
 export PYTHONPATH=/pylon5/pscstaff/welling/git/tensorflow_apps/src:$PYTHONPATH
 python ./train_binaryclassifier.py \
-       --network_pattern outer_layer_cnn_to_binary \
+       --network_pattern outer_layer_logits_to_binary \
        --batch_size 180 \
        --read_threads 3 \
        --data_dir $datadir \
@@ -35,7 +35,6 @@ python ./train_binaryclassifier.py \
        --num_examples $nexamples \
        --starting_snapshot $JOELWORK/tf/logs/cnn_train_5962735cnn-4448 \
        --learning_rate 0.1 \
-       --snapshot_load cnn,classifier \
        --hold_constant classifier
 
 #       --starting_snapshot $WORK/tf/logs/cnn_train_5962735cnn-4448 \                                                                                        
