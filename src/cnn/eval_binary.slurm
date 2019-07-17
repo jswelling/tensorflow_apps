@@ -9,7 +9,7 @@ myname=`whoami`
 groupid=syr54jp
 WORK=/pylon5/${groupid}/${myname}
 #srcdir=${HOME}/tensorflow_apps/src/cnn
-srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
+srcdir=/pylon5/syr54jp/brl51/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
 
 file_list=${datadir}/../fish_cube_files_test_2.txt
@@ -30,4 +30,4 @@ python ./eval_binary.py \
        --log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
        --shuffle_size $nexamples \
        --num_examples $nexamples \
-       --starting_snapshot $WORK/tf/logs/cnn_train_5909294cnn-99
+       --starting_snapshot $WORK/tf/logs/cnn_train_6003431cnn-599
