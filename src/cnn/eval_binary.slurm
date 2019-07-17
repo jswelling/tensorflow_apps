@@ -31,4 +31,4 @@ python ./eval_binary.py \
        --log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
        --shuffle_size $nexamples \
        --num_examples $nexamples \
-#       --starting_snapshot $WORK/tf/logs/cnn_train_5909294cnn-99
+       --starting_snapshot $WORK/tf/logs/cnn_train_6050171cnn-4404
