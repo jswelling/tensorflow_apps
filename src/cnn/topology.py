@@ -33,7 +33,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 
-from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+import harmonics
+from constants import *
 
 OUTERMOST_SPHERE_N = OUTERMOST_SPHERE_SHAPE[0] * OUTERMOST_SPHERE_SHAPE[1]
 
@@ -145,7 +146,7 @@ def _add_cross(inputImg):
 #              padding='SAME') + biases               
 #      return layer
 
-def build_filter(input, pattern_str):
+def build_filter(input, pattern_str, **kwargs):
     """Build the model up to where it may be converted to a logit.
 
     Args:
@@ -156,6 +157,8 @@ def build_filter(input, pattern_str):
       pattern_str : str - string specifying network pattern. One of:
         'strip_outer_layer' : [batch_size, N_BALL_SAMPS] -> [batch_size, nRows, nCols, 1]
         'outer_layer_cnn': [batch_size, nRows, nCols, 1]
+    
+      (kwargs are pattern-specific)
                   
 
     Returns:
@@ -193,10 +196,19 @@ def build_filter(input, pattern_str):
 
         return input_skin
     
+    elif pattern_str == 'strip_layers':
+        """
+        Select one or more layers, resampling all up to the L value of the 
+        highest resolution layer.
+        Input shape: [batch_size, N_BALL_SAMPS]  (1 channel)
+        Output shape: [batch_size, n_layers, nRows, nCols, 1]
+        """
+        return harmonics.extract_and_pair(input, layer_list=kwargs['layers'])
+
     elif pattern_str == 'outer_layer_cnn':
         """
         Apply a CNN to the outer layer of the ball.
-        input shape: [batch_size, nRows, nCols, 1]
+        input shape: [batch_size, nRows, nCols, 1] or [batch_size, nLayers, nRows, nCols, 1]
         output shape: [batch_size, nRows, nCols, 1]
 
 
@@ -217,18 +229,35 @@ def build_filter(input, pattern_str):
         input shape: [batch_size, nRows, nCols, 1]
         output shape: [batch_size, nRows, nCols, 1]
         """
-        assert input.get_shape()[1:] == [nRows, nCols, 1], "wrong input shape %s" % input.get_shape()
 
         # Convolutional layer #1
         # conv1 : [batch_size, nRows, nCols, 8]
-        conv1 = tf.contrib.layers.conv2d(
-            inputs=input,
-            num_outputs=8,
-            kernel_size=[5, 5],
-            activation_fn=tf.nn.relu,
-            padding="SAME",
-            scope="conv1")
+        dim_list = input.get_shape().as_list()
+        if len(dim_list) == 5:
+            batch_size, n_layers, n_rows, n_cols, input_chan = dim_list
+        else:
+            batch_size, n_rows, n_cols, input_chan = dim_list
+            n_layers = 1
+
+        if n_layers == 1:
+            conv1 = tf.contrib.layers.conv2d(
+                inputs=input,
+                num_outputs=8,
+                kernel_size=[5, 5],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv1")
+        else:
+            conv1 = tf.contrib.layers.conv3d(
+                inputs=input,
+                num_outputs=8,
+                kernel_size=[n_layers, 5, 5],
+                stride = [n_layers, 1, 1],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv1")
         print('conv1: ', conv1)
+        conv1 = tf.reshape(conv1, [-1, n_rows, n_cols, 8])
 
         # Pooling layer #1
         # pool1 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
@@ -371,7 +400,7 @@ def build_filter(input, pattern_str):
         raise RuntimeError('Unknown inference pattern "%s"' % pattern_str)
 
 
-def inference(feature, pattern_str):
+def inference(feature, pattern_str, **kwargs):
     """Build the model up to where it may be used for inference.
     """
 
@@ -401,7 +430,7 @@ def inference(feature, pattern_str):
             logits = build_filter(dense, 'dense_linear')
             print('logits: ', logits)
             return logits
-
+    
     elif pattern_str == 'outer_layer_cnn_to_binary':
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
@@ -429,6 +458,32 @@ def inference(feature, pattern_str):
             print('outer_layer: %s' % outer_layer.get_shape().as_list())
 
             dense = build_filter(outer_layer, 'outer_layer_cnn')
+            print('dense: %s' % dense.get_shape().as_list())
+            tf.summary.image(scope.name + 'dense', 
+                             tf.reshape(dense, [-1, nRows, nCols, nChan]))
+            
+            logits = build_filter(dense, 'dense_linear')
+            print('logits: %s' % logits.get_shape().as_list())
+            logits = build_filter(logits, 'l2_norm')
+            print('logits: %s' % logits.get_shape().as_list())
+            tf.summary.image(scope.name + 'logits', 
+                             tf.reshape(logits, [-1, nRows, nCols, nChan]))
+            
+        with tf.variable_scope('image_binary_classifier') as scope:
+            
+            output = build_filter(logits, 'image_binary_classifier')
+            tf.summary.histogram(scope.name+'output', output)
+            print('output: ', output)
+            return output
+
+    elif pattern_str == 'two_layers_logits_to_binary':
+        nRows, nCols = OUTERMOST_SPHERE_SHAPE
+        nChan = 1
+        with tf.variable_scope('cnn') as scope:
+            layer_list = layers=[MAX_L//2, MAX_L]
+            layers = build_filter(feature, 'strip_layers', layers=layer_list)
+
+            dense = build_filter(layers, 'outer_layer_cnn', layers=layer_list)
             print('dense: %s' % dense.get_shape().as_list())
             tf.summary.image(scope.name + 'dense', 
                              tf.reshape(dense, [-1, nRows, nCols, nChan]))
