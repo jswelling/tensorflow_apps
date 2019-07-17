@@ -12,12 +12,12 @@ import math
 import numpy as np
 import yaml
 
-from traceneighbors import Vtx, UsefulVtx
-from transforms import transToEulerRzRyRz, makeAligningRotation
-from writegeom import writeBOV, plotSphere, writeVtkPolylines, plotBall
-from writegeom import dtypeToExt, extToDtype
-from sampler import CylinderSampler, ArraySampler
-from shtransform import SHTransformer
+from brainroller.traceneighbors import Vtx, UsefulVtx
+from brainroller.transforms import transToEulerRzRyRz, makeAligningRotation
+from brainroller.writegeom import writeBOV, plotSphere, writeVtkPolylines, plotBall
+from brainroller.writegeom import dtypeToExt, extToDtype
+from brainroller.sampler import CylinderSampler, ArraySampler
+from brainroller.shtransform import SHTransformer
 
 
 def calcMomentTensor(dCube, sig=(1.0, 1.0, 1.0)):
@@ -301,7 +301,7 @@ def addFieldEntry(yamlDict, matrix, baseName, fieldName, sampId,
         matrix.tofile(matFName)
 
 
-def loadFieldEntry(yamlDict, baseName, fieldName):
+def loadFieldEntry(yamlDict, baseName, fieldName, dataDir=None):
     sampId = yamlDict['vtxId']
     fname = yamlDict[fieldName + 'File']
     shape = yamlDict[fieldName + 'Shape']
@@ -310,7 +310,8 @@ def loadFieldEntry(yamlDict, baseName, fieldName):
     count = 1
     for dim in yamlDict[fieldName + 'Shape']:
         count *= dim
-    rawData = np.fromfile(fname, dtype=dtype, count=count)
+    fullFName = fname if dataDir is None else os.path.join(dataDir, fname)
+    rawData = np.fromfile(fullFName, dtype=dtype, count=count)
     if isFtnOrder:
         order = 'F'
     else:

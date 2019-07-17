@@ -9,12 +9,12 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
+import numpy as np
+from math import ceil
 
+from constants import *
 #tf.enable_eager_execution()
 
-# initiate constant 
-N_BALL_SAMPS = 71709
-OUTERMOST_SPHERE_SHAPE = [49, 97]
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 #module-specific command line flags
@@ -31,8 +31,12 @@ def data_fnames_from_yaml_fname(yaml_path):
     words = fn[:-5].split('_')
     base = words[0]
     idx = int(words[2])
-    feature_fn = os.path.join(dir_path,'%s_rotBallSamp_%d.doubles' % (base, idx))
-    label_fn = os.path.join(dir_path,'%s_rotEdgeSamp_%d.doubles' % (base, idx))
+    if FLAGS.random_rotation:
+        feature_fn = os.path.join(dir_path,'%s_ballSamp_%d.doubles' % (base, idx))
+        label_fn = os.path.join(dir_path,'%s_edgeSamp_%d.doubles' % (base, idx))
+    else:
+        feature_fn = os.path.join(dir_path,'%s_rotBallSamp_%d.doubles' % (base, idx))
+        label_fn = os.path.join(dir_path,'%s_rotEdgeSamp_%d.doubles' % (base, idx))
     return feature_fn, label_fn
     
 
@@ -101,14 +105,16 @@ def load_and_preprocess_image(image_path, label_path):
 
     return image_path, label_path, fVals, lVals
 
+
 def load_and_preprocess_image_binary(image_path, label_path):
     # read and preprocess feature file
     fString = tf.read_file(image_path, name='featureReadFile')
-    fVals = tf.cast(tf.reshape(tf.decode_raw(fString, dtypes.float64,
-                                             name='featureDecode'),
-                               [N_BALL_SAMPS]),
-                    tf.float32, 
-                    name='featureToFloat')
+    fVals = tf.reshape(tf.decode_raw(fString,
+                                     dtypes.float64,
+                                     name='featureDecode'
+                                     ),
+                       [N_BALL_SAMPS])
+    fVals = tf.cast(fVals, tf.float32, name='featureToFloat')
     regex = '.*empty[^\/]*'   # Must match the full string, end-to-end!
     flagVals = tf.strings.regex_full_match(label_path, regex)
     lVals = tf.where(flagVals,
@@ -116,6 +122,7 @@ def load_and_preprocess_image_binary(image_path, label_path):
                      LABEL_FALSE, LABEL_TRUE)
 
     return image_path, flagVals, fVals, lVals
+
 
 def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                    read_threads=1, shuffle_size=100,
@@ -126,7 +133,8 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
                         )
     image_label_ds = ds.map(load_and_preprocess_image,
                             num_parallel_calls=read_threads)
-    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
+    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples,
+                                            seed=seed)
     #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.
@@ -138,13 +146,15 @@ def input_pipeline(train_dir, batch_size, fake_data=False, num_epochs=None,
 def input_pipeline_binary(train_dir, batch_size, fake_data=False, num_epochs=None,
                           read_threads=1, shuffle_size=100,
                           num_expected_examples=None, seed=None):
+        
     ds = get_data_pairs(train_dir, FLAGS.file_list,
                         num_expected_examples=num_expected_examples,
                         seed=seed
                         )
     image_label_ds = ds.map(load_and_preprocess_image_binary,
                             num_parallel_calls=read_threads)
-    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples)
+    image_label_ds = image_label_ds.shuffle(buffer_size=num_expected_examples,
+                                            seed=seed)
     #image_label_ds = image_label_ds.repeat()
     image_label_ds = image_label_ds.batch(batch_size)
     # `prefetch` lets the dataset fetch batches, in the background while the model is training.

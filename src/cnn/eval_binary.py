@@ -87,6 +87,7 @@ def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predi
 
     # Number of examples evaluated
     examples = 0
+    accuracy_samples = []
 
     try:
         sess.run(iterator.initializer, feed_dict={seed: 1234})
@@ -95,6 +96,7 @@ def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predi
             print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
             # Test model and check accuracy
             print('Test Accuracy:', accuracy)
+            accuracy_samples.append(accuracy)
 
             total_loss += np.sum(losses)
             step += 1
@@ -122,8 +124,11 @@ def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predi
 
     # Compute precision @ 1.
     loss = total_loss / examples
+    accuracyV = np.asarray(accuracy_samples)
     print('%s: total examples @ 1 = %d' % (datetime.now(), examples))
     print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
+    print('%s: overall accuracy %s +- %s' % (datetime.now(), np.mean(accuracyV),
+                                             np.std(accuracyV, ddof=1)))
     print('%s: true positive @ 1 = %d' % (datetime.now(), n_true_pos))
     print('%s: false positive @ 1 = %d' % (datetime.now(), n_false_pos))
     print('%s: true negative @ 1 = %d' % (datetime.now(), n_true_neg))

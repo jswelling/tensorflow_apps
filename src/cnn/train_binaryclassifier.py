@@ -28,8 +28,9 @@ import tensorflow as tf
 #import input_data
 #from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import input_data_from_list as input_data
-from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import topology
+import harmonics
+from constants import *
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -58,6 +59,15 @@ flags.DEFINE_string('starting_snapshot', '',
                     'Snapshot from the end of the previous run ("" for none)')
 flags.DEFINE_boolean('check_numerics', False, 'If true, add and run check_numerics ops.')
 flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
+flags.DEFINE_string('snapshot_load', 'all',
+                    'A comma-separated list of variable name prefixes to load from the snapshot.'
+                    ' One or more of "all", "cnn", "classifier"')
+flags.DEFINE_string('hold_constant', None,
+                    'A comma-separated list of variable name prefixes to exclude from learning.'
+                    ' One or more of "cnn", "classifier"')
+flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
+flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                     ' rotations to each data sample')
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -68,6 +78,13 @@ def train():
     else:
         num_epochs = None
 
+    # Track global step across multiple iterations.  This is updated in
+    # the optimizer.
+    with tf.variable_scope('control'):
+        global_step = tf.get_variable('global_step', 
+                                      dtype=tf.int32, initializer=0, 
+                                      trainable=False)
+    
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -88,6 +105,9 @@ def train():
     else:
         print_op = tf.constant('No printing')
 
+    if FLAGS.random_rotation:
+        images, labels = harmonics.apply_random_rotation(images, labels)
+
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
     
@@ -95,45 +115,90 @@ def train():
     loss = topology.binary_loss(logits, labels)
     print('loss: ', loss)
 
-    # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate)
-    print('train (optimizer): ', train_op)
-    
     if FLAGS.check_numerics:
+        if FLAGS.random_rotation:
+            sys.exit('check_numerics is not compatible with random_rotation')
         check_numerics_op = tf.add_check_numerics_ops()
     else:
         check_numerics_op = tf.constant('not checked')
 
-    # Build the summary operation based on the TF collection of Summaries.
-    summary_op = tf.summary.merge_all()
+    var_pfx_map = {'cnn' : 'cnn/',
+                   'classifier' : 'image_binary_classifier/'}
 
-    # Create the graph, etc.
-    init_op = tf.group(tf.global_variables_initializer(),
-                       tf.local_variables_initializer())
+    vars_to_load = []  # empty list means load all
+    if len(FLAGS.starting_snapshot) and FLAGS.snapshot_load:
+        keys = FLAGS.snapshot_load.split(',')
+        keys = [k.strip() for k in keys]
+        if 'all' not in keys:
+            assert all([k in var_pfx_map for k in keys]), 'unknown key to load: %s' % key
+            for k in keys:
+                vars_to_load.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                                     if v.name.startswith(var_pfx_map[k])])
+            if not FLAGS.reset_global_step:
+                vars_to_load.append(global_step)
+
+    vars_to_hold_constant = []
+    if FLAGS.hold_constant is not None:
+        keys = FLAGS.hold_constant.split(',')
+        keys = [k.strip() for k in keys]
+        assert all([k in var_pfx_map for k in keys]), 'unknown key to hold constant: %s' % key
+        for k in keys:
+            vars_to_hold_constant.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                                          if v.name.startswith(var_pfx_map[k])])
+    print('not subject to training: %s' % [v.name for v in vars_to_hold_constant])
+        
+
+    # Add to the Graph the Ops that calculate and apply gradients.
+    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant)
+    print('train (optimizer): ', train_op)
+
+    # Try making histograms of *everything*
+    for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
+        if var.name.startswith('cnn') or var.name.startswith('image_binary_classifier'):
+            tf.summary.histogram(var.name, var)
 
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver(max_to_keep=10)
 
+    # Build the summary operation based on the TF collection of Summaries.
+    summary_op = tf.summary.merge_all()
+
     # Create a session for running operations in the Graph.
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.verbose))
 
     # Optionally restore from a checkpoint.  The right file to load seems to be
     # the one with extension '.index'
     if len(FLAGS.starting_snapshot) == 0:
-        sess.run(init_op)
+        pass
+    elif FLAGS.snapshot_load and vars_to_load:
+        print('loading from checkpoint: %s' % [v.name for v in vars_to_load])
+        partial_saver = tf.train.Saver(vars_to_load)
+        partial_saver.restore(sess, FLAGS.starting_snapshot)
     else:
+        print('loading all variables from checkpoint ')
         saver.restore(sess, FLAGS.starting_snapshot)
+
+    # Create the graph, etc.
+    if vars_to_load:
+        vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+                              if v not in vars_to_load]
+        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
+        init_op = tf.variables_initializer(vars_to_initialize)
+    elif len(FLAGS.starting_snapshot) == 0:
+        # initialize everything
+        print('initalizing all globals')
+        init_op = tf.variables_initializer(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
+    else:
+        vars_to_initialize = []
+        if FLAGS.reset_global_step:
+            vars_to_initialize.append(global_step)
+        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
+        init_op = tf.variables_initializer(vars_to_initialize)
+    sess.run(init_op)
 
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
-    # Start input enqueue threads.
-    #coord = tf.train.Coordinator()
-    
-    # This isn't needed now that we no longer use input queues
-    #threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-
-    step = 0
     loss_value = -1.0  # avoid a corner case where it is unset on error
     duration = 0.0     # ditto
     num_chk = None     # ditto
@@ -142,31 +207,33 @@ def train():
     for epoch in range(num_epochs):
         try:
             sess.run(iterator.initializer, feed_dict={seed: epoch})
-            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=0)
+            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=global_step)
+            last_save_epoch = 0
 
             while True:            
                 # Run training steps or whatever
                 start_time = time.time()
-                _, loss_value, num_chk, _ = sess.run([train_op, loss, check_numerics_op, print_op])
+                _, loss_value, num_chk, _, gstp = sess.run([train_op, loss, check_numerics_op,
+                                                            print_op, global_step])
                 duration = time.time() - start_time
 
                 # Write the summaries and print an overview fairly often.
-                if ((step + 1) % 100 == 0 or step < 10):
+                if ((gstp + 1) % 100 == 0 or gstp < 10):
                     # Print status to stdout.
-                    print('Step %d epoch %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
-                          % (step, epoch, num_chk, loss_value.mean(), duration))
+                    print('Global step %d epoch %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
+                          % (gstp, epoch, num_chk, loss_value.mean(), duration))
                     # Update the events file.
                     summary_str = sess.run(summary_op)
-                    summary_writer.add_summary(summary_str, step)
+                    summary_writer.add_summary(summary_str, gstp)
                     summary_writer.flush()
 
                 # Save a checkpoint periodically.
-                if (epoch + 1) % 100 == 0:
+                if (epoch + 1) % 100 == 0 and epoch != last_save_epoch:
                     # If log_dir is /tmp/cnn/ then checkpoints are saved in that
                     # directory, prefixed with 'cnn'.
-                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=epoch)
-
-                step += 1
+                    print('saving checkpoint at global step %d, epoch %s' % (gstp, epoch))
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=global_step)
+                    last_save_epoch = epoch
 
         except tf.errors.OutOfRangeError as e:
             print('Finished epoch {}'.format(epoch))
@@ -183,7 +250,7 @@ def train():
 #        coord.join(threads, stop_grace_period=10)
 
     print('Final Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
-          % (step, num_chk, loss_value.mean(), duration))
+          % (gstp, num_chk, loss_value.mean(), duration))
     try:
         summary_str = sess.run(summary_op)
         summary_writer.add_summary(summary_str, step)

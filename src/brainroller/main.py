@@ -9,10 +9,10 @@ Created on May 31, 2016
 import sys
 import numpy as np
 
-from transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
-from writegeom import plotSphere
-from sampler import ArraySampler, BlockSampler
-from yamlblocks import parseBlock
+from .transforms import eulerRzRyRzToTrans, transToEulerRzRyRz, makeAligningRotation
+from .writegeom import plotSphere
+from .sampler import ArraySampler, BlockSampler
+from .yamlblocks import parseBlock
 
 sys.path.extend(['/home/welling/git/Fiasco/src/fmri'])
 # sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
