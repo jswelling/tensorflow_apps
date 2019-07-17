@@ -24,7 +24,7 @@ source activate /pylon5/pscstaff/welling/conda/envs/tfEnv
 cd $srcdir
 
 python ./train_binaryclassifier.py \
-       --network_pattern outer_layer_cnn_to_binary \
+       --network_pattern outer_layer_logits_to_binary \
        --batch_size 180 \
        --read_threads 3 \
        --data_dir $datadir \

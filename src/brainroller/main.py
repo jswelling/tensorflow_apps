@@ -17,6 +17,8 @@ from .yamlblocks import parseBlock
 sys.path.extend(['/home/welling/git/Fiasco/src/fmri'])
 # sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/shtools/SHTOOLS-3.2'])
+sys.path.extend(['/home/welling/Fiasco/fiasco_final/bin/LINUXX86_64',
+                 '/home/welling/shtools/SHTOOLS-3.2'])
 # sys.path.extend(['/home/welling/Fiasco/Fiasco_final/src/fmri',
 #                  '/home/welling/Fiasco/Fiasco_final/bin/LINUXX86_64',
 #                  '/home/welling/git/SHTOOLS'])
