@@ -7,13 +7,14 @@
 
 myname=`whoami`
 groupid=syr54jp
-WORK=/pylon5/${groupid}/${myname}
+WORK=/pylon5/syr54jp/brl51
+JOELWORK=/pylon5/syr54jp/welling
 #srcdir=${HOME}/tensorflow_apps/src/cnn
-srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
+srcdir=/pylon5/pscstaff/brl51/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
 
 file_list=${datadir}/../fish_cube_files_train_2.txt
-nepochs=100
+nepochs=600
 
 nexamples=`cat $file_list | wc -l`
 
@@ -21,7 +22,7 @@ module load anaconda3
 source activate /pylon5/pscstaff/welling/conda/envs/tfEnv
 
 cd $srcdir
-
+export PYTHONPATH=/pylon5/pscstaff/welling/git/tensorflow_apps/src:$PYTHONPATH
 python ./train_binaryclassifier.py \
        --network_pattern outer_layer_cnn_to_binary \
        --batch_size 180 \
@@ -32,4 +33,12 @@ python ./train_binaryclassifier.py \
        --num_epochs $nepochs \
        --shuffle_size $nexamples \
        --num_examples $nexamples \
-       --starting_snapshot $WORK/tf/logs/cnn_train_5909294cnn-99
+       --starting_snapshot $JOELWORK/tf/logs/cnn_train_5962735cnn-4448 \
+       --learning_rate 0.1 \
+       --snapshot_load cnn,classifier \
+       --hold_constant classifier
+
+#       --starting_snapshot $WORK/tf/logs/cnn_train_5962735cnn-4448 \                                                                                        
+#       --hold_constant classifier \
+#       --reset_global_step \                                                                                                                                                                                                        
+#       --snapshot_load cnn,classifier \    
