@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 
 """Trains the network."""
 
@@ -31,6 +30,8 @@ import input_data_from_list as input_data
 import topology
 import harmonics
 from constants import *
+from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+import topology
 
 # Basic model parameters as external flags.
 flags = tf.app.flags
@@ -68,6 +69,7 @@ flags.DEFINE_string('hold_constant', None,
 flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
+=======
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -85,6 +87,7 @@ def train():
                                       dtype=tf.int32, initializer=0, 
                                       trainable=False)
     
+=======
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -108,6 +111,7 @@ def train():
     if FLAGS.random_rotation:
         images, labels = harmonics.apply_random_rotation(images, labels)
 
+=======
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
     
@@ -118,6 +122,23 @@ def train():
     if FLAGS.check_numerics:
         if FLAGS.random_rotation:
             sys.exit('check_numerics is not compatible with random_rotation')
+=======
+    #loss = topology.binary_loss(logits, labels)
+   # print('loss: ', loss)
+    loss = topology.binary_loss(logits,labels)
+    #print('loss: ', loss1)
+
+    # Add to the Graph the Ops that calculate and apply gradients.
+    train_op = topology.training(loss, FLAGS.learning_rate)
+    print('train (optimizer): ', train_op)
+ #   train_op2 = topology.training(loss2, FLAGS.learning_rate)
+    
+    # set up accuracy 
+    predicted = tf.round(tf.nn.sigmoid(logits))
+    correct_pred = tf.equal(predicted, labels)
+    accuracy_op = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+    if FLAGS.check_numerics:
         check_numerics_op = tf.add_check_numerics_ops()
     else:
         check_numerics_op = tf.constant('not checked')
@@ -156,6 +177,13 @@ def train():
     for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
         if var.name.startswith('cnn') or var.name.startswith('image_binary_classifier'):
             tf.summary.histogram(var.name, var)
+=======
+    # Build the summary operation based on the TF collection of Summaries.
+    summary_op = tf.summary.merge_all()
+
+    # Create the graph, etc.
+    init_op = tf.group(tf.global_variables_initializer(),
+                       tf.local_variables_initializer())
 
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver(max_to_keep=10)
@@ -165,6 +193,9 @@ def train():
 
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.verbose))
+=======
+    # Create a session for running operations in the Graph.
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     # Optionally restore from a checkpoint.  The right file to load seems to be
     # the one with extension '.index'
@@ -199,6 +230,21 @@ def train():
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
+=======
+        sess.run(init_op)
+    else:
+        saver.restore(sess, FLAGS.starting_snapshot)
+
+    # Instantiate a SummaryWriter to output summaries and the Graph.
+    summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
+
+    # Start input enqueue threads.
+    #coord = tf.train.Coordinator()
+    
+    # This isn't needed now that we no longer use input queues
+    #threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+    step = 0
     loss_value = -1.0  # avoid a corner case where it is unset on error
     duration = 0.0     # ditto
     num_chk = None     # ditto
@@ -209,6 +255,7 @@ def train():
             sess.run(iterator.initializer, feed_dict={seed: epoch})
             saver.save(sess, FLAGS.log_dir + 'cnn', global_step=global_step)
             last_save_epoch = 0
+            saver.save(sess, FLAGS.log_dir + 'cnn', global_step=0)
 
             while True:            
                 # Run training steps or whatever
@@ -234,6 +281,26 @@ def train():
                     print('saving checkpoint at global step %d, epoch %s' % (gstp, epoch))
                     saver.save(sess, FLAGS.log_dir + 'cnn', global_step=global_step)
                     last_save_epoch = epoch
+                _, loss_value, num_chk,_, accuracy = sess.run([train_op, loss, check_numerics_op, print_op, accuracy_op])
+                duration = time.time() - start_time
+
+                # Write the summaries and print an overview fairly often.
+                if ((step + 1) % 100 == 0 or step < 10):
+                    # Print status to stdout.
+                    print('Step %d epoch %d: numerics = %s, train accuracy %.2f , batch mean loss = %.2f (%.3f sec)'
+                          % (step, epoch, num_chk, accuracy,  loss_value.mean(), duration))
+                    # Update the events file.
+                    summary_str = sess.run(summary_op)
+                    summary_writer.add_summary(summary_str, step)
+                    summary_writer.flush()
+
+                # Save a checkpoint periodically.
+                if (epoch + 1) % 100 == 0:
+                    # If log_dir is /tmp/cnn/ then checkpoints are saved in that
+                    # directory, prefixed with 'cnn'.
+                    saver.save(sess, FLAGS.log_dir + 'cnn', global_step=epoch)
+
+                step += 1
 
         except tf.errors.OutOfRangeError as e:
             print('Finished epoch {}'.format(epoch))
@@ -251,6 +318,7 @@ def train():
 
     print('Final Step %d: numerics = %s, batch mean loss = %.2f (%.3f sec)'
           % (gstp, num_chk, loss_value.mean(), duration))
+          % (step, num_chk, loss_value.mean(), duration))
     try:
         summary_str = sess.run(summary_op)
         summary_writer.add_summary(summary_str, step)
