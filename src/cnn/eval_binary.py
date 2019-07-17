@@ -11,49 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from datetime import datetime
-import math
-import time
-
-import numpy as np
-import tensorflow as tf
-
-import input_data_from_list as input_data
-import topology
-
-FLAGS = tf.app.flags.FLAGS
-
-tf.app.flags.DEFINE_string('network_pattern', 'outer_layer_cnn',
-                           'A network pattern recognized in topology.py')
-tf.app.flags.DEFINE_string('log_dir', '/tmp/eval',
-                           """Directory where to write event logs.""")
-tf.app.flags.DEFINE_string('data_dir', '',
-                           """Directory for evaluation data""")
-tf.app.flags.DEFINE_string('starting_snapshot', None,
-                    'Snapshot to evaluate')
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
-                            """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', 10000,
-                            """Number of examples to run.""")
-tf.app.flags.DEFINE_boolean('run_once', True,
-                            """Whether to run eval only once.""")
-tf.app.flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
-                            'for unit testing.')
-tf.app.flags.DEFINE_integer('read_threads', 2,
-                            'Number of threads reading input files')
-tf.app.flags.DEFINE_integer('shuffle_size', 8,
-                            'Number of input data pairs to shuffle (min_dequeue)')
-tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
-                            'Must divide evenly into the dataset sizes.')
-tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
-
-
-def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predicted_op):
-    """Run Eval once.
 
     Args:
         saver: Saver.

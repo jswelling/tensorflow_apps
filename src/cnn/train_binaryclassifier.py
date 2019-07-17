@@ -69,7 +69,6 @@ flags.DEFINE_string('hold_constant', None,
 flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
-=======
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -87,7 +86,6 @@ def train():
                                       dtype=tf.int32, initializer=0, 
                                       trainable=False)
     
-=======
     # seed provides the mechanism to control the shuffling which takes place reading input
     seed = tf.placeholder(tf.int64, shape=())
     
@@ -111,7 +109,6 @@ def train():
     if FLAGS.random_rotation:
         images, labels = harmonics.apply_random_rotation(images, labels)
 
-=======
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
     
@@ -122,7 +119,6 @@ def train():
     if FLAGS.check_numerics:
         if FLAGS.random_rotation:
             sys.exit('check_numerics is not compatible with random_rotation')
-=======
     #loss = topology.binary_loss(logits, labels)
    # print('loss: ', loss)
     loss = topology.binary_loss(logits,labels)
@@ -177,7 +173,6 @@ def train():
     for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
         if var.name.startswith('cnn') or var.name.startswith('image_binary_classifier'):
             tf.summary.histogram(var.name, var)
-=======
     # Build the summary operation based on the TF collection of Summaries.
     summary_op = tf.summary.merge_all()
 
@@ -193,7 +188,6 @@ def train():
 
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.verbose))
-=======
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
@@ -230,7 +224,6 @@ def train():
     # Instantiate a SummaryWriter to output summaries and the Graph.
     summary_writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
-=======
         sess.run(init_op)
     else:
         saver.restore(sess, FLAGS.starting_snapshot)

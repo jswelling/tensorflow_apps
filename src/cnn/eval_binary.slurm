@@ -8,7 +8,6 @@
 myname=`whoami`
 groupid=syr54jp
 WORK=/pylon5/${groupid}/${myname}
-#srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
 srcdir=${HOME}/tensorflow_apps/src/cnn
 #srcdir=/pylon5/pscstaff/welling/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
