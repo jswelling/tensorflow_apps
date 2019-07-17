@@ -269,10 +269,15 @@ def build_filter(input, pattern_str, **kwargs):
             scope="pool1")
         print('pool1:', pool1)
 
+        # Dropout layer #1 
+        dropped1 = tf.nn.dropout(pool1,keep_prob = 0.9)
+
+
         # Convolutional layer #2
         # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
         conv2 = tf.contrib.layers.conv2d(
-            inputs=pool1,
+#            inputs=pool1,
+            inputs = dropped1, 
             num_outputs=16,
             kernel_size=[5, 5],
             activation_fn=tf.nn.relu,
@@ -290,7 +295,11 @@ def build_filter(input, pattern_str, **kwargs):
             scope="pool2")
         print('pool2: ', pool2)
 
-        pool2_dim = pool2.get_shape().as_list()
+        # Dropout layer #2 
+        dropped2 = tf.nn.dropout(pool2, keep_prob = 0.9)
+
+        pool2_dim = dropped2.get_shape().as_list()
+        #pool2_dim = pool2.get_shape().as_list()
         batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
 
         num_units = pool2_height * pool2_width * pool2_filters
@@ -300,7 +309,7 @@ def build_filter(input, pattern_str, **kwargs):
             num_neurons = n_outer_cells
 
             # Flatten pool2 into [batch_size, h * w * filters]
-            pool2_flat = tf.reshape(pool2, [-1, num_units],
+            pool2_flat = tf.reshape(dropped22, [-1, num_units],
                                     name="pool2_flat")
             print('pool2_flat:', pool2_flat)
 
