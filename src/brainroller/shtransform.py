@@ -9,7 +9,7 @@ Created on May 31, 2016
 import math
 import numpy as np
 
-import pyshtools as psh
+import pyshtools.shtools as psh
 import fiasco_numpy as fiasco
 
 def latToTheta(lat):
