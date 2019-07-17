@@ -1,3 +1,4 @@
+  
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,18 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 
 """Builds the MNIST network.
-
 Implements the inference/loss/training pattern for model building.
-
 1. inference() - Builds the model as far as is required for running the network
 forward to make predictions.
 2. loss() - Adds to the inference model the layers required to generate loss.
 3. training() - Adds to the loss model the Ops required to generate and
 apply gradients.
-
 This file is used by the various "fully_connected_*.py" files and not meant to
 be run.
 """
@@ -43,10 +40,8 @@ OUTERMOST_SPHERE_N = OUTERMOST_SPHERE_SHAPE[0] * OUTERMOST_SPHERE_SHAPE[1]
 def weight_variable(shape):
     """Generate a tensor of weight variables of dimensions `shape`.
     Initialize them with a small amount of noise for symmetry breaking
-
     Args:
       shape : [...] - desired shape of the weights
-
     """
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial, name='weight')
@@ -55,10 +50,8 @@ def bias_variable(shape):
     """Generate a tensor of bias variables of dimensions `shape`.
     Initialize them with a small positive bias to avoid dead neurons
     (if using relu).
-
     Args:
       shape : [...] - desired shape of the biases
-
     """
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial, name='bias')
@@ -66,6 +59,8 @@ def bias_variable(shape):
 def _add_dense_linear_layer(input, n_outer_cells):
     """Build a single densely connected layer with no activation component
 
+def _add_dense_linear_layer(input, n_outer_cells):
+    """Build a single densely connected layer with no activation component
     Args:
       input: The upstream tensor. float - [batch_size, dim1, dim2, 1] (last 2 dims optional)
 
@@ -156,6 +151,8 @@ def build_filter(input, pattern_str):
     Args:
       input : input tensor; required shape varies by pattern_str
 
+    Args:
+      input : input tensor; required shape varies by pattern_str
       pattern_str : str - string specifying network pattern. One of:
         'strip_outer_layer' : [batch_size, N_BALL_SAMPS] -> [batch_size, nRows, nCols, 1]
         'outer_layer_cnn': [batch_size, nRows, nCols, 1]
@@ -164,6 +161,8 @@ def build_filter(input, pattern_str):
     Returns:
       output: output tensor; expected shape varies by pattern_str
 
+    Returns:
+      output: output tensor; expected shape varies by pattern_str
     """
 
     # Some convenient constants
@@ -200,6 +199,23 @@ def build_filter(input, pattern_str):
         input shape: [batch_size, nRows, nCols, 1]
         output shape: [batch_size, nRows, nCols, 1]
 
+
+        # Slice the outer layer of pixels from the feature
+        # outer_skin : [batch_size, n_outer_cells]
+        outer_skin = tf.slice(input, [0, skinStart], [-1, n_outer_cells])
+
+        # Reshape the outer_skin into 2 dimensions and 1 channel : [nRows, nCols, 1]
+        input_skin = tf.reshape(outer_skin, [-1, nRows, nCols, 1], name="input")
+        
+        #tf.summary.image('input_outer_skin', input_skin, max_outputs=100)
+
+        return input_skin
+    
+    elif pattern_str == 'outer_layer_cnn':
+        """
+        Apply a CNN to the outer layer of the ball.
+        input shape: [batch_size, nRows, nCols, 1]
+        output shape: [batch_size, nRows, nCols, 1]
         """
         assert input.get_shape()[1:] == [nRows, nCols, 1], "wrong input shape %s" % input.get_shape()
 
@@ -357,21 +373,17 @@ def build_filter(input, pattern_str):
 
 def inference(feature, pattern_str):
     """Build the model up to where it may be used for inference.
-
-    Args:
-      feature : [batch_size, N_BALL_SAMPS] - feature placeholder, from inputs().
-
-      pattern_str : str - string specifying network pattern. One of:
-                  'outer_layer_cnn'
-
-    Returns:
-      something_not_softmax_linear: Output tensor with the computed logits.
-
     """
 
     if pattern_str == 'outer_layer_cnn':
 
         """ Apply a CNN to the outer layer of the ball.
+
+        """
+
+        with tf.variable_scope('cnn'):
+            
+            outer_layer = build_filter(feature, 'strip_outer_layer')
 
         """
 
@@ -441,11 +453,9 @@ def inference(feature, pattern_str):
 
 def loss(logits, labels):
     """Calculates the loss from the logits and the labels.
-
     Args:
       logits: Logits tensor, float - [batch_size, NUM_CLASSES].
       labels: Labels tensor, float - [batch_size].
-
     Returns:
       loss: Loss tensor of type float. - []
     """
@@ -479,11 +489,9 @@ def loss(logits, labels):
 
 def binary_loss(logits, labels):
     """Calculates the loss from the logits and the labels.
-
     Args:
       logits: Logits tensor, float - [batch_size, NUM_CLASSES].
       labels: Labels tensor, float - [batch_size].
-
     Returns:
       loss: Loss tensor of type float. - []
     """
@@ -525,18 +533,13 @@ def binary_loss(logits, labels):
 
 def training(loss, learning_rate, exclude=None):
     """Sets up the training Ops.
-
     Creates a summarizer to track the loss over time in TensorBoard.
-
     Creates an optimizer and applies the gradients to all trainable variables.
-
     The Op returned by this function is what must be passed to the
     `sess.run()` call to cause the model to train.
-
     Args:
       loss: Loss tensor, from loss().
       learning_rate: The learning rate to use for gradient descent.
-
     Returns:
       train_op: The Op for training.
     """
@@ -561,3 +564,4 @@ def training(loss, learning_rate, exclude=None):
                                                           'gradient_norm'],
                                                variables=train_these_vars)
     return train_op
+
