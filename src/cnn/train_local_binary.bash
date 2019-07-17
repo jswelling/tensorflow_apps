@@ -19,8 +19,8 @@ python ./train_binaryclassifier.py \
 	--hold_constant='classifier' \
 	--starting_snapshot=${HOME}/sshfshook/logs/cnn_train_5962735cnn-4448 \
 	--reset_global_step \
-		
-	# --random_rotation
+	--random_rotation
+
 	#--starting_snapshot=${HOME}/git/tensorflow_apps/log/train_local_logcnn-7 \
 	#--check_numerics=True \
 								

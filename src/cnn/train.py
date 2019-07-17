@@ -28,7 +28,7 @@ import tensorflow as tf
 #import input_data
 #from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
 import input_data_from_list as input_data
-from input_data_from_list import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+from constants import *
 import topology
 
 # Basic model parameters as external flags.
@@ -98,7 +98,7 @@ def train():
     loss = topology.loss(logits, labels)
 
     # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate)
+    train_op = topology.training(tf.reduce_mean(loss), FLAGS.learning_rate)
     if FLAGS.check_numerics:
         check_numerics_op = tf.add_check_numerics_ops()
     else:
@@ -146,7 +146,7 @@ def train():
             while True:            
                 # Run training steps or whatever
                 start_time = time.time()
-                _, _, loss_value, num_chk = sess.run([print_op, train_op, loss, check_numerics_op])
+                _, loss_value, num_chk = sess.run([train_op, loss, check_numerics_op])
                 duration = time.time() - start_time
 
                 # Write the summaries and print an overview fairly often.

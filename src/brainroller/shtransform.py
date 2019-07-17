@@ -9,7 +9,7 @@ Created on May 31, 2016
 import math
 import numpy as np
 
-import pyshtools as psh
+import pyshtools.shtools as psh
 import fiasco_numpy as fiasco
 
 def latToTheta(lat):
@@ -84,7 +84,7 @@ class SHTransformer(object):
     def rotateHarmonics(self, harmonics, thetaZ0, thetaY, thetaZ1, maxL=None):
         if maxL is None:
             maxL = self.maxL
-        rotMatrix = psh.djpi2(maxL)
+        rotMatrix = psh.djpi2(maxL).copy()
         rotHarm = psh.SHRotateRealCoef(harmonics,
                                        np.array([-thetaZ1, -thetaY, -thetaZ0]),
                                        rotMatrix)
@@ -210,8 +210,10 @@ class SHTransformer(object):
             blkSz = dim0 * dim1 * dim2
             thisBlk = np.zeros(blkSz)
             thisBlk[:] = ballExpansion[offset: offset+blkSz]
-            thisRotBlk = self.rotateHarmonics(thisBlk.reshape((dim0, dim1, dim2)),
-                                              thetaZ0, thetaY, thetaZ1, maxL = l)
+            thisBlk = thisBlk.reshape((dim0, dim1, dim2))
+            thetaArr = np.array([-thetaZ1, -thetaY, -thetaZ0])
+            thisRotBlk = psh.SHRotateRealCoef(thisBlk,
+                                              thetaArr, psh.djpi2(l))
             result[offset: offset+blkSz] = thisRotBlk.flat
             offset += blkSz
         return result
