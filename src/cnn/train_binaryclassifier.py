@@ -171,7 +171,6 @@ def train():
                          for var in vars_to_load])
     vars_to_load = [var for var in vars_to_load if var is not None]
     vars_to_load = list(set(vars_to_load))  # remove duplicates
-    print('after append: vars_to_load: %s' % [var.name for var in vars_to_load])
     
     # Filter vars to load based on what is in the checkpoint
     in_vars = []
