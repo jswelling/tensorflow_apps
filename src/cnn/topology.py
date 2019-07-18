@@ -84,10 +84,11 @@ def _add_dense_linear_layer(input, n_outer_cells):
         #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
-        weights = tf.Variable(tf.truncated_normal([n_inner_cells, n_outer_cells],
-                                                  stddev= wtStdv),
-                              name='logit_w')
-        biases = tf.Variable(tf.zeros([n_outer_cells]), name='logit_b')
+        weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
+                                  initializer=tf.truncated_normal_initializer(mean=0.0,
+                                                                              stddev=wtStdv))
+        biases = tf.get_variable('logit_b', shape=[n_outer_cells],
+                                 initializer=tf.contrib.layers.xavier_initializer())
         #print('input', input)
         shaped_input = tf.reshape(input, [batch_size, n_inner_cells])
         #print('shaped input: ', shaped_input)
