@@ -162,7 +162,7 @@ def train():
     vars_in_snapshot = set(vars_in_snapshot)
     print('vars in snapshot: %s' % vars_in_snapshot)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate)
+    optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=0.1)
     train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant,
                                  optimizer=optimizer)
     
