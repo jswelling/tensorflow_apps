@@ -15,9 +15,9 @@ python ./train_binaryclassifier.py \
 	--num_examples 9 \
 	--file_list /home/welling/data/fish_cubes_train_gp0.txt	\
 	--verbose=False \
-	--snapshot_load='classifier' \
+	--snapshot_load='cnn,classifier' \
 	--hold_constant='classifier' \
-	--starting_snapshot=${HOME}/sshfshook/logs/cnn_train_5962735cnn-4448 \
+	--starting_snapshot=${HOME}/sshfshook/logs/cnn_train_6045675cnn-4404 \
 	--reset_global_step \
 	--random_rotation
 
