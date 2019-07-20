@@ -49,8 +49,9 @@ def weight_variable(shape):
       shape : [...] - desired shape of the weights
 
     """
-    initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial, name='weight')
+    return tf.get_variable('weight', shape=shape,
+                           initializer=tf.truncated_normal_initializer(mean=0.0,
+                                                                       stddev=0.1))
 
 def bias_variable(shape):
     """Generate a tensor of bias variables of dimensions `shape`.
@@ -61,8 +62,8 @@ def bias_variable(shape):
       shape : [...] - desired shape of the biases
 
     """
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial, name='bias')
+    return tf.get_variable('bias', shape=shape,
+                           initializer=tf.contrib.layers.xavier_initializer())
 
 def _add_dense_linear_layer(input, n_outer_cells):
     """Build a single densely connected layer with no activation component
@@ -84,10 +85,11 @@ def _add_dense_linear_layer(input, n_outer_cells):
         #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
-        weights = tf.Variable(tf.truncated_normal([n_inner_cells, n_outer_cells],
-                                                  stddev= wtStdv),
-                              name='logit_w')
-        biases = tf.Variable(tf.zeros([n_outer_cells]), name='logit_b')
+        weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
+                                  initializer=tf.truncated_normal_initializer(mean=0.0,
+                                                                              stddev=wtStdv))
+        biases = tf.get_variable('logit_b', shape=[n_outer_cells],
+                                 initializer=tf.contrib.layers.xavier_initializer())
         #print('input', input)
         shaped_input = tf.reshape(input, [batch_size, n_inner_cells])
         #print('shaped input: ', shaped_input)
@@ -577,7 +579,7 @@ def binary_loss(logits, labels):
     return cross_entropy
 
 
-def training(loss, learning_rate, exclude=None):
+def training(loss, learning_rate, exclude=None, optimizer=None):
     """Sets up the training Ops.
 
     Creates a summarizer to track the loss over time in TensorBoard.
@@ -590,6 +592,7 @@ def training(loss, learning_rate, exclude=None):
     Args:
       loss: Loss tensor, from loss().
       learning_rate: The learning rate to use for gradient descent.
+      optimizer: None, or one of the options for tf.contrib.layers.optimize_loss
 
     Returns:
       train_op: The Op for training.
@@ -607,9 +610,11 @@ def training(loss, learning_rate, exclude=None):
 #    train_op = optimizer.minimize(loss, global_step=global_step)
     with tf.variable_scope('control', reuse=True):
         global_step = tf.get_variable('global_step', dtype=tf.int32)
+    if optimizer is None:
+        optimizer = 'Adam'
     train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
-                                               'Adam',
+                                               optimizer,
                                                summaries=['loss', 'learning_rate',
                                                           'gradients',
                                                           'gradient_norm'],
