@@ -49,9 +49,15 @@ def weight_variable(shape):
       shape : [...] - desired shape of the weights
 
     """
+    # return tf.get_variable('weight', shape=shape,
+    #                        initializer=tf.truncated_normal_initializer(mean=0.0,
+    #                                                                    stddev=0.1))
+    # return tf.get_variable('weight', shape=shape,
+    #                        initializer=tf.contrib.layers.xavier_initializer(uniform=False))
+
     return tf.get_variable('weight', shape=shape,
-                           initializer=tf.truncated_normal_initializer(mean=0.0,
-                                                                       stddev=0.1))
+                           initializer=tf.initializers.he_normal())
+
 
 def bias_variable(shape):
     """Generate a tensor of bias variables of dimensions `shape`.
@@ -63,7 +69,7 @@ def bias_variable(shape):
 
     """
     return tf.get_variable('bias', shape=shape,
-                           initializer=tf.contrib.layers.xavier_initializer())
+                           initializer=tf.initializers.he_uniform())
 
 def _add_dense_linear_layer(input, n_outer_cells):
     """Build a single densely connected layer with no activation component
@@ -85,11 +91,15 @@ def _add_dense_linear_layer(input, n_outer_cells):
         #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
+        # weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
+        #                           initializer=tf.truncated_normal_initializer(mean=0.0,
+        #                                                                       stddev=wtStdv))
+        # biases = tf.get_variable('logit_b', shape=[n_outer_cells],
+        #                          initializer=tf.contrib.layers.xavier_initializer())
         weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
-                                  initializer=tf.truncated_normal_initializer(mean=0.0,
-                                                                              stddev=wtStdv))
+                                  initializer=tf.initializers.he_normal())
         biases = tf.get_variable('logit_b', shape=[n_outer_cells],
-                                 initializer=tf.contrib.layers.xavier_initializer())
+                                 initializer=tf.initializers.he_uniform())
         #print('input', input)
         shaped_input = tf.reshape(input, [batch_size, n_inner_cells])
         #print('shaped input: ', shaped_input)
@@ -613,10 +623,13 @@ def training(loss, learning_rate, exclude=None, optimizer=None):
         global_step = tf.get_variable('global_step', dtype=tf.int32)
     if optimizer is None:
         optimizer = 'Adam'
-    train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
+    train_these_vars = [v for v in tf.trainable_variables()
+                        if v not in exclude]
+    print('vars to be trained: %s' % [var.name for var in train_these_vars])
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
                                                optimizer,
-                                               summaries=['loss', 'learning_rate',
+                                               summaries=['loss',
+                                                          'learning_rate',
                                                           'gradients',
                                                           'gradient_norm'],
                                                variables=train_these_vars)

@@ -218,4 +218,3 @@ class SHTransformer(object):
             offset += blkSz
         return result
             
-            
