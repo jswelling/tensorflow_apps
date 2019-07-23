@@ -469,7 +469,7 @@ def inference(feature, pattern_str, **kwargs):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
         with tf.variable_scope('cnn') as scope:
-            layer_list = layers=[MAX_L//2, MAX_L]
+            layer_list = [MAX_L//2, MAX_L]
             layers = build_filter(feature, 'strip_layers', layers=layer_list)
 
             dense = build_filter(layers, 'outer_layer_cnn', layers=layer_list)
@@ -550,6 +550,7 @@ def binary_loss(logits, labels):
                                                         weights=1.0,
                                                         scope=scope
                                                         )
+        tf.summary.histogram('cross_entropy', cross_entropy)
     #now minize the above error
     #calculate the total mean of all the errors from all the nodes
     #cost=tf.reduce_mean(cross_entropy)
