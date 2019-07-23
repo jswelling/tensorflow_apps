@@ -501,6 +501,77 @@ def inference(feature, pattern_str, **kwargs):
             print('output: ', output)
             return output
 
+    elif pattern_str == 'two_layers_short_binary':
+        n_rows, n_cols = OUTERMOST_SPHERE_SHAPE
+        layer_list = [MAX_L//2, MAX_L]
+        n_layers = len(layer_list)
+        n_chan_0 = 1
+        n_chan_1 = 8
+        n_chan_2 = 16
+        num_neurons = 1024  # In the dense nonlinear layer
+        with tf.variable_scope('short_binary') as scope:
+            layers = build_filter(feature, 'strip_layers', layers=layer_list)
+
+            conv1 = tf.contrib.layers.conv3d(
+                inputs=layers, num_outputs=n_chan_1,
+                kernel_size=[n_layers, 5, 5],
+                stride = [n_layers, 1, 1],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv1")
+            print('conv1: ', conv1)
+            conv1 = tf.reshape(conv1, [-1, n_rows, n_cols, n_chan_1])
+            tf.summary.histogram('conv1', conv1)
+
+            pool1 = tf.contrib.layers.max_pool2d(
+                inputs=conv1,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool1")
+            print('pool1:', pool1)
+
+            conv2 = tf.contrib.layers.conv2d(
+                inputs=pool1,
+                num_outputs=n_chan_2,
+                kernel_size=[5, 5],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv2")
+            print('conv2: ', conv2)
+            tf.summary.histogram('conv2', conv2)
+
+            pool2 = tf.contrib.layers.max_pool2d(
+                inputs=conv2,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool2")
+            print('pool2: ', pool2)
+
+        pool2_dim = pool2.get_shape().as_list()
+        batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
+        num_units = pool2_height * pool2_width * pool2_filters
+
+        with tf.variable_scope("dense_binary") as scope:
+
+            # Flatten pool2 into [batch_size, h * w * channels]
+            pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                    name="pool2_flat")
+            print('pool2_flat:', pool2_flat)
+
+            weights = weight_variable([num_units, num_neurons])
+            biases  = bias_variable([num_neurons])
+
+            # dense : [batch_size, num_neurons]
+            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
+            print('dense: ', dense)
+            tf.summary.histogram('dense', dense)
+
+            logits = _add_dense_linear_layer(dense, 2)
+            tf.summary.histogram('binary_logits', logits)
+            return logits
+
     else:
         raise RuntimeError('Unknown inference pattern "{}"'.format(pattern_str))
 
