@@ -634,15 +634,13 @@ def binary_loss(logits, labels):
     """
     with tf.name_scope('binary_loss') as scope:
         labels = tf.stop_gradient(labels)
-        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
-                                                                   labels=labels)
-        tf.summary.histogram('cross_entropy', cross_entropy)
+        cost = tf.losses.softmax_cross_entropy(onehot_labels=labels,
+                                               logits=logits)
 
         # #calculate the total mean of all the errors from all the nodes
         # with tf.control_dependencies([tf.print('values: ', tf.concat([logits, labels, tf.round(tf.nn.softmax(logits)), 
         #                                                               tf.reshape(cross_entropy,[-1, 1])],1))]):
         #     cost=tf.reduce_mean(cross_entropy)
-        cost=tf.reduce_mean(cross_entropy)
 
     return cost
 
