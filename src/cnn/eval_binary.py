@@ -54,8 +54,8 @@ tf.app.flags.DEFINE_integer('shuffle_size', 8,
 tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
                             'Must divide evenly into the dataset sizes.')
 tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
-flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
-                     ' rotations to each data sample')
+tf.app.flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                            ' rotations to each data sample')
 
 
 def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predicted_op):
