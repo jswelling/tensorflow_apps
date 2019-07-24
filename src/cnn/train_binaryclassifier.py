@@ -66,6 +66,7 @@ flags.DEFINE_string('hold_constant', None,
 flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
+flags.DEFINE_string('optimizer', 'Adam', 'which optimizer (Adam or SGD)')
 
 def get_cpt_name(var):
     nm = var.name
@@ -162,7 +163,12 @@ def train():
     vars_in_snapshot = set(vars_in_snapshot)
     print('vars in snapshot: %s' % vars_in_snapshot)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=0.1)
+    if FLAGS.optimizer == 'Adam':
+        optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=0.1)
+    elif FLAGS.optimizer == 'SGD':
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=FLAGS.learning_rate)
+    else:
+        raise RuntimeError('Unimplemented optimizer %s was requested' % FLAGS.optimizer)
     train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant,
                                  optimizer=optimizer)
     
