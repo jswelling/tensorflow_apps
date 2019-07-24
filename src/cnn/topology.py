@@ -98,14 +98,17 @@ def _add_dense_linear_layer(input, n_outer_cells):
         #                          initializer=tf.contrib.layers.xavier_initializer())
         weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
                                   initializer=tf.initializers.he_normal())
+        tf.summary.histogram('logit_w', weights)
         biases = tf.get_variable('logit_b', shape=[n_outer_cells],
                                  initializer=tf.initializers.he_uniform())
-        #print('input', input)
+        tf.summary.histogram('logit_b', biases)
+        # print('input', input)
         shaped_input = tf.reshape(input, [batch_size, n_inner_cells])
-        #print('shaped input: ', shaped_input)
-        #print('weights: ', weights)
-        #print('biases: ', biases)
+        # print('shaped input: ', shaped_input)
+        # print('weights: ', weights)
+        # print('biases: ', biases)
         logits = tf.matmul(shaped_input, weights) + biases
+        # print('logits: ', logits)
     return logits
 
 
@@ -381,7 +384,7 @@ def build_filter(input, pattern_str, **kwargs):
     elif pattern_str == 'l2_norm':
         """
         input shape: [batch_size, nRows*nCols, nChan]  # last dim optional
-        output shape: [batch_size, nRows, nCols, nChan
+        output shape: [batch_size, nRows, nCols, nChan]
         
         """
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
@@ -512,6 +515,11 @@ def inference(feature, pattern_str, **kwargs):
         with tf.variable_scope('short_binary') as scope:
             layers = build_filter(feature, 'strip_layers', layers=layer_list)
 
+            layers = tf.nn.l2_normalize(tf.reshape(layers,
+                                                   [-1, n_layers*n_rows*n_cols]),
+                                        1)
+            layers = tf.reshape(layers, [-1, n_layers, n_rows, n_cols, 1])
+
             conv1 = tf.contrib.layers.conv3d(
                 inputs=layers, num_outputs=n_chan_1,
                 kernel_size=[n_layers, 5, 5],
@@ -626,39 +634,17 @@ def binary_loss(logits, labels):
     """
     with tf.name_scope('binary_loss') as scope:
         labels = tf.stop_gradient(labels)
-        cross_entropy = tf.losses.softmax_cross_entropy(logits=logits,
-                                                        onehot_labels=labels,
-                                                        weights=1.0,
-                                                        scope=scope
-                                                        )
+        cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
+                                                                   labels=labels)
         tf.summary.histogram('cross_entropy', cross_entropy)
-    #now minize the above error
-    #calculate the total mean of all the errors from all the nodes
-    #cost=tf.reduce_mean(cross_entropy)
 
-    #Now backpropagate to minimise the cost in the network.
+        # #calculate the total mean of all the errors from all the nodes
+        # with tf.control_dependencies([tf.print('values: ', tf.concat([logits, labels, tf.round(tf.nn.softmax(logits)), 
+        #                                                               tf.reshape(cross_entropy,[-1, 1])],1))]):
+        #     cost=tf.reduce_mean(cross_entropy)
+        cost=tf.reduce_mean(cross_entropy)
 
-#         batch_size = tf.shape(labels)[0]
-#         logits = tf.reshape(logits, [batch_size, -1])
-#         tf.summary.histogram(scope + 'logits', logits)
-#         labels = tf.reshape(labels, [batch_size, -1])
-#         softLogits = tf.nn.l2_normalize(logits, 1)
-#         tf.summary.histogram(scope + 'soft_logits', softLogits)
-# 
-#         diffSqr = tf.squared_difference(softLogits, labels)
-#         tf.summary.histogram(scope + 'squared_difference', diffSqr)
-#         loss = tf.reduce_sum(diffSqr, 1)
-#         tf.summary.histogram(scope + 'loss', loss)
-#         nRows, nCols = OUTERMOST_SPHERE_SHAPE
-#         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
-#         tf.summary.image(scope + 'logits',
-#                          tf.reshape(logitImg, [batch_size, nRows, nCols, 1]),
-#                          max_outputs=100)
-#         tf.summary.image(scope + 'labels',
-#                          tf.reshape(labels, [batch_size, nRows, nCols, 1]),
-#                          max_outputs=100)
-    #return cost
-    return cross_entropy
+    return cost
 
 
 def training(loss, learning_rate, exclude=None, optimizer=None):
