@@ -391,8 +391,9 @@ def build_filter(input, pattern_str, **kwargs):
             # dense : [batch_size, num_neurons]
             dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
-        
-        logits = _add_dense_linear_layer(dense, 2)
+
+        with tf.variable_scope("dense_linear") as scope:
+            logits = _add_dense_linear_layer(dense, 2)
         return logits
     
     elif pattern_str == 'l2_norm':
@@ -503,8 +504,8 @@ def inference(feature, pattern_str, **kwargs):
             print('dense: %s' % dense.get_shape().as_list())
             tf.summary.image(scope.name + 'dense', 
                              tf.reshape(dense, [-1, nRows, nCols, nChan]))
-            
-            logits = build_filter(dense, 'dense_linear')
+            with tf.variable_scope('dense_linear') as scope:
+                logits = build_filter(dense, 'dense_linear')
             print('logits: %s' % logits.get_shape().as_list())
             logits = build_filter(logits, 'l2_norm')
             print('logits: %s' % logits.get_shape().as_list())

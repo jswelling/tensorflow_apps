@@ -70,6 +70,8 @@ def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predi
     init_op = tf.local_variables_initializer()
     sess.run(init_op)
 
+    print('restoring from snapshot: %s'
+          % [var.name for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)])
     saver.restore(sess, FLAGS.starting_snapshot)
     global_step = FLAGS.starting_snapshot.split('/')[-1].split('-')[-1]
     # ckpt = tf.train.get_checkpoint_state(FLAGS.checkpoint_dir)
