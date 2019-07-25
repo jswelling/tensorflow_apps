@@ -39,7 +39,21 @@ from tensorflow.python.framework import dtypes
 import harmonics
 from constants import *
 
+flags = tf.app.flags
+FLAGS = flags.FLAGS
+
 OUTERMOST_SPHERE_N = OUTERMOST_SPHERE_SHAPE[0] * OUTERMOST_SPHERE_SHAPE[1]
+
+
+def layer_list_from_flags():
+    """Extract a list of layers from the command line flag"""
+    layer_list = FLAGS.layers.split(',')
+    layer_list = [int(elt.strip()) for elt in layer_list]
+    assert all([elt > 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
+    print('layer_list: %s'%layer_list)
+    return layer_list
+    
+
 
 def weight_variable(shape):
     """Generate a tensor of weight variables of dimensions `shape`.
@@ -482,7 +496,7 @@ def inference(feature, pattern_str, **kwargs):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
         with tf.variable_scope('cnn') as scope:
-            layer_list = [MAX_L//2, MAX_L]
+            layer_list = layer_list_from_flags()
             layers = build_filter(feature, 'strip_layers', layers=layer_list)
 
             dense = build_filter(layers, 'outer_layer_cnn', layers=layer_list)
@@ -506,7 +520,7 @@ def inference(feature, pattern_str, **kwargs):
 
     elif pattern_str == 'two_layers_short_binary':
         n_rows, n_cols = OUTERMOST_SPHERE_SHAPE
-        layer_list = [MAX_L//2, MAX_L]
+        layer_list = layer_list_from_flags()
         n_layers = len(layer_list)
         n_chan_0 = 1
         n_chan_1 = 8

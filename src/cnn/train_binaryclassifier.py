@@ -67,6 +67,9 @@ flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts 
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
 flags.DEFINE_string('optimizer', 'Adam', 'which optimizer (Adam or SGD)')
+flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                   'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
+
 
 def get_cpt_name(var):
     nm = var.name
