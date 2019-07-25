@@ -56,6 +56,8 @@ tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
 tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
 tf.app.flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                             ' rotations to each data sample')
+tf.app.flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                           'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
 
 
 def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predicted_op):
