@@ -102,7 +102,7 @@ def _add_dense_linear_layer(input, n_outer_cells):
         n_inner_cells = 1
         for dim in input_shape[1:]:
             n_inner_cells *= dim
-        #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
+        print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
         # weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
@@ -588,6 +588,33 @@ def inference(feature, pattern_str, **kwargs):
 
             # dense : [batch_size, num_neurons]
             dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
+            print('dense: ', dense)
+            tf.summary.histogram('dense', dense)
+
+            logits = _add_dense_linear_layer(dense, 2)
+            tf.summary.histogram('binary_logits', logits)
+            return logits
+
+    elif pattern_str == 'lnet':
+        n_chan = 8
+        l_min = 7
+        l_stride = 2
+        num_neurons = 1024  # in dense non-linear layer
+        
+        with tf.variable_scope('lnet') as scope:
+            feature_harmonics = harmonics.lnet(feature, MAX_L, 7, 2, n_chan)
+            tf.summary.histogram('lnet', feature_harmonics)
+
+        num_units = (2 * l_min + 1) * n_chan
+        
+        with tf.variable_scope("dense_binary") as scope:
+            hrm_flat = tf.reshape(feature_harmonics, [-1, num_units],
+                                  name="feature_harmonics_flat")
+
+            # dense : [batch_size, num_neurons]
+            weights = weight_variable([num_units, num_neurons])
+            biases = bias_variable([num_neurons])
+            dense = tf.nn.relu(tf.matmul(hrm_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
             tf.summary.histogram('dense', dense)
 

@@ -47,7 +47,7 @@ def prep_rotations(edgeLen, maxL, rMax):
     for _, _, l in fullChain:
         nodes, weights = psh.SHGLQ(l)
         lDict[l] = (nodes, weights, psh.djpi2(l))
-    print('##### Completed prep_rotations')
+    #print('##### Completed prep_rotations')
     return fullChain, lDict
 
 def dims_from_l(l):
@@ -180,6 +180,49 @@ def extract_and_pair(images, layer_list):
     rslt = tf.reshape(rslt, [-1, n_layers, dim1, dim2, 1])
     tf.summary.image('scaledlayers', tf.reshape(rslt, [-1, n_layers*dim1, dim2, 1]), max_outputs=100)
     return rslt
+
+
+def lnet_single(images, full_chain, l_dict, l_weights, lmix_weights, parms):
+    l_max, l_min, l_stride, n_chan = parms
+    rslt = np.ones((2*l_min + 1, n_chan), dtype=np.float32)
+    print('lnet_single: rslt= %s' % rslt)
+    return rslt
+
+
+def lnet_op(images, lmix_weights, l_weights, parms):
+    l_max, l_min, l_stride, n_chan = parms
+    edge_len = 2 * RAD_PIXELS + 1
+    r_max = 0.5*float(edge_len + 1)
+    full_chain, l_dict = prep_rotations(edge_len, MAX_L, r_max)
+    print('images.shape is ', images.shape)
+    rslt = np.apply_along_axis(lnet_single, 1, images,
+                               full_chain=full_chain, l_dict=l_dict,
+                               l_weights=l_weights, lmix_weights=lmix_weights,
+                               parms=parms)
+    blk_sz, fields, channels  = rslt.shape
+    print('rslt.shape is ', rslt.shape)
+    return tf.convert_to_tensor(rslt.reshape((blk_sz, fields, channels)).astype(np.float32))
+    
+
+def lnet(images, l_max, l_min, l_stride, n_chan):
+    """
+    Implement the lnet algorithm
+    """
+    # All params must be float tensors, so we have to convert
+    parms = tf.constant([float(l_max), float(l_min), float(l_stride), float(n_chan)])
+    l_weights = tf.get_variable('lweight',
+                                shape=[(l_max - l_min + 1)//l_stride, n_chan],
+                                initializer=tf.initializers.he_uniform())
+    lmix_weights = tf.get_variable('lmixweight', shape=[l_max],
+                                   initializer=tf.initializers.he_uniform())
+    rslt = tf.py_function(lnet_op,
+                          [images, lmix_weights, l_weights, parms],
+                          dtypes.float32, name='lnet')
+    print('tf side: rslt:', rslt)
+    rslt = tf.reshape(rslt, [-1, 2 * l_min + 1, n_chan])
+    return rslt
+    
+    
 
                                                         
     
