@@ -29,35 +29,40 @@ import topology
 import harmonics
 from constants import *
 
-FLAGS = tf.app.flags.FLAGS
+flags = tf.app.flags
+FLAGS = flags.FLAGS
 
-tf.app.flags.DEFINE_string('network_pattern', 'outer_layer_cnn',
-                           'A network pattern recognized in topology.py')
-tf.app.flags.DEFINE_string('log_dir', '/tmp/eval',
-                           """Directory where to write event logs.""")
-tf.app.flags.DEFINE_string('data_dir', '',
-                           """Directory for evaluation data""")
-tf.app.flags.DEFINE_string('starting_snapshot', None,
+flags.DEFINE_string('network_pattern', 'outer_layer_cnn',
+                    'A network pattern recognized in topology.py')
+flags.DEFINE_string('log_dir', '/tmp/eval',
+                    """Directory where to write event logs.""")
+flags.DEFINE_string('data_dir', '',
+                    """Directory for evaluation data""")
+flags.DEFINE_string('starting_snapshot', None,
                     'Snapshot to evaluate')
-tf.app.flags.DEFINE_integer('eval_interval_secs', 60 * 5,
-                            """How often to run the eval.""")
-tf.app.flags.DEFINE_integer('num_examples', 10000,
-                            """Number of examples to run.""")
-tf.app.flags.DEFINE_boolean('run_once', True,
-                            """Whether to run eval only once.""")
-tf.app.flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
-                            'for unit testing.')
-tf.app.flags.DEFINE_integer('read_threads', 2,
-                            'Number of threads reading input files')
-tf.app.flags.DEFINE_integer('shuffle_size', 8,
-                            'Number of input data pairs to shuffle (min_dequeue)')
-tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
-                            'Must divide evenly into the dataset sizes.')
-tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
-tf.app.flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
-                            ' rotations to each data sample')
-tf.app.flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
-                           'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
+flags.DEFINE_integer('eval_interval_secs', 60 * 5,
+                     """How often to run the eval.""")
+flags.DEFINE_integer('num_examples', 10000,
+                     """Number of examples to run.""")
+flags.DEFINE_boolean('run_once', True,
+                     """Whether to run eval only once.""")
+flags.DEFINE_boolean('fake_data', False, 'If true, uses fake data '
+                     'for unit testing.')
+flags.DEFINE_integer('read_threads', 2,
+                     'Number of threads reading input files')
+flags.DEFINE_integer('shuffle_size', 8,
+                     'Number of input data pairs to shuffle (min_dequeue)')
+flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
+                     'Must divide evenly into the dataset sizes.')
+flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
+flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                     ' rotations to each data sample')
+flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                    'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
+flags.DEFINE_float('drop1', 1.0, 'Fraction to keep in first drop-out layer. Default of'
+                   ' 1.0 means no drop-out layer in this position')
+flags.DEFINE_float('drop2', 1.0, 'Fraction to keep in second drop-out layer. Default of'
+                   ' 1.0 means no drop-out layer in this position')
 
 
 def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predicted_op):

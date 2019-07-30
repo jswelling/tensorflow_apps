@@ -281,6 +281,9 @@ def build_filter(input, pattern_str, **kwargs):
             scope="pool1")
         print('pool1:', pool1)
 
+        if FLAGS.drop1 < 1.0:
+            pool1 = tf.nn.dropout(pool1, keep_prob=FLAGS.drop1)
+
         # Convolutional layer #2
         # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
         conv2 = tf.contrib.layers.conv2d(
@@ -301,6 +304,9 @@ def build_filter(input, pattern_str, **kwargs):
             padding="SAME",
             scope="pool2")
         print('pool2: ', pool2)
+
+        if FLAGS.drop2 < 1.0:
+            pool2 = tf.nn.dropout(pool2, keep_prob=FLAGS.drop2)
 
         pool2_dim = pool2.get_shape().as_list()
         batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim

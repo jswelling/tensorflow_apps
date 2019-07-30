@@ -16,7 +16,9 @@ python ./eval_binary.py \
 	--num_examples 9 \
 	--file_list /home/welling/data/fish_cubes_train_gp0.txt	\
 	--verbose=False \
-	--starting_snapshot /home/welling/sshfshook/logs/cnn_train_6045675cnn-4404 \
-	--random_rotation
+	--starting_snapshot ${HOME}/git/tensorflow_apps/log/train_local_logcnn-8 \
+	--random_rotation \
+	--drop1 0.9 \
+	--drop2 0.9
 
 								
