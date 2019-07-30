@@ -596,16 +596,15 @@ def inference(feature, pattern_str, **kwargs):
             return logits
 
     elif pattern_str == 'lnet':
-        n_chan = 8
+        n_chan = 4
         l_min = 7
-        l_stride = 2
         num_neurons = 1024  # in dense non-linear layer
         
         with tf.variable_scope('lnet') as scope:
-            feature_harmonics = harmonics.lnet(feature, MAX_L, 7, 2, n_chan)
+            feature_harmonics = harmonics.lnet(feature, MAX_L, l_min, n_chan)
             tf.summary.histogram('lnet', feature_harmonics)
 
-        num_units = (2 * l_min + 1) * n_chan
+        num_units = 2 * (l_min + 1) * (l_min + 1) * n_chan
         
         with tf.variable_scope("dense_binary") as scope:
             hrm_flat = tf.reshape(feature_harmonics, [-1, num_units],
