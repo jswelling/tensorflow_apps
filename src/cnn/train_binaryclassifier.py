@@ -67,6 +67,13 @@ flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts 
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
 flags.DEFINE_string('optimizer', 'Adam', 'which optimizer (Adam or SGD)')
+flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                   'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
+flags.DEFINE_float('drop1', 1.0, 'Fraction to keep in first drop-out layer. Default of'
+                   '1.0 means no drop-out layer in this position')
+flags.DEFINE_float('drop2', 1.0, 'Fraction to keep in second drop-out layer. Default of'
+                   '1.0 means no drop-out layer in this position')
+
 
 def get_cpt_name(var):
     nm = var.name

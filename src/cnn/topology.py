@@ -39,7 +39,21 @@ from tensorflow.python.framework import dtypes
 import harmonics
 from constants import *
 
+flags = tf.app.flags
+FLAGS = flags.FLAGS
+
 OUTERMOST_SPHERE_N = OUTERMOST_SPHERE_SHAPE[0] * OUTERMOST_SPHERE_SHAPE[1]
+
+
+def layer_list_from_flags():
+    """Extract a list of layers from the command line flag"""
+    layer_list = FLAGS.layers.split(',')
+    layer_list = [int(elt.strip()) for elt in layer_list]
+    assert all([elt > 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
+    print('layer_list: %s'%layer_list)
+    return layer_list
+    
+
 
 def weight_variable(shape):
     """Generate a tensor of weight variables of dimensions `shape`.
@@ -88,7 +102,7 @@ def _add_dense_linear_layer(input, n_outer_cells):
         n_inner_cells = 1
         for dim in input_shape[1:]:
             n_inner_cells *= dim
-        #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
+        print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
         # weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
@@ -267,6 +281,9 @@ def build_filter(input, pattern_str, **kwargs):
             scope="pool1")
         print('pool1:', pool1)
 
+        if FLAGS.drop1 < 1.0:
+            pool1 = tf.nn.dropout(pool1, keep_prob=FLAGS.drop1)
+
         # Convolutional layer #2
         # conv2 : [batch_size, ceil(nRows / 2), ceil(nCols / 2), 8]
         conv2 = tf.contrib.layers.conv2d(
@@ -287,6 +304,9 @@ def build_filter(input, pattern_str, **kwargs):
             padding="SAME",
             scope="pool2")
         print('pool2: ', pool2)
+
+        if FLAGS.drop2 < 1.0:
+            pool2 = tf.nn.dropout(pool2, keep_prob=FLAGS.drop2)
 
         pool2_dim = pool2.get_shape().as_list()
         batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
@@ -377,8 +397,9 @@ def build_filter(input, pattern_str, **kwargs):
             # dense : [batch_size, num_neurons]
             dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
-        
-        logits = _add_dense_linear_layer(dense, 2)
+
+        with tf.variable_scope("dense_linear") as scope:
+            logits = _add_dense_linear_layer(dense, 2)
         return logits
     
     elif pattern_str == 'l2_norm':
@@ -482,15 +503,15 @@ def inference(feature, pattern_str, **kwargs):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
         with tf.variable_scope('cnn') as scope:
-            layer_list = [MAX_L//2, MAX_L]
+            layer_list = layer_list_from_flags()
             layers = build_filter(feature, 'strip_layers', layers=layer_list)
 
             dense = build_filter(layers, 'outer_layer_cnn', layers=layer_list)
             print('dense: %s' % dense.get_shape().as_list())
             tf.summary.image(scope.name + 'dense', 
                              tf.reshape(dense, [-1, nRows, nCols, nChan]))
-            
-            logits = build_filter(dense, 'dense_linear')
+            with tf.variable_scope('dense_linear') as scope:
+                logits = build_filter(dense, 'dense_linear')
             print('logits: %s' % logits.get_shape().as_list())
             logits = build_filter(logits, 'l2_norm')
             print('logits: %s' % logits.get_shape().as_list())
@@ -506,7 +527,7 @@ def inference(feature, pattern_str, **kwargs):
 
     elif pattern_str == 'two_layers_short_binary':
         n_rows, n_cols = OUTERMOST_SPHERE_SHAPE
-        layer_list = [MAX_L//2, MAX_L]
+        layer_list = layer_list_from_flags()
         n_layers = len(layer_list)
         n_chan_0 = 1
         n_chan_1 = 8
@@ -573,6 +594,32 @@ def inference(feature, pattern_str, **kwargs):
 
             # dense : [batch_size, num_neurons]
             dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
+            print('dense: ', dense)
+            tf.summary.histogram('dense', dense)
+
+            logits = _add_dense_linear_layer(dense, 2)
+            tf.summary.histogram('binary_logits', logits)
+            return logits
+
+    elif pattern_str == 'lnet':
+        n_chan = 4
+        l_min = 7
+        num_neurons = 1024  # in dense non-linear layer
+        
+        with tf.variable_scope('lnet') as scope:
+            feature_harmonics = harmonics.lnet(feature, MAX_L, l_min, n_chan)
+            tf.summary.histogram('lnet', feature_harmonics)
+
+        num_units = 2 * (l_min + 1) * (l_min + 1) * n_chan
+        
+        with tf.variable_scope("dense_binary") as scope:
+            hrm_flat = tf.reshape(feature_harmonics, [-1, num_units],
+                                  name="feature_harmonics_flat")
+
+            # dense : [batch_size, num_neurons]
+            weights = weight_variable([num_units, num_neurons])
+            biases = bias_variable([num_neurons])
+            dense = tf.nn.relu(tf.matmul(hrm_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
             tf.summary.histogram('dense', dense)
 
