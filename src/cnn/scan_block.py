@@ -10,11 +10,11 @@ import time
 import numpy as np
 import tensorflow as tf
 
-import input_data_from_list as input_data
 from input_data_from_block import get_loc_iterator, get_subblock_edge_len, get_full_block
 import topology
 import harmonics
 from constants import *
+from brainroller.shtransform import SHTransformer
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -45,7 +45,7 @@ flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 
 
-def scan(iterator, saver, label_op, loss_op, accuracy_op, predicted_op):
+def scan(iterator, saver, predicted_op):
     """Scan through the block locations specified by the iterator
 
     Args:
@@ -62,10 +62,10 @@ def scan(iterator, saver, label_op, loss_op, accuracy_op, predicted_op):
         saver.restore(sess, FLAGS.starting_snapshot)
         global_step = FLAGS.starting_snapshot.split('/')[-1].split('-')[-1]
         try:
-            sess.run(iter.initializer, feed_dict={})
+            sess.run(iterator.initializer, feed_dict={})
             step = 0
             while True:
-                print(sess.run([rslt])[0].shape)
+                print(sess.run([predicted_op]))
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
@@ -128,14 +128,17 @@ def scan(iterator, saver, label_op, loss_op, accuracy_op, predicted_op):
 
 
 def get_subblock_op(loc_iterator, blk_sz, full_block):
-    blk_shape = tf.constant([blk_sz, blk_sz, blk_sz], dtype=tf.int64)
+    blk_shape = tf.constant([blk_sz, blk_sz, blk_sz], dtype=tf.int32)
     x_off, y_off, z_off = loc_iterator.get_next()
     offset_mtx = tf.transpose(tf.reshape(tf.concat([x_off, y_off, z_off], 0), [3, -1]))
-    rslt = tf.map_fn(lambda offset: tf.slice(tf_fish_stick, offset, blk_shape), offset_mtx)
+    print('full_block: %s' % full_block)
+    rslt = tf.map_fn(lambda offset: tf.slice(full_block, offset, blk_shape), offset_mtx,
+                     dtype=tf.dtypes.int64)
+    print('rslt: %s' % rslt)
     return rslt
 
 
-def sample_single(double_cube, transformer, sig):
+def sample_single(double_cube, transformer, edge_len, sig):
     return transformer.calcBallOfSamples(double_cube.reshape((edge_len, edge_len, edge_len)),
                                          sig=sig)
 
@@ -145,7 +148,8 @@ def sample_op(double_cube_mtx, edge_len):
     assert all([len == edge_len for len in double_cube_mtx.shape[1:]]), 'input is not appropriate cubes'
     batch_sz = double_cube_mtx.shape[0]
     double_cube_mtx = tf.reshape(double_cube_mtx, [batch_sz, edge_len*edge_len*edge_len])
-    rslt = np.apply_along_axis(sample_single, 1, double_cube_mtx, transformer, sig=(1.0, -1.0, 1.0))
+    rslt = np.apply_along_axis(sample_single, 1, double_cube_mtx, transformer, 
+                               edge_len=edge_len, sig=(1.0, -1.0, 1.0))
     return tf.convert_to_tensor(rslt.reshape((batch_sz, -1)))
     
 
@@ -167,10 +171,11 @@ def evaluate():
     seed = tf.placeholder(tf.int64, shape=())
     
     # Generate placeholders for the images and labels.
-    loc_iterator = get_loc_iter(FLAGS.data_dir, FLAGS.batch_size)
+    loc_iterator = get_loc_iterator(FLAGS.data_dir, FLAGS.batch_size)
 
     edge_len = get_subblock_edge_len()
     subblock = get_subblock_op(loc_iterator, edge_len, get_full_block())
+    subblock = tf.dtypes.cast(subblock, tf.dtypes.float64)
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
 
@@ -178,13 +183,11 @@ def evaluate():
     logits = topology.inference(images, FLAGS.network_pattern)
     
     # Set up some prediction statistics
-    predicted = tf.round(tf.nn.sigmoid(logits))
-    correct_pred = tf.equal(predicted, labels)
-    accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+    predicted_op = tf.round(tf.nn.sigmoid(logits))
 
     saver = tf.train.Saver()
 
-    scan(iterator, saver, label_op, loss_op, accuracy_op, predicted_op)
+    scan(loc_iterator, saver, predicted_op)
 
 
 def main(argv=None):  # pylint: disable=unused-argument

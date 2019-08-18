@@ -20,8 +20,6 @@ from constants import *
 #module-specific command line flags
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_string('file_list', None,
-                   'A filename containing a list of .yaml files to use for training')
 
 LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
@@ -32,9 +30,9 @@ def generate_offsets():
             for i in range(7, 14):
                 yield (i, j, k)
 
-def get_loc_iter(data_dir, batch_size):
+def get_loc_iterator(data_dir, batch_size):
     ds = tf.data.Dataset.from_generator(generate_offsets, (tf.int32, tf.int32, tf.int32))
-    return ds.batch(batch_sz).make_initializable_iterator()
+    return ds.batch(batch_size).make_initializable_iterator()
 
 
 def get_subblock_edge_len():
