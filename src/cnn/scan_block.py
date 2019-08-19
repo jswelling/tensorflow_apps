@@ -15,6 +15,7 @@ import topology
 import harmonics
 from constants import *
 from brainroller.shtransform import SHTransformer
+from util import parse_int_list
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -66,6 +67,9 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
     """
     
     epoch = 0
+    scan_sz = parse__list(FLAGS.scan_size, 3, low_bound=[1, 1, 1])
+    x_base, y_base, z_base = parse_int_list(FLAGS.scan_start, 3, low_bound=[0, 0, 0])
+    out_blk = np.zeros(scan_sz, dtype=np.uint8)
     with tf.Session() as sess:
         init_op = tf.local_variables_initializer()
         sess.run(init_op)
@@ -78,10 +82,17 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
             sess.run(loc_iterator.initializer, feed_dict={})
             step = 0
             while True:
+                xV, yV, zV, predV = sess.run([x_off, y_off, z_off, pred_op])
+                pred_byte = np.where((predV[:, 1] == 1), 255, 0)
+                if any(pred_bool):
+                    print('HIT!!!')
+                out_blk[xV - x_base, yV - y_base, zV - z_base] = pred_byte
                 print(sess.run([x_off, y_off, z_off, predicted_op]))
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
+    out_blk.tofile('scanned_%d_%d_%d_%d_%d_%d.npy' % (x_base, y_base, z_base,
+                                                      scan_sz[0], scan_sz[1], scan_sz[2]))
 
 #     total_loss = 0.0
 #     n_true_pos = 0

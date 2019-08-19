@@ -10,9 +10,9 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 import numpy as np
-from math import ceil
-
+from util import parse_int_list
 from constants import *
+
 #tf.enable_eager_execution()
 
 #AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -25,12 +25,10 @@ LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
 
 def generate_offsets():
-    x_start, y_start, z_start = [int(k.strip())
-                                 for k in FLAGS.scan_start.split(',')]
-    assert x_start >= 0 and y_start >= 0 and z_start >= 0, 'bad scan start'
-    x_wid, y_wid, z_wid = [int(k.strip())
-                           for k in FLAGS.scan_size.split(',')]
-    assert x_wid > 0 and y_wid > 0 and z_wid > 0, 'bad scan size'
+    x_start, y_start, z_start = parse_int_list(FLAGS.scan_start, 3,
+                                               low_bound=[0, 0, 0])
+    x_wid, y_wid, z_wid = parse_int_list(FLAGS.scan_size, 3,
+                                         low_bound=[1, 1, 1])
     for k in range(z_start, z_start+z_wid):
         for j in range(y_start, y_start+y_wid):
             for i in range(x_start, x_start+x_wid):
