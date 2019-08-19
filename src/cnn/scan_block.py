@@ -41,16 +41,28 @@ flags.DEFINE_float('drop1', 1.0, 'Fraction to keep in first drop-out layer. Defa
 flags.DEFINE_float('drop2', 1.0, 'Fraction to keep in second drop-out layer. Default of'
                    ' 1.0 means no drop-out layer in this position')
 flags.DEFINE_string('data_block_path', None, 'full path to the data block')
+flags.DEFINE_string('data_block_dims', None, 
+                    '3 comma-separated ints for '
+                    'x, y, and z dimensions of the data block')
+flags.DEFINE_integer('data_block_offset', 0, 'offset in bytes to start reading the data block file')
+flags.DEFINE_string('scan_start', None,
+                    '3 comma-separated ints for'
+                    ' x, y, and z location of the start of the scan')
+flags.DEFINE_string('scan_size', None,
+                    '3 comma-separated ints for the '
+                    'x, y, and z region size to scan')
 flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 
 
-def scan(iterator, saver, predicted_op):
+def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
     """Scan through the block locations specified by the iterator
 
     Args:
-        saver: Saver.
-        loss_op: Loss op.
+      saver: Saver.
+      x_off, y_off, z_off: ops giving lower left front corner of sub-cube
+      predicted_op: op giving prediction for sub-cube
+
     """
     
     epoch = 0
@@ -61,11 +73,12 @@ def scan(iterator, saver, predicted_op):
               % [var.name for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)])
         saver.restore(sess, FLAGS.starting_snapshot)
         global_step = FLAGS.starting_snapshot.split('/')[-1].split('-')[-1]
+        
         try:
-            sess.run(iterator.initializer, feed_dict={})
+            sess.run(loc_iterator.initializer, feed_dict={})
             step = 0
             while True:
-                print(sess.run([predicted_op]))
+                print(sess.run([x_off, y_off, z_off, predicted_op]))
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
@@ -127,13 +140,12 @@ def scan(iterator, saver, predicted_op):
 #     print('%s: false negative @ 1 = %d' % (datetime.now(), n_false_neg))
 
 
-def get_subblock_op(loc_iterator, blk_sz, full_block):
+def get_subblock_op(x_off, y_off, z_off, blk_sz, full_block):
     blk_shape = tf.constant([blk_sz, blk_sz, blk_sz], dtype=tf.int32)
-    x_off, y_off, z_off = loc_iterator.get_next()
     offset_mtx = tf.transpose(tf.reshape(tf.concat([x_off, y_off, z_off], 0), [3, -1]))
     print('full_block: %s' % full_block)
     rslt = tf.map_fn(lambda offset: tf.slice(full_block, offset, blk_shape), offset_mtx,
-                     dtype=tf.dtypes.int64)
+                     dtype=tf.dtypes.uint8)
     print('rslt: %s' % rslt)
     return rslt
 
@@ -174,7 +186,8 @@ def evaluate():
     loc_iterator = get_loc_iterator(FLAGS.data_dir, FLAGS.batch_size)
 
     edge_len = get_subblock_edge_len()
-    subblock = get_subblock_op(loc_iterator, edge_len, get_full_block())
+    x_off, y_off, z_off = loc_iterator.get_next()
+    subblock = get_subblock_op(x_off, y_off, z_off, edge_len, get_full_block())
     subblock = tf.dtypes.cast(subblock, tf.dtypes.float64)
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
@@ -187,7 +200,7 @@ def evaluate():
 
     saver = tf.train.Saver()
 
-    scan(loc_iterator, saver, predicted_op)
+    scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op)
 
 
 def main(argv=None):  # pylint: disable=unused-argument

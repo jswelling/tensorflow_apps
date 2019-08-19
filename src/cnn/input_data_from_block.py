@@ -25,13 +25,20 @@ LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
 
 def generate_offsets():
-    for k in range(3,10):
-        for j in range(5, 12):
-            for i in range(7, 14):
+    x_start, y_start, z_start = [int(k.strip())
+                                 for k in FLAGS.scan_start.split(',')]
+    assert x_start >= 0 and y_start >= 0 and z_start >= 0, 'bad scan start'
+    x_wid, y_wid, z_wid = [int(k.strip())
+                           for k in FLAGS.scan_size.split(',')]
+    assert x_wid > 0 and y_wid > 0 and z_wid > 0, 'bad scan size'
+    for k in range(z_start, z_start+z_wid):
+        for j in range(y_start, y_start+y_wid):
+            for i in range(x_start, x_start+x_wid):
                 yield (i, j, k)
 
 def get_loc_iterator(data_dir, batch_size):
-    ds = tf.data.Dataset.from_generator(generate_offsets, (tf.int32, tf.int32, tf.int32))
+    ds = tf.data.Dataset.from_generator(generate_offsets,
+                                        (tf.int32, tf.int32, tf.int32))
     return ds.batch(batch_size).make_initializable_iterator()
 
 
@@ -46,19 +53,35 @@ def get_full_block():
     """
     Return an op (usually a tf.constant) giving the full input data block
     """
-    # Make some data
-    fish_xsz = 100
-    fish_ysz = 101
-    fish_zsz = 102
-    fish_stick = np.zeros([fish_xsz, fish_ysz, fish_zsz], dtype=np.int)
-    for k in range(fish_zsz):
-        for j in range(fish_ysz):
-            for i in range(fish_xsz):
-                fish_stick[i, j, k] = i + 1000 * j + 1000000 * k
-    fish_stick_flat = fish_stick.flatten('F')
-    tf_fish_stick = tf.constant(fish_stick_flat, shape=[fish_zsz, fish_ysz, fish_xsz])
+    # # Make some data
+    # fish_xsz = 100
+    # fish_ysz = 101
+    # fish_zsz = 102
+    # fish_stick = np.zeros([fish_xsz, fish_ysz, fish_zsz], dtype=np.int)
+    # for k in range(fish_zsz):
+    #     for j in range(fish_ysz):
+    #         for i in range(fish_xsz):
+    #             fish_stick[i, j, k] = i + 1000 * j + 1000000 * k
+    # fish_stick_flat = fish_stick.flatten('F')
+    assert FLAGS.data_block_path is not None, '--data_block_path is missing'
+    assert FLAGS.data_block_dims is not None, '--data_block_dims is missing'
+    fish_xsz, fish_ysz, fish_zsz = [int(k.strip()) 
+                                    for k in FLAGS.data_block_dims.split(',')]
+    assert fish_xsz > 0 and fish_ysz > 0 and fish_zsz > 0, 'bad block volume'
+    print('data_block_dims: %d %d %d' % (fish_xsz, fish_ysz, fish_zsz))
+    print('reading from <%s>' % FLAGS.data_block_path)
+    with open(FLAGS.data_block_path, 'rb') as f:
+        f.seek(FLAGS.data_block_offset)
+        fish_stick_flat = np.fromfile(f, count=fish_xsz*fish_ysz*fish_zsz,
+                                      dtype=np.uint8)
+    print('fish_stick_flat: %s' % fish_stick_flat)
+    tf_fish_stick = tf.constant(fish_stick_flat, dtypes.uint8, 
+                                shape=[fish_zsz, fish_ysz, fish_xsz])
     print('Created fish stick constant: %s' % tf_fish_stick)
     return tf_fish_stick
+
+
+
 
 
 def data_fnames_from_yaml_fname(yaml_path):
