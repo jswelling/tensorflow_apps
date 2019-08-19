@@ -19,9 +19,9 @@ def parse_int_list(in_str, num_vals, low_bound=None, high_bound=None):
     """
     vL = [int(elt.strip()) for elt in in_str.split(',')]
     assert len(vL) == num_vals, 'Wrong number of values in %s' % in_str
-    if lower_bounds is not None:
+    if low_bound is not None:
         assert [v >= b for v, b in zip(vL, low_bound)], 'invalid low value found in %s' % in_str
-    if upper_bounds is not None:
+    if high_bound is not None:
         assert [v <= b for v, b in zip(vL, high_bound)], 'invalid high value found in %s' % in_str
     return vL
 
