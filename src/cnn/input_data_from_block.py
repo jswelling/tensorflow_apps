@@ -47,7 +47,7 @@ def get_subblock_edge_len():
     return 2 * RAD_PIXELS + 1
 
 
-def get_full_block():
+def get_full_block(data_block_offset):
     """
     Return an op (usually a tf.constant) giving the full input data block
     """
@@ -69,7 +69,7 @@ def get_full_block():
     print('data_block_dims: %d %d %d' % (fish_xsz, fish_ysz, fish_zsz))
     print('reading from <%s>' % FLAGS.data_block_path)
     with open(FLAGS.data_block_path, 'rb') as f:
-        f.seek(FLAGS.data_block_offset)
+        f.seek(data_block_offset)
         fish_stick_flat = np.fromfile(f, count=fish_xsz*fish_ysz*fish_zsz,
                                       dtype=np.uint8)
     print('fish_stick_flat: %s' % fish_stick_flat)

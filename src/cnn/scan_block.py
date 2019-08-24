@@ -91,8 +91,7 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
-    out_blk.tofile('scanned_%d_%d_%d_%d_%d_%d.npy' % (x_base, y_base, z_base,
-                                                      scan_sz[0], scan_sz[1], scan_sz[2]))
+    return (x_base, y_base, z_base), out_blk
 
 #     total_loss = 0.0
 #     n_true_pos = 0
@@ -161,31 +160,49 @@ def get_subblock_op(x_off, y_off, z_off, blk_sz, full_block):
     return rslt
 
 
-def sample_single(double_cube, transformer, edge_len, sig):
-    return transformer.calcBallOfSamples(double_cube.reshape((edge_len, edge_len, edge_len)),
-                                         sig=sig)
+# def sample_single(double_cube, transformer, edge_len, sig):
+#     return transformer.calcBallOfSamples(double_cube.reshape((edge_len, edge_len, edge_len)),
+#                                          sig=sig)
 
 
-def sample_op(double_cube_mtx, edge_len):
-    transformer = SHTransformer(edge_len, MAX_L)
-    assert all([len == edge_len for len in double_cube_mtx.shape[1:]]), 'input is not appropriate cubes'
-    batch_sz = double_cube_mtx.shape[0]
-    double_cube_mtx = tf.reshape(double_cube_mtx, [batch_sz, edge_len*edge_len*edge_len])
-    rslt = np.apply_along_axis(sample_single, 1, double_cube_mtx, transformer, 
-                               edge_len=edge_len, sig=(1.0, -1.0, 1.0))
-    return tf.convert_to_tensor(rslt.reshape((batch_sz, -1)))
+# def sample_op(double_cube_mtx, edge_len):
+#     transformer = SHTransformer(edge_len, MAX_L)
+#     assert all([len == edge_len for len in double_cube_mtx.shape[1:]]), 'input is not appropriate cubes'
+#     batch_sz = double_cube_mtx.shape[0]
+#     double_cube_mtx = tf.reshape(double_cube_mtx, [batch_sz, edge_len*edge_len*edge_len])
+#     rslt = np.apply_along_axis(sample_single, 1, double_cube_mtx, transformer, 
+#                                edge_len=edge_len, sig=(1.0, -1.0, 1.0))
+#     return tf.convert_to_tensor(rslt.reshape((batch_sz, -1)))
     
+
+# def collect_ball_samples(double_cube_mtx, edge_len, read_threads):
+#     """
+#     Call python functions to interpolate samples from within the data subblocks.
+    
+#     data_cub_mtx dims: [batch_sz, edge_len, edge_len, edge_len]
+#     """
+#     rslt = tf.py_function(lambda x: sample_op(x, edge_len), [double_cube_mtx],
+#                           tf.dtypes.float64, name='collect_ball_samples')
+#     return rslt
 
 def collect_ball_samples(double_cube_mtx, edge_len, read_threads):
-    """
-    Call python functions to interpolate samples from within the data subblocks.
-    
-    data_cub_mtx dims: [batch_sz, edge_len, edge_len, edge_len]
-    """
-    rslt = tf.py_function(lambda x: sample_op(x, edge_len), [double_cube_mtx],
-                          tf.dtypes.float64, name='collect_ball_samples')
-    return rslt
+    dense_shape = np.asarray([edge_len * edge_len * edge_len, N_BALL_SAMPS],
+                             dtype=np.int64)
+    npzfile = np.load('precalc_sampler_full.npz')
+    print('loaded!')
+    index_full = npzfile['arr_0']
+    vals_full = npzfile['arr_1']
+    sampler_mtx = tf.SparseTensor(indices=index_full, values=vals_full,
+                                  dense_shape=dense_shape)
+    sampler_mtx = tf.sparse.reorder(sampler_mtx)
+    sampler_mtx_T = tf.sparse.transpose(sampler_mtx)
 
+    double_cube_mtx = tf.reshape(double_cube_mtx, 
+                                 [-1, edge_len*edge_len*edge_len])
+    rslt = tf.sparse_tensor_dense_matmul(sampler_mtx_T, 
+                                         tf.transpose(double_cube_mtx))
+    rslt = tf.transpose(rslt)
+    return rslt
 
 def evaluate():
     """Instantiate the network, then eval for a number of steps."""
@@ -198,7 +215,9 @@ def evaluate():
 
     edge_len = get_subblock_edge_len()
     x_off, y_off, z_off = loc_iterator.get_next()
-    subblock = get_subblock_op(x_off, y_off, z_off, edge_len, get_full_block())
+    data_block_offset = FLAGS.data_block_offset
+    z_start_offset = data_block_offset // (1024 * 1024)
+    subblock = get_subblock_op(x_off, y_off, z_off, edge_len, get_full_block(data_block_offset))
     subblock = tf.dtypes.cast(subblock, tf.dtypes.float64)
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
@@ -211,7 +230,23 @@ def evaluate():
 
     saver = tf.train.Saver()
 
-    scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op)
+    (x_base, y_base, z_base), out_blk = scan(loc_iterator, x_off, y_off, z_off,
+                                             saver, predicted_op)
+    scan_sz = out_blk.shape
+    fname_base = 'scanned_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
+                                                scan_sz[0], scan_sz[1], scan_sz[2])
+    out_blk.tofile(fname_base+'.bytes')
+    with open(fname_base + '.bov', 'w') as f:
+        f.write("TIME: 0\n")
+        f.write("DATA_FILE: %s\n" % (fname_base + '.bytes'))
+        f.write("DATA_SIZE: %d %d %d\n" % (scan_sz[0], scan_sz[1], scan_sz[2]))
+        f.write("DATA_FORMAT: BYTE\n")
+        f.write("VARIABLE: prediction\n")
+        f.write("DATA_ENDIAN: LITTLE\n")
+        f.write("CENTERING: ZONAL\n")
+        f.write("BRICK_ORIGIN: %f %f %f\n" % (float(x_base + 4750), float(y_base + 2150),
+                                              float(z_start_offset + z_base + 4000)))
+        f.write("BRICK_SIZE: %f %f %f\n" % (float(scan_sz[0]), float(scan_sz[1]), float(scan_sz[2])))
 
 
 def main(argv=None):  # pylint: disable=unused-argument
