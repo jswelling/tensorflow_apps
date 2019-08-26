@@ -56,7 +56,7 @@ flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 
 
-def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
+def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
     """Scan through the block locations specified by the iterator
 
     Args:
@@ -70,6 +70,7 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
     scan_sz = parse_int_list(FLAGS.scan_size, 3, low_bound=[1, 1, 1])
     x_base, y_base, z_base = parse_int_list(FLAGS.scan_start, 3, low_bound=[0, 0, 0])
     out_blk = np.zeros(scan_sz, dtype=np.uint8)
+    pred_blk = np.zeros(scan_sz, dtype=np.uint8)
     with tf.Session() as sess:
         init_op = tf.local_variables_initializer()
         sess.run(init_op)
@@ -82,16 +83,18 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, predicted_op):
             sess.run(loc_iterator.initializer, feed_dict={})
             step = 0
             while True:
-                xV, yV, zV, predV = sess.run([x_off, y_off, z_off,
-                                              predicted_op])
+                xV, yV, zV, ctrptV, predV = sess.run([x_off, y_off, z_off,
+                                                      ctrpt_op, predicted_op])
                 pred_byte = np.where((predV[:, 1] == 1), 255, 0)
                 if any(pred_byte):
                     print('HIT!!!')
-                out_blk[xV - x_base, yV - y_base, zV - z_base] = pred_byte
+                print('testing: ', xV, yV, zV, ctrptV, predV, x_base, y_base, z_base)
+                out_blk[xV - x_base, yV - y_base, zV - z_base] = ctrptV
+                pred_blk[xV - x_base, yV - y_base, zV - z_base] = pred_byte
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
-    return (x_base, y_base, z_base), out_blk
+    return (x_base, y_base, z_base), out_blk, pred_blk
 
 #     total_loss = 0.0
 #     n_true_pos = 0
@@ -204,6 +207,24 @@ def collect_ball_samples(double_cube_mtx, edge_len, read_threads):
     rslt = tf.transpose(rslt)
     return rslt
 
+def writeBOV(fname_base, byte_blk, var_name):
+    byte_blk.tofile(fname_base+'.bytes')
+    scan_sz = byte_blk.shape
+    with open(fname_base + '.bov', 'w') as f:
+        f.write("TIME: 0\n")
+        f.write("DATA_FILE: %s\n" % (fname_base + '.bytes'))
+        f.write("DATA_SIZE: %d %d %d\n" % (scan_sz[0], scan_sz[1], scan_sz[2]))
+        f.write("DATA_FORMAT: BYTE\n")
+        f.write("VARIABLE: %s\n" % var_name)
+        f.write("DATA_ENDIAN: LITTLE\n")
+        f.write("CENTERING: ZONAL\n")
+        f.write("BRICK_ORIGIN: 0.0 0.0 0.0\n")
+#        f.write("BRICK_ORIGIN: %f %f %f\n" % (float(x_base + 4750), float(y_base + 2150),
+#                                              float(z_start_offset + z_base + 4000)))
+
+        f.write("BRICK_SIZE: %f %f %f\n" % (float(scan_sz[0]), float(scan_sz[1]), float(scan_sz[2])))
+
+
 def evaluate():
     """Instantiate the network, then eval for a number of steps."""
 
@@ -221,6 +242,7 @@ def evaluate():
     subblock = tf.dtypes.cast(subblock, tf.dtypes.float64)
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
+    ctrpt_op = tf.dtypes.cast(images[:,0], tf.dtypes.uint8)
 
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
@@ -228,25 +250,18 @@ def evaluate():
     # Set up some prediction statistics
     predicted_op = tf.round(tf.nn.sigmoid(logits))
 
+
     saver = tf.train.Saver()
 
-    (x_base, y_base, z_base), out_blk = scan(loc_iterator, x_off, y_off, z_off,
-                                             saver, predicted_op)
-    scan_sz = out_blk.shape
+    (x_base, y_base, z_base), scanned_blk, pred_blk = scan(loc_iterator, x_off, y_off, z_off,
+                                                           saver, ctrpt_op, predicted_op)
+    scan_sz = scanned_blk.shape
     fname_base = 'scanned_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
                                                 scan_sz[0], scan_sz[1], scan_sz[2])
-    out_blk.tofile(fname_base+'.bytes')
-    with open(fname_base + '.bov', 'w') as f:
-        f.write("TIME: 0\n")
-        f.write("DATA_FILE: %s\n" % (fname_base + '.bytes'))
-        f.write("DATA_SIZE: %d %d %d\n" % (scan_sz[0], scan_sz[1], scan_sz[2]))
-        f.write("DATA_FORMAT: BYTE\n")
-        f.write("VARIABLE: prediction\n")
-        f.write("DATA_ENDIAN: LITTLE\n")
-        f.write("CENTERING: ZONAL\n")
-        f.write("BRICK_ORIGIN: %f %f %f\n" % (float(x_base + 4750), float(y_base + 2150),
-                                              float(z_start_offset + z_base + 4000)))
-        f.write("BRICK_SIZE: %f %f %f\n" % (float(scan_sz[0]), float(scan_sz[1]), float(scan_sz[2])))
+    writeBOV(fname_base, scanned_blk, 'density')
+    fname_base = 'pred_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
+                                             scan_sz[0], scan_sz[1], scan_sz[2])
+    writeBOV(fname_base, pred_blk, 'prediction')
 
 
 def main(argv=None):  # pylint: disable=unused-argument
