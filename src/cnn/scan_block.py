@@ -155,7 +155,8 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
 
 def get_subblock_op(x_off, y_off, z_off, blk_sz, full_block):
     blk_shape = tf.constant([blk_sz, blk_sz, blk_sz], dtype=tf.int32)
-    offset_mtx = tf.transpose(tf.reshape(tf.concat([x_off, y_off, z_off], 0), [3, -1]))
+    #offset_mtx = tf.transpose(tf.reshape(tf.concat([x_off, y_off, z_off], 0), [3, -1]))
+    offset_mtx = tf.transpose(tf.reshape(tf.concat([z_off, y_off, x_off], 0), [3, -1]))
     print('full_block: %s' % full_block)
     rslt = tf.map_fn(lambda offset: tf.slice(full_block, offset, blk_shape), offset_mtx,
                      dtype=tf.dtypes.uint8)
@@ -191,6 +192,7 @@ def get_subblock_op(x_off, y_off, z_off, blk_sz, full_block):
 def collect_ball_samples(double_cube_mtx, edge_len, read_threads):
     dense_shape = np.asarray([edge_len * edge_len * edge_len, N_BALL_SAMPS],
                              dtype=np.int64)
+#    npzfile = np.load('zslow_precalc_sampler_full.npz')
     npzfile = np.load('precalc_sampler_full.npz')
     print('loaded!')
     index_full = npzfile['arr_0']
@@ -225,6 +227,14 @@ def writeBOV(fname_base, byte_blk, var_name):
         f.write("BRICK_SIZE: %f %f %f\n" % (float(scan_sz[0]), float(scan_sz[1]), float(scan_sz[2])))
 
 
+def reorder_array(blk):
+    """
+    Operations to flip the array orders to match the original data
+    samples
+    """
+    return np.flip(blk.transpose(), 1)
+
+
 def evaluate():
     """Instantiate the network, then eval for a number of steps."""
 
@@ -256,12 +266,13 @@ def evaluate():
     (x_base, y_base, z_base), scanned_blk, pred_blk = scan(loc_iterator, x_off, y_off, z_off,
                                                            saver, ctrpt_op, predicted_op)
     scan_sz = scanned_blk.shape
+
     fname_base = 'scanned_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
                                                 scan_sz[0], scan_sz[1], scan_sz[2])
-    writeBOV(fname_base, scanned_blk, 'density')
+    writeBOV(fname_base, reorder_array(scanned_blk), 'density')
     fname_base = 'pred_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
                                              scan_sz[0], scan_sz[1], scan_sz[2])
-    writeBOV(fname_base, pred_blk, 'prediction')
+    writeBOV(fname_base, reorder_array(pred_blk), 'prediction')
 
 
 def main(argv=None):  # pylint: disable=unused-argument
