@@ -10,11 +10,11 @@ groupid=syr54jp
 WORK=/pylon5/syr54jp/brl51
 JOELWORK=/pylon5/syr54jp/welling
 #srcdir=${HOME}/tensorflow_apps/src/cnn
-srcdir=/pylon5/pscstaff/brl51/git/tensorflow_apps/src/cnn
+srcdir=/pylon5/syr54jp/brl51/git/tensorflow_apps/src/cnn
 datadir=/pylon5/pscstaff/welling/pylon2_rescue/fish_cube_links
 
 file_list=${datadir}/../fish_cube_files_train_2.txt
-nepochs=600
+nepochs=100
 
 nexamples=`cat $file_list | wc -l`
 
@@ -23,8 +23,9 @@ source activate /pylon5/pscstaff/welling/conda/envs/tfEnv
 
 cd $srcdir
 export PYTHONPATH=/pylon5/pscstaff/welling/git/tensorflow_apps/src:$PYTHONPATH
+export LD_PRELOAD="/usr/lib64/libtcmalloc_minimal.so.4"
 python ./train_binaryclassifier.py \
-       --network_pattern outer_layer_logits_to_binary \
+       --network_pattern two_layers_logits_to_binary \
        --batch_size 180 \
        --read_threads 3 \
        --data_dir $datadir \
@@ -33,11 +34,13 @@ python ./train_binaryclassifier.py \
        --num_epochs $nepochs \
        --shuffle_size $nexamples \
        --num_examples $nexamples \
-       --starting_snapshot $JOELWORK/tf/logs/cnn_train_5962735cnn-4448 \
+       --starting_snapshot $JOELWORK/tf/logs/cnn_train_6045675cnn-4404 \
        --learning_rate 0.1 \
-       --hold_constant classifier
-
-#       --starting_snapshot $WORK/tf/logs/cnn_train_5962735cnn-4448 \                                                                                        
+       --hold_constant classifier \
+       --snapshot_load classifier \
+       --layers 2,4,48
+ 
+#       --starting_snapshot $WORK/tf/logs/cnn_train_6045675cnn-4404 \                                                                                        
 #       --hold_constant classifier \
 #       --reset_global_step \                                                                                                                                                                                                        
-#       --snapshot_load cnn,classifier \    
+#       --snapshot_load classifier     

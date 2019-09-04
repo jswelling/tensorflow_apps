@@ -23,10 +23,8 @@ import time
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-#import tensorflow.python.debug as tf_debug
-
-#import input_data
-#from input_data import N_BALL_SAMPS, OUTERMOST_SPHERE_SHAPE
+from tensorflow.python import pywrap_tensorflow
+ 
 import input_data_from_list as input_data
 import topology
 import harmonics
@@ -68,6 +66,16 @@ flags.DEFINE_string('hold_constant', None,
 flags.DEFINE_boolean('reset_global_step', False, 'If true, global_step restarts from zero')
 flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
                      ' rotations to each data sample')
+flags.DEFINE_string('optimizer', 'Adam', 'which optimizer (Adam or SGD)')
+flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                   'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
+
+
+def get_cpt_name(var):
+    nm = var.name
+    parts = nm.split(':')
+    assert len(parts) == 2, 'get_cpt_name failed for the variable %s' % nm
+    return parts[0]
 
 def train():
     """Train fish_cubes for a number of steps."""
@@ -125,32 +133,70 @@ def train():
     var_pfx_map = {'cnn' : 'cnn/',
                    'classifier' : 'image_binary_classifier/'}
 
-    vars_to_load = []  # empty list means load all
-    if len(FLAGS.starting_snapshot) and FLAGS.snapshot_load:
-        keys = FLAGS.snapshot_load.split(',')
+    if len(FLAGS.starting_snapshot):
+        keys = FLAGS.snapshot_load.split(',') if FLAGS.snapshot_load else ['all']
         keys = [k.strip() for k in keys]
-        if 'all' not in keys:
+        if 'all' in keys:
+            vars_to_load = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+        else:
             assert all([k in var_pfx_map for k in keys]), 'unknown key to load: %s' % key
+            vars_to_load = [global_step]
             for k in keys:
                 vars_to_load.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
                                      if v.name.startswith(var_pfx_map[k])])
-            if not FLAGS.reset_global_step:
-                vars_to_load.append(global_step)
+        if FLAGS.reset_global_step:
+            vars_to_load.remove(global_step)
+    else:
+        vars_to_load = []
 
-    vars_to_hold_constant = []
+    vars_to_hold_constant = []  # empty list means hold nothing constant
     if FLAGS.hold_constant is not None:
-        keys = FLAGS.hold_constant.split(',')
-        keys = [k.strip() for k in keys]
+        keys = [k.strip() for k in FLAGS.hold_constant.split(',')]
         assert all([k in var_pfx_map for k in keys]), 'unknown key to hold constant: %s' % key
         for k in keys:
-            vars_to_hold_constant.extend([v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+            vars_to_hold_constant.extend([v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
                                           if v.name.startswith(var_pfx_map[k])])
     print('not subject to training: %s' % [v.name for v in vars_to_hold_constant])
-        
 
-    # Add to the Graph the Ops that calculate and apply gradients.
-    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant)
-    print('train (optimizer): ', train_op)
+    if FLAGS.starting_snapshot and len(FLAGS.starting_snapshot):
+        vars_in_snapshot = [k for k in (pywrap_tensorflow.NewCheckpointReader(FLAGS.starting_snapshot)
+                                        .get_variable_to_shape_map())]
+    else:
+        vars_in_snapshot = []
+    vars_in_snapshot = set(vars_in_snapshot)
+    print('vars in snapshot: %s' % vars_in_snapshot)
+
+    if FLAGS.optimizer == 'Adam':
+        optimizer = tf.train.AdamOptimizer(learning_rate=FLAGS.learning_rate, epsilon=0.1)
+    elif FLAGS.optimizer == 'SGD':
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=FLAGS.learning_rate)
+    else:
+        raise RuntimeError('Unimplemented optimizer %s was requested' % FLAGS.optimizer)
+    train_op = topology.training(loss, FLAGS.learning_rate, exclude=vars_to_hold_constant,
+                                 optimizer=optimizer)
+    
+    # Also load any variables the optimizer created for variables we want to load
+    vars_to_load.extend([optimizer.get_slot(var, name) for name in optimizer.get_slot_names()
+                         for var in vars_to_load])
+    vars_to_load = [var for var in vars_to_load if var is not None]
+    vars_to_load = list(set(vars_to_load))  # remove duplicates
+    
+    # Filter vars to load based on what is in the checkpoint
+    in_vars = []
+    out_vars = []
+    for var in vars_to_load:
+        if get_cpt_name(var) in vars_in_snapshot:
+            in_vars.append(var)
+        else:
+            out_vars.append(var)
+    if out_vars:
+        print('WARNING: cannot load the following vars because they are not in the snapshot: %s'
+              % [var.name for var in out_vars])
+    if in_vars:
+        print('loading from checkpoint: %s' % [var.name for var in in_vars])
+        tf.train.init_from_checkpoint(FLAGS.starting_snapshot,
+                                      {get_cpt_name(var): var for var in in_vars})
+
 
     # Try making histograms of *everything*
     for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
@@ -166,34 +212,10 @@ def train():
     # Create a session for running operations in the Graph.
     sess = tf.Session(config=tf.ConfigProto(log_device_placement=FLAGS.verbose))
 
-    # Optionally restore from a checkpoint.  The right file to load seems to be
-    # the one with extension '.index'
-    if len(FLAGS.starting_snapshot) == 0:
-        pass
-    elif FLAGS.snapshot_load and vars_to_load:
-        print('loading from checkpoint: %s' % [v.name for v in vars_to_load])
-        partial_saver = tf.train.Saver(vars_to_load)
-        partial_saver.restore(sess, FLAGS.starting_snapshot)
-    else:
-        print('loading all variables from checkpoint ')
-        saver.restore(sess, FLAGS.starting_snapshot)
-
     # Create the graph, etc.
-    if vars_to_load:
-        vars_to_initialize = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-                              if v not in vars_to_load]
-        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
-        init_op = tf.variables_initializer(vars_to_initialize)
-    elif len(FLAGS.starting_snapshot) == 0:
-        # initialize everything
-        print('initalizing all globals')
-        init_op = tf.variables_initializer(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
-    else:
-        vars_to_initialize = []
-        if FLAGS.reset_global_step:
-            vars_to_initialize.append(global_step)
-        print('vars being initialized: %s' % [v.name for v in vars_to_initialize])
-        init_op = tf.variables_initializer(vars_to_initialize)
+    # we either have no snapshot and must initialize everything, or we do have a snapshot
+    # and have already set appropriate vars to be initialized from it
+    init_op = tf.variables_initializer(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
     sess.run(init_op)
 
     # Instantiate a SummaryWriter to output summaries and the Graph.

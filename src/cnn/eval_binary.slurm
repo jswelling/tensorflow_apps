@@ -20,14 +20,28 @@ module load anaconda3
 source activate /pylon5/pscstaff/welling/conda/envs/tfEnv
 
 cd $srcdir
+export PYTHONPATH=/pylon5/pscstaff/welling/git/tensorflow_apps/src:$PYTHONPATH
+export LD_PRELOAD="/usr/lib64/libtcmalloc_minimal.so.4"
+python ./eval_binary.py \
+        --network_pattern two_layers_logits_to_binary \
+	--batch_size 180 \
+	--read_threads 3 \
+	--data_dir $datadir \
+	--file_list $file_list \
+	--log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
+	--shuffle_size $nexamples \
+	--num_examples $nexamples \
+        --starting_snapshot $WORK/tf/logs/cnn_train_6243446cnn-8817 \
+        --layers 0,4,5
 
 python ./eval_binary.py \
-       --network_pattern outer_layer_cnn_to_binary \
-       --batch_size 180 \
-       --read_threads 3 \
-       --data_dir $datadir \
-       --file_list $file_list \
-       --log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
-       --shuffle_size $nexamples \
-       --num_examples $nexamples \
-       --starting_snapshot $WORK/tf/logs/cnn_train_6025881cnn-599
+        --network_pattern two_layers_logits_to_binary \
+        --batch_size 180 \
+        --read_threads 3 \
+        --data_dir $datadir \
+        --file_list $file_list \
+        --log_dir $WORK/tf/logs/cnn_train_${SLURM_JOB_ID} \
+        --shuffle_size $nexamples \
+        --num_examples $nexamples \
+        --starting_snapshot $WORK/tf/logs/cnn_train_6243453cnn-8817 \
+        --layers 0,4,6

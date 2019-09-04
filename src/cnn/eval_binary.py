@@ -26,6 +26,8 @@ import tensorflow as tf
 
 import input_data_from_list as input_data
 import topology
+import harmonics
+from constants import *
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -52,6 +54,10 @@ tf.app.flags.DEFINE_integer('shuffle_size', 8,
 tf.app.flags.DEFINE_integer('batch_size', 8, 'Batch size.  '
                             'Must divide evenly into the dataset sizes.')
 tf.app.flags.DEFINE_boolean('verbose', False, 'If true, print extra output.')
+tf.app.flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                            ' rotations to each data sample')
+tf.app.flags.DEFINE_string('layers', '%d,%d' % (MAX_L//2,MAX_L),
+                           'layers to include (depends on network-pattern; MAX_L=%d)' % MAX_L)
 
 
 def eval_once(sess, iterator, saver, seed, label_op, loss_op, accuracy_op, predicted_op):
@@ -158,6 +164,9 @@ def evaluate():
                             image_path, label_path, labels)
     else:
         print_op = tf.constant('No printing')
+
+    if FLAGS.random_rotation:
+        images, labels = harmonics.apply_random_rotation(images, labels)
 
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)

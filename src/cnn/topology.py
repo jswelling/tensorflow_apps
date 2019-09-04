@@ -39,7 +39,21 @@ from tensorflow.python.framework import dtypes
 import harmonics
 from constants import *
 
+flags = tf.app.flags
+FLAGS = flags.FLAGS
+
 OUTERMOST_SPHERE_N = OUTERMOST_SPHERE_SHAPE[0] * OUTERMOST_SPHERE_SHAPE[1]
+
+
+def layer_list_from_flags():
+    """Extract a list of layers from the command line flag"""
+    layer_list = FLAGS.layers.split(',')
+    layer_list = [int(elt.strip()) for elt in layer_list]
+    assert all([elt >= 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
+    print('layer_list: %s'%layer_list)
+    return layer_list
+    
+
 
 def weight_variable(shape):
     """Generate a tensor of weight variables of dimensions `shape`.
@@ -49,8 +63,15 @@ def weight_variable(shape):
       shape : [...] - desired shape of the weights
 
     """
-    initial = tf.truncated_normal(shape, stddev=0.1)
-    return tf.Variable(initial, name='weight')
+    # return tf.get_variable('weight', shape=shape,
+    #                        initializer=tf.truncated_normal_initializer(mean=0.0,
+    #                                                                    stddev=0.1))
+    # return tf.get_variable('weight', shape=shape,
+    #                        initializer=tf.contrib.layers.xavier_initializer(uniform=False))
+
+    return tf.get_variable('weight', shape=shape,
+                           initializer=tf.initializers.he_normal())
+
 
 def bias_variable(shape):
     """Generate a tensor of bias variables of dimensions `shape`.
@@ -61,8 +82,8 @@ def bias_variable(shape):
       shape : [...] - desired shape of the biases
 
     """
-    initial = tf.constant(0.1, shape=shape)
-    return tf.Variable(initial, name='bias')
+    return tf.get_variable('bias', shape=shape,
+                           initializer=tf.initializers.he_uniform())
 
 def _add_dense_linear_layer(input, n_outer_cells):
     """Build a single densely connected layer with no activation component
@@ -84,16 +105,24 @@ def _add_dense_linear_layer(input, n_outer_cells):
         #print('n_inner_cells: ', n_inner_cells, type(n_inner_cells))
         batch_size = tf.shape(input)[0]
         wtStdv = 1.0 / math.sqrt(float(n_outer_cells))
-        weights = tf.Variable(tf.truncated_normal([n_inner_cells, n_outer_cells],
-                                                  stddev= wtStdv),
-                              name='logit_w')
-        biases = tf.Variable(tf.zeros([n_outer_cells]), name='logit_b')
-        #print('input', input)
+        # weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
+        #                           initializer=tf.truncated_normal_initializer(mean=0.0,
+        #                                                                       stddev=wtStdv))
+        # biases = tf.get_variable('logit_b', shape=[n_outer_cells],
+        #                          initializer=tf.contrib.layers.xavier_initializer())
+        weights = tf.get_variable('logit_w', shape=[n_inner_cells, n_outer_cells],
+                                  initializer=tf.initializers.he_normal())
+        tf.summary.histogram('logit_w', weights)
+        biases = tf.get_variable('logit_b', shape=[n_outer_cells],
+                                 initializer=tf.initializers.he_uniform())
+        tf.summary.histogram('logit_b', biases)
+        # print('input', input)
         shaped_input = tf.reshape(input, [batch_size, n_inner_cells])
-        #print('shaped input: ', shaped_input)
-        #print('weights: ', weights)
-        #print('biases: ', biases)
+        # print('shaped input: ', shaped_input)
+        # print('weights: ', weights)
+        # print('biases: ', biases)
         logits = tf.matmul(shaped_input, weights) + biases
+        # print('logits: ', logits)
     return logits
 
 
@@ -362,14 +391,15 @@ def build_filter(input, pattern_str, **kwargs):
             # dense : [batch_size, num_neurons]
             dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
             print('dense: ', dense)
-        
-        logits = _add_dense_linear_layer(dense, 2)
+
+        with tf.variable_scope("dense_linear") as scope:
+            logits = _add_dense_linear_layer(dense, 2)
         return logits
     
     elif pattern_str == 'l2_norm':
         """
         input shape: [batch_size, nRows*nCols, nChan]  # last dim optional
-        output shape: [batch_size, nRows, nCols, nChan
+        output shape: [batch_size, nRows, nCols, nChan]
         
         """
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
@@ -467,15 +497,15 @@ def inference(feature, pattern_str, **kwargs):
         nRows, nCols = OUTERMOST_SPHERE_SHAPE
         nChan = 1
         with tf.variable_scope('cnn') as scope:
-            layer_list = layers=[MAX_L//2, MAX_L]
+            layer_list = layer_list_from_flags()
             layers = build_filter(feature, 'strip_layers', layers=layer_list)
 
             dense = build_filter(layers, 'outer_layer_cnn', layers=layer_list)
             print('dense: %s' % dense.get_shape().as_list())
             tf.summary.image(scope.name + 'dense', 
                              tf.reshape(dense, [-1, nRows, nCols, nChan]))
-            
-            logits = build_filter(dense, 'dense_linear')
+            with tf.variable_scope('dense_linear') as scope:
+                logits = build_filter(dense, 'dense_linear')
             print('logits: %s' % logits.get_shape().as_list())
             logits = build_filter(logits, 'l2_norm')
             print('logits: %s' % logits.get_shape().as_list())
@@ -488,6 +518,82 @@ def inference(feature, pattern_str, **kwargs):
             tf.summary.histogram(scope.name+'output', output)
             print('output: ', output)
             return output
+
+    elif pattern_str == 'two_layers_short_binary':
+        n_rows, n_cols = OUTERMOST_SPHERE_SHAPE
+        layer_list = layer_list_from_flags()
+        n_layers = len(layer_list)
+        n_chan_0 = 1
+        n_chan_1 = 8
+        n_chan_2 = 16
+        num_neurons = 1024  # In the dense nonlinear layer
+        with tf.variable_scope('short_binary') as scope:
+            layers = build_filter(feature, 'strip_layers', layers=layer_list)
+
+            layers = tf.nn.l2_normalize(tf.reshape(layers,
+                                                   [-1, n_layers*n_rows*n_cols]),
+                                        1)
+            layers = tf.reshape(layers, [-1, n_layers, n_rows, n_cols, 1])
+
+            conv1 = tf.contrib.layers.conv3d(
+                inputs=layers, num_outputs=n_chan_1,
+                kernel_size=[n_layers, 5, 5],
+                stride = [n_layers, 1, 1],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv1")
+            print('conv1: ', conv1)
+            conv1 = tf.reshape(conv1, [-1, n_rows, n_cols, n_chan_1])
+            tf.summary.histogram('conv1', conv1)
+
+            pool1 = tf.contrib.layers.max_pool2d(
+                inputs=conv1,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool1")
+            print('pool1:', pool1)
+
+            conv2 = tf.contrib.layers.conv2d(
+                inputs=pool1,
+                num_outputs=n_chan_2,
+                kernel_size=[5, 5],
+                activation_fn=tf.nn.relu,
+                padding="SAME",
+                scope="conv2")
+            print('conv2: ', conv2)
+            tf.summary.histogram('conv2', conv2)
+
+            pool2 = tf.contrib.layers.max_pool2d(
+                inputs=conv2,
+                kernel_size=[2, 2],
+                stride=2,
+                padding="SAME",
+                scope="pool2")
+            print('pool2: ', pool2)
+
+        pool2_dim = pool2.get_shape().as_list()
+        batch_size, pool2_height, pool2_width, pool2_filters = pool2_dim
+        num_units = pool2_height * pool2_width * pool2_filters
+
+        with tf.variable_scope("dense_binary") as scope:
+
+            # Flatten pool2 into [batch_size, h * w * channels]
+            pool2_flat = tf.reshape(pool2, [-1, num_units],
+                                    name="pool2_flat")
+            print('pool2_flat:', pool2_flat)
+
+            weights = weight_variable([num_units, num_neurons])
+            biases  = bias_variable([num_neurons])
+
+            # dense : [batch_size, num_neurons]
+            dense = tf.nn.relu(tf.matmul(pool2_flat, weights) + biases, name='dense_binary_relu')
+            print('dense: ', dense)
+            tf.summary.histogram('dense', dense)
+
+            logits = _add_dense_linear_layer(dense, 2)
+            tf.summary.histogram('binary_logits', logits)
+            return logits
 
     else:
         raise RuntimeError('Unknown inference pattern "{}"'.format(pattern_str))
@@ -543,41 +649,18 @@ def binary_loss(logits, labels):
     """
     with tf.name_scope('binary_loss') as scope:
         labels = tf.stop_gradient(labels)
-        cross_entropy = tf.losses.softmax_cross_entropy(logits=logits,
-                                                        onehot_labels=labels,
-                                                        weights=1.0,
-                                                        scope=scope
-                                                        )
-    #now minize the above error
-    #calculate the total mean of all the errors from all the nodes
-    #cost=tf.reduce_mean(cross_entropy)
+        cost = tf.losses.softmax_cross_entropy(onehot_labels=labels,
+                                               logits=logits)
 
-    #Now backpropagate to minimise the cost in the network.
+        # #calculate the total mean of all the errors from all the nodes
+        # with tf.control_dependencies([tf.print('values: ', tf.concat([logits, labels, tf.round(tf.nn.softmax(logits)), 
+        #                                                               tf.reshape(cross_entropy,[-1, 1])],1))]):
+        #     cost=tf.reduce_mean(cross_entropy)
 
-#         batch_size = tf.shape(labels)[0]
-#         logits = tf.reshape(logits, [batch_size, -1])
-#         tf.summary.histogram(scope + 'logits', logits)
-#         labels = tf.reshape(labels, [batch_size, -1])
-#         softLogits = tf.nn.l2_normalize(logits, 1)
-#         tf.summary.histogram(scope + 'soft_logits', softLogits)
-# 
-#         diffSqr = tf.squared_difference(softLogits, labels)
-#         tf.summary.histogram(scope + 'squared_difference', diffSqr)
-#         loss = tf.reduce_sum(diffSqr, 1)
-#         tf.summary.histogram(scope + 'loss', loss)
-#         nRows, nCols = OUTERMOST_SPHERE_SHAPE
-#         logitImg = _add_cross(tf.reshape(softLogits,[batch_size, nRows, nCols]))
-#         tf.summary.image(scope + 'logits',
-#                          tf.reshape(logitImg, [batch_size, nRows, nCols, 1]),
-#                          max_outputs=100)
-#         tf.summary.image(scope + 'labels',
-#                          tf.reshape(labels, [batch_size, nRows, nCols, 1]),
-#                          max_outputs=100)
-    #return cost
-    return cross_entropy
+    return cost
 
 
-def training(loss, learning_rate, exclude=None):
+def training(loss, learning_rate, exclude=None, optimizer=None):
     """Sets up the training Ops.
 
     Creates a summarizer to track the loss over time in TensorBoard.
@@ -590,6 +673,7 @@ def training(loss, learning_rate, exclude=None):
     Args:
       loss: Loss tensor, from loss().
       learning_rate: The learning rate to use for gradient descent.
+      optimizer: None, or one of the options for tf.contrib.layers.optimize_loss
 
     Returns:
       train_op: The Op for training.
@@ -607,10 +691,15 @@ def training(loss, learning_rate, exclude=None):
 #    train_op = optimizer.minimize(loss, global_step=global_step)
     with tf.variable_scope('control', reuse=True):
         global_step = tf.get_variable('global_step', dtype=tf.int32)
-    train_these_vars = [v for v in tf.trainable_variables() if v not in exclude]
+    if optimizer is None:
+        optimizer = 'Adam'
+    train_these_vars = [v for v in tf.trainable_variables()
+                        if v not in exclude]
+    print('vars to be trained: %s' % [var.name for var in train_these_vars])
     train_op = tf.contrib.layers.optimize_loss(loss, global_step, learning_rate,
-                                               'Adam',
-                                               summaries=['loss', 'learning_rate',
+                                               optimizer,
+                                               summaries=['loss',
+                                                          'learning_rate',
                                                           'gradients',
                                                           'gradient_norm'],
                                                variables=train_these_vars)
