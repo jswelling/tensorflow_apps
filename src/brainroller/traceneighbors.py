@@ -82,7 +82,7 @@ def loadSkipTable(skipF, maxSlice):
 class UsefulVtx(Vtx):
     @classmethod
     def load(cls, pklF, maxSlice, skipF):
-        usefulVtxDict = pickle.load(pklF)
+        usefulVtxDict = pickle.load(pklF, fix_imports=True, encoding='latin1')
         skipTbl = loadSkipTable(skipF, maxSlice)
         for v in list(usefulVtxDict.values()):
             v.setSkipTable(skipTbl)
