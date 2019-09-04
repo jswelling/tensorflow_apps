@@ -49,7 +49,7 @@ def layer_list_from_flags():
     """Extract a list of layers from the command line flag"""
     layer_list = FLAGS.layers.split(',')
     layer_list = [int(elt.strip()) for elt in layer_list]
-    assert all([elt > 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
+    assert all([elt >= 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
     print('layer_list: %s'%layer_list)
     return layer_list
     
