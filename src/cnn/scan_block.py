@@ -54,6 +54,8 @@ flags.DEFINE_string('scan_size', None,
                     'x, y, and z region size to scan')
 flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
+flags.DEFINE_string('outname', 'scanner',
+                    'A prefix for the scanned and predicted output file names')
 
 
 def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
@@ -256,11 +258,11 @@ def evaluate():
     (x_base, y_base, z_base), scanned_blk, pred_blk = scan(loc_iterator, x_off, y_off, z_off,
                                                            saver, ctrpt_op, predicted_op)
     scan_sz = scanned_blk.shape
-    fname_base = 'scanned_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
-                                                scan_sz[0], scan_sz[1], scan_sz[2])
+    fname_base = '%s_scanned_%d_%d_%d_%d_%d_%d' % (FLAGS.outname, x_base, y_base, z_base,
+                                                   scan_sz[0], scan_sz[1], scan_sz[2])
     writeBOV(fname_base, scanned_blk, 'density')
-    fname_base = 'pred_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
-                                             scan_sz[0], scan_sz[1], scan_sz[2])
+    fname_base = '%s_pred_%d_%d_%d_%d_%d_%d' % (FLAGS.outname, x_base, y_base, z_base,
+                                                scan_sz[0], scan_sz[1], scan_sz[2])
     writeBOV(fname_base, pred_blk, 'prediction')
 
 
