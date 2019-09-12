@@ -24,18 +24,25 @@ FLAGS = flags.FLAGS
 LABEL_TRUE = tf.constant([0.0, 1.0])
 LABEL_FALSE = tf.constant([1.0, 0.0])
 
-def generate_offsets():
-    x_start, y_start, z_start = parse_int_list(FLAGS.scan_start, 3,
-                                               low_bound=[0, 0, 0])
-    x_wid, y_wid, z_wid = parse_int_list(FLAGS.scan_size, 3,
-                                         low_bound=[1, 1, 1])
-    for k in range(z_start, z_start+z_wid):
-        for j in range(y_start, y_start+y_wid):
-            for i in range(x_start, x_start+x_wid):
-                yield (i, j, k)
 
-def get_loc_iterator(data_dir, batch_size):
-    ds = tf.data.Dataset.from_generator(generate_offsets,
+def get_loc_iterator(data_dir, batch_size, coord_base_V, scan_sz_V):
+
+    assert all(coord_base_V >= 0), 'scan volume is too close to low edge of block'
+    fish_sz_V = np.asarray(parse_int_list(FLAGS.data_block_dims, 3, low_bound=[1, 1, 1]),
+                           dtype=np.int)
+    high_bound_V = coord_base_V + scan_sz_V + (2 * RAD_PIXELS) + 1
+    assert all(high_bound_V < fish_sz_V), 'scan volume is too close to high edge of block'
+
+    x_start, y_start, z_start = coord_base_V
+    x_wid, y_wid, z_wid = scan_sz_V
+
+    def gen():
+        for k in range(z_start, z_start+z_wid):
+            for j in range(y_start, y_start+y_wid):
+                for i in range(x_start, x_start+x_wid):
+                    yield (i, j, k)
+
+    ds = tf.data.Dataset.from_generator(gen,
                                         (tf.int32, tf.int32, tf.int32))
     return ds.batch(batch_size).make_initializable_iterator()
 
@@ -47,7 +54,7 @@ def get_subblock_edge_len():
     return 2 * RAD_PIXELS + 1
 
 
-def get_full_block(data_block_offset):
+def get_full_block():
     """
     Return an op (usually a tf.constant) giving the full input data block
     """
@@ -63,15 +70,19 @@ def get_full_block(data_block_offset):
     # fish_stick_flat = fish_stick.flatten('F')
     assert FLAGS.data_block_path is not None, '--data_block_path is missing'
     assert FLAGS.data_block_dims is not None, '--data_block_dims is missing'
-    fish_xsz, fish_ysz, fish_zsz = [int(k.strip()) 
-                                    for k in FLAGS.data_block_dims.split(',')]
+    fish_xsz, fish_ysz, fish_zsz = parse_int_list(FLAGS.data_block_dims, 3,
+                                                  low_bound=[1, 1, 1])
     assert fish_xsz > 0 and fish_ysz > 0 and fish_zsz > 0, 'bad block volume'
-    print('data_block_dims: %d %d %d' % (fish_xsz, fish_ysz, fish_zsz))
+    data_block_offset = FLAGS.data_block_offset
+    print('data_block_dims: %d %d %d, offset %d' % (fish_xsz, fish_ysz, fish_zsz,
+                                                    data_block_offset))
     print('reading from <%s>' % FLAGS.data_block_path)
+
     with open(FLAGS.data_block_path, 'rb') as f:
         f.seek(data_block_offset)
         fish_stick_flat = np.fromfile(f, count=fish_xsz*fish_ysz*fish_zsz,
                                       dtype=np.uint8)
+
     print('fish_stick_flat: %s' % fish_stick_flat)
     tf_fish_stick = tf.constant(fish_stick_flat, dtypes.uint8, 
                                 shape=[fish_zsz, fish_ysz, fish_xsz])

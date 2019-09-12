@@ -56,21 +56,21 @@ flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 
 
-def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
+def scan(coord_base_V, scan_sz_V,
+         loc_iterator, x_off_op, y_off_op, z_off_op, saver, ctrpt_op, predicted_op):
     """Scan through the block locations specified by the iterator
 
     Args:
       saver: Saver.
-      x_off, y_off, z_off: ops giving lower left front corner of sub-cube
+      x_off_op, y_off_op, z_off_op: ops giving lower left front corner of sub-cube
       predicted_op: op giving prediction for sub-cube
 
     """
     
     epoch = 0
-    scan_sz = parse_int_list(FLAGS.scan_size, 3, low_bound=[1, 1, 1])
-    x_base, y_base, z_base = parse_int_list(FLAGS.scan_start, 3, low_bound=[0, 0, 0])
-    out_blk = np.zeros(scan_sz, dtype=np.uint8)
-    pred_blk = np.zeros(scan_sz, dtype=np.uint8)
+    x_base, y_base, z_base = coord_base_V
+    out_blk = np.zeros(scan_sz_V, dtype=np.uint8)
+    pred_blk = np.zeros(scan_sz_V, dtype=np.uint8)
     with tf.Session() as sess:
         init_op = tf.local_variables_initializer()
         sess.run(init_op)
@@ -83,7 +83,7 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
             sess.run(loc_iterator.initializer, feed_dict={})
             step = 0
             while True:
-                xV, yV, zV, ctrptV, predV = sess.run([x_off, y_off, z_off,
+                xV, yV, zV, ctrptV, predV = sess.run([x_off_op, y_off_op, z_off_op,
                                                       ctrpt_op, predicted_op])
                 pred_byte = np.where((predV[:, 1] == 1), 255, 0)
                 if any(pred_byte):
@@ -94,69 +94,12 @@ def scan(loc_iterator, x_off, y_off, z_off, saver, ctrpt_op, predicted_op):
                 step += 1
         except tf.errors.OutOfRangeError as e:
             print('Finished evaluating epoch %d (%d steps)' % (epoch, step))
-    return (x_base, y_base, z_base), out_blk, pred_blk
-
-#     total_loss = 0.0
-#     n_true_pos = 0
-#     n_false_pos = 0
-#     n_true_neg = 0
-#     n_false_neg = 0
-#     step = 0
-# 
-#     # Number of examples evaluated
-#     examples = 0
-#     accuracy_samples = []
-# 
-#     try:
-#         sess.run(iterator.initializer, feed_dict={seed: 1234})
-#         while True:
-#             losses, accuracy, labels, predicted = sess.run([loss_op, accuracy_op, label_op, predicted_op])
-#             print('loss @ step', step, '=', np.sum(losses) / FLAGS.batch_size)
-#             # Test model and check accuracy
-#             print('Test Accuracy:', accuracy)
-#             accuracy_samples.append(accuracy)
-# 
-#             total_loss += np.sum(losses)
-#             step += 1
-#             examples += labels.shape[0]
-# 
-#             #print('predicted:')
-#             #print(predicted[0:5,:])
-#             #print('labels:')
-#             #print(labels[0:5,:])
-#             for idx in range(labels.shape[0]):
-#                 if labels[idx, 1]:  # label true
-#                     if predicted[idx, 1]:
-#                         n_true_pos += 1
-#                     else:
-#                         n_false_neg += 1
-#                 else:               # label false
-#                     if predicted[idx, 1]:
-#                         n_false_pos += 1
-#                     else:
-#                         n_true_neg += 1
-# 
-# 
-#     except tf.errors.OutOfRangeError as e:
-#         print('Finished evaluation {}'.format(step))
-
-#     # Compute precision @ 1.
-#     loss = total_loss / examples
-#     accuracyV = np.asarray(accuracy_samples)
-#     print('%s: total examples @ 1 = %d' % (datetime.now(), examples))
-#     print('%s: loss @ 1 = %.3f' % (datetime.now(), loss))
-#     print('%s: overall accuracy %s +- %s' % (datetime.now(), np.mean(accuracyV),
-#                                              np.std(accuracyV, ddof=1)))
-#     print('%s: true positive @ 1 = %d' % (datetime.now(), n_true_pos))
-#     print('%s: false positive @ 1 = %d' % (datetime.now(), n_false_pos))
-#     print('%s: true negative @ 1 = %d' % (datetime.now(), n_true_neg))
-#     print('%s: false negative @ 1 = %d' % (datetime.now(), n_false_neg))
+    return out_blk, pred_blk
 
 
-def get_subblock_op(x_off, y_off, z_off, blk_sz, full_block):
+def get_subblock_op(x_off_op, y_off_op, z_off_op, blk_sz, full_block):
     blk_shape = tf.constant([blk_sz, blk_sz, blk_sz], dtype=tf.int32)
-    #offset_mtx = tf.transpose(tf.reshape(tf.concat([x_off, y_off, z_off], 0), [3, -1]))
-    offset_mtx = tf.transpose(tf.reshape(tf.concat([z_off, y_off, x_off], 0), [3, -1]))
+    offset_mtx = tf.transpose(tf.reshape(tf.concat([z_off_op, y_off_op, x_off_op], 0), [3, -1]))
     print('full_block: %s' % full_block)
     rslt = tf.map_fn(lambda offset: tf.slice(full_block, offset, blk_shape), offset_mtx,
                      dtype=tf.dtypes.uint8)
@@ -238,17 +181,22 @@ def reorder_array(blk):
 def evaluate():
     """Instantiate the network, then eval for a number of steps."""
 
-    # seed provides the mechanism to control the shuffling which takes place reading input
-    seed = tf.placeholder(tf.int64, shape=())
-    
-    # Generate placeholders for the images and labels.
-    loc_iterator = get_loc_iterator(FLAGS.data_dir, FLAGS.batch_size)
-
+    # What volume are we scanning?
     edge_len = get_subblock_edge_len()
-    x_off, y_off, z_off = loc_iterator.get_next()
-    data_block_offset = FLAGS.data_block_offset
-    z_start_offset = data_block_offset // (1024 * 1024)
-    subblock = get_subblock_op(x_off, y_off, z_off, edge_len, get_full_block(data_block_offset))
+    scan_sz_V = np.asarray(parse_int_list(FLAGS.scan_size, 3, low_bound=[1, 1, 1]),
+                           dtype=np.int)
+
+    scan_start_V = np.asarray(parse_int_list(FLAGS.scan_start, 3, low_bound=[0, 0, 0]),
+                              dtype=np.int)
+    coord_base_V = scan_start_V - ((edge_len - 1)//2)  # correct for shift to center of ball
+
+
+    # Generate placeholders for the images and labels.
+    loc_iterator = get_loc_iterator(FLAGS.data_dir, FLAGS.batch_size, coord_base_V,
+                                    scan_sz_V)
+
+    x_off_op, y_off_op, z_off_op = loc_iterator.get_next()
+    subblock = get_subblock_op(x_off_op, y_off_op, z_off_op, edge_len, get_full_block())
     subblock = tf.dtypes.cast(subblock, tf.dtypes.float64)
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
@@ -260,11 +208,12 @@ def evaluate():
     # Set up some prediction statistics
     predicted_op = tf.round(tf.nn.sigmoid(logits))
 
-
     saver = tf.train.Saver()
 
-    (x_base, y_base, z_base), scanned_blk, pred_blk = scan(loc_iterator, x_off, y_off, z_off,
-                                                           saver, ctrpt_op, predicted_op)
+    scanned_blk, pred_blk = scan(coord_base_V, scan_sz_V, loc_iterator,
+                                 x_off_op, y_off_op, z_off_op,
+                                 saver, ctrpt_op, predicted_op)
+    x_base, y_base, z_base = scan_start_V
     scan_sz = scanned_blk.shape
 
     fname_base = 'scanned_%d_%d_%d_%d_%d_%d' % (x_base, y_base, z_base,
