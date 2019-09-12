@@ -9,6 +9,46 @@ Created on May 31, 2016
 import numpy as np
 
 
+def writeVtkPolypoints(fname, vtxList, 
+                      shift1 = None, shift2 = None,
+                      sig = (+1.0, +1.0, +1.0)):
+    with open(fname, 'w') as f:
+        f.write('# vtk DataFile Version 3.0\n')
+        f.write('sample points\n')
+        f.write('ASCII\n')
+        f.write('DATASET POLYDATA\n')
+        f.write('POINTS %d float\n' % len(vtxList))
+        sx, sy, sz = sig
+        if shift1 or shift2:
+            if shift1:
+                s1 = shift1
+            else:
+                s1 = [0.0, 0.0, 0.0]
+            if shift2:
+                s2 = shift2
+            else:
+                s2 = [0.0, 0.0, 0.0]
+            for v in vtxList:
+                vx = (sx * (v.x + s1[0])) + s2[0]
+                vy = (sy * (v.y + s1[1])) + s2[1]
+                vz = (sz * (v.z + s1[2])) + s2[2]
+                f.write('%f %f %f\n' % (vx, vy, vz))
+        else:
+            for v in vtxList:
+                f.write('%f %f %f\n' % (v.x, v.y, v.z))
+        f.write('\n')
+        f.write('LINES %d %d\n' % (0, 0))
+        f.write('\n')
+        f.write('POINT_DATA %d\n' % len(vtxList))
+        f.write('SCALARS vID int 1\n')
+        f.write('LOOKUP_TABLE default\n')
+        for v in vtxList:
+            f.write('%d\n' % v.id)
+        f.write('SCALARS objID int 1\n')
+        f.write('LOOKUP_TABLE default\n')
+        for v in vtxList:
+            f.write('%d\n' % v.objId)
+            
 def writeVtkPolylines(fname, vtxListList, 
                       shift1 = None, shift2 = None,
                       sig = (+1.0, +1.0, +1.0)):
