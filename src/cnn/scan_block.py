@@ -219,10 +219,10 @@ def evaluate():
     scan_sz = scanned_blk.shape
     fname_base = '%s_scanned_%d_%d_%d_%d_%d_%d' % (FLAGS.outname, x_base, y_base, z_base,
                                                    scan_sz[0], scan_sz[1], scan_sz[2])
-    writeBOV(fname_base, scanned_blk, 'density')
+    writeBOV(fname_base, reorder_bkl(scanned_blk), 'density')
     fname_base = '%s_pred_%d_%d_%d_%d_%d_%d' % (FLAGS.outname, x_base, y_base, z_base,
                                                 scan_sz[0], scan_sz[1], scan_sz[2])
-    writeBOV(fname_base, pred_blk, 'prediction')
+    writeBOV(fname_base, reorder_blk(pred_blk), 'prediction')
 
 
 def main(argv=None):  # pylint: disable=unused-argument
