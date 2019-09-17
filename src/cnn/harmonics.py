@@ -63,6 +63,12 @@ def dims_from_l(l):
     """
     return (l+1, (2 * l) + 1)
 
+def hrm_dims_from_l(l):
+    """
+    convenience function for calculating harmonic array dims from the associated l
+    """
+    return (2, l+1, l+1)
+
 def random_rotate_ball_data(vals_to_rotate, full_chain, l_dict):
     r0, r1, r2 = np.random.random(size=3)
     theta = np.arccos((2.0 * r0) - 1.0)
@@ -260,9 +266,132 @@ def lnet(images, l_max, l_min, n_chan):
         rslt = tf.reshape(rslt, [-1, 2 * (l_min + 1) * (l_min + 1), n_chan])
     print('tf side: reshaped rslt: ', rslt)
     return rslt
+
+
+def samples_to_ylms(images, layer_list, n_chan):
+    """
+    Given a collection of samples on the sphere, transform the given sub-range to Ylms
     
+    input:
+      images: dimensions (batch_sz, N_BALL_SAMPS, n_chan)
+      layer_list: python list of integer layer numbers
+      n_chan: number of channels in the input
+    
+    returns:
+      rslt: dimensions (blk_sz, hrm_samps, n_chan)
+        where hrm_samps is the sum over layer_list of (2 * (l+1) * (l+1))
+    """
+    edge_len = 2 * RAD_PIXELS + 1
+    r_max = 0.5*float(edge_len + 1)
+    full_chain = prep_chain(edge_len, MAX_L, r_max)
+    l_dict = {}
+    for _, _, l in full_chain:
+        nodes, weights = psh.SHGLQ(l)
+        l_dict[l] = (nodes, weights)
+    tot_hrm_sz = 0
+    for l in layer_list:
+        tot_hrm_sz += np.prod(hrm_dims_from_l(l))
+    #print('tot_hrm_sz:', tot_hrm_sz)
+    #print('keys: ', l_dict.keys())
+
+    def this_op(images):
+        #print('images shape: ', images.shape)
+        assert n_chan == images.shape[-1], 'Got the wrong number of channels'
+        batch_sz, blk_sz = images.shape[:-1]
+        rslt = np.zeros((batch_sz, tot_hrm_sz, n_chan))
+        for idx_batch in range(batch_sz):
+            samp_offset = 0
+            hrm_offset = 0
+            for _, _, l in full_chain:
+                samp_dim1, samp_dim2 = dims_from_l(l)
+                samp_blk_sz = samp_dim1 * samp_dim2
+                if l in layer_list:
+                    hrm_blk_sz = np.prod(hrm_dims_from_l(l))
+                    #print('hrm_blk_sz:', hrm_blk_sz)
+                    for idx_chan in range(n_chan):
+                        samp_blk = images[idx_batch,
+                                          samp_offset: samp_offset+samp_blk_sz,
+                                          idx_chan]
+                        nodes, weights = l_dict[l]
+                        hrm_blk = psh.SHExpandGLQ(tf.reshape(samp_blk, [samp_dim1, samp_dim2]),
+                                                  weights, nodes)
+                        #print('hrm_blk shape: ', hrm_blk.shape)
+
+                        rslt[idx_batch,
+                             hrm_offset: hrm_offset + hrm_blk_sz,
+                             idx_chan] = hrm_blk.flat
+                    hrm_offset += hrm_blk_sz
+                samp_offset += samp_blk_sz
+        return rslt
+        
+    rslt = tf.py_function(this_op, [images],
+                          dtypes.float32, name="samples_to_ylms")
+    #with tf.control_dependencies([tf.print('rslt: ', rslt)]):
+    rslt = tf.reshape(rslt, [-1, tot_hrm_sz, n_chan])
+    return rslt
     
 
-                                                        
+def ylms_to_samples(ylms, layer_list, n_chan):
+    """
+    Given a subrange of ylms, transform to images on the sphere
+    
+    input:
+      images: dimensions (batch_sz, N_BALL_SAMPS, n_chan)
+      layer_list: python list of integer layer numbers
+      n_chan: number of channels in the input
+    
+    returns:
+      rslt: dimensions (blk_sz, hrm_samps, n_chan)
+        where hrm_samps is the sum over layer_list of (2 * (l+1) * (l+1))
+    """
+    edge_len = 2 * RAD_PIXELS + 1
+    r_max = 0.5*float(edge_len + 1)
+    full_chain = prep_chain(edge_len, MAX_L, r_max)
+    l_dict = {}
+    for _, _, l in full_chain:
+        nodes, weights = psh.SHGLQ(l)
+        l_dict[l] = (nodes, weights)
+    tot_hrm_sz = 0
+    for l in layer_list:
+        tot_hrm_sz += np.prod(hrm_dims_from_l(l))
+    #print('tot_hrm_sz:', tot_hrm_sz)
+    #print('keys: ', l_dict.keys())
+
+    def this_op(ylms):
+        #print('ylms shape: ', ylms.shape)
+        assert n_chan == ylms.shape[-1], 'Got the wrong number of channels'
+        batch_sz, hrm_blk_sz = ylms.shape[:-1]
+        rslt = np.zeros((batch_sz, N_BALL_SAMPS, n_chan))
+        for idx_batch in range(batch_sz):
+            samp_offset = 0
+            hrm_offset = 0
+            for _, _, l in full_chain:
+                samp_dim1, samp_dim2 = dims_from_l(l)
+                samp_blk_sz = samp_dim1 * samp_dim2
+                if l in layer_list:
+                    hrm_dim1, hrm_dim2, hrm_dim3 = hrm_dims_from_l(l)
+                    hrm_blk_sz = hrm_dim1 * hrm_dim2 * hrm_dim3
+                    #print('hrm_blk_sz:', hrm_blk_sz)
+                    for idx_chan in range(n_chan):
+                        hrm_blk = ylms[idx_batch,
+                                       hrm_offset: hrm_offset+hrm_blk_sz,
+                                       idx_chan]
+                        nodes, weights = l_dict[l]
+                        samp_blk = psh.MakeGridGLQ(tf.reshape(hrm_blk, [hrm_dim1, hrm_dim2,
+                                                                        hrm_dim3]),
+                                                   nodes)
+                        #print('samp_blk shape: ', samp_blk.shape)
+                        rslt[idx_batch,
+                             samp_offset: samp_offset + samp_blk_sz,
+                             idx_chan] = samp_blk.flat
+                    hrm_offset += hrm_blk_sz
+                samp_offset += samp_blk_sz
+        return rslt
+        
+    rslt = tf.py_function(this_op, [ylms],
+                          dtypes.float32, name="ylms_to_samples")
+    #with tf.control_dependencies([tf.print('rslt: ', rslt)]):
+    rslt = tf.reshape(rslt, [-1, N_BALL_SAMPS, n_chan])
+    return rslt
     
 
