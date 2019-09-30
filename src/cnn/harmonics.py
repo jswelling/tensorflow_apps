@@ -45,7 +45,7 @@ def prep_chain(edgeLen, maxL, rMax):
     return fullChain
 
 
-def prep_rotations(edgeLen, maxL, rMax):
+def prep_transforms(edgeLen, maxL, rMax):
     """
     Build harmonics tables.  This is expected to be called once per block.
     """
@@ -53,9 +53,21 @@ def prep_rotations(edgeLen, maxL, rMax):
     lDict = {}
     for _, _, l in fullChain:
         nodes, weights = psh.SHGLQ(l)
-        lDict[l] = (nodes, weights, psh.djpi2(l))
+        lDict[l] = (nodes, weights)
     #print('##### Completed prep_rotations')
     return fullChain, lDict
+
+
+def prep_rotations(edgeLen, maxL, rMax):
+    """
+    Build harmonics tables plus rotations.  This is expected to be called once per block.
+    """
+    fullChain, lDict = prep_transforms(edgeLen, maxL, rMax)
+    for _, _, l in fullChain:
+        nodes, weights = lDict[l]
+        lDict[l] = (nodes, weights, psh.djpi2(l))
+    return fullChain, lDict
+
 
 def dims_from_l(l):
     """
@@ -195,82 +207,11 @@ def extract_and_pair(images, layer_list):
     return rslt
 
 
-def lnet_single(images, full_chain, l_dict, l_weights, lmix_weights, parms):
-    l_max, l_min, n_chan = parms
-    l_max = int(l_max)
-    l_min = int(l_min)
-    n_chan = int(n_chan)
-    sampOffset = 0
-    rslt = np.zeros((2, l_min+1, l_min+1, n_chan))
-    wtOffset = 0
-    for _, _, l in full_chain:
-        sampDim1, sampDim2 = dims_from_l(l)
-        sampBlkSz = sampDim1 * sampDim2
-        if l >= l_min and l <= l_max:
-            sampBlk = images[sampOffset: sampOffset+sampBlkSz]
-            samps = sampBlk.reshape((sampDim1, sampDim2))
-            nodes, weights, rotMtx = l_dict[l]
-            hrm = psh.SHExpandGLQ(samps, weights, nodes)
-            hrm = hrm[:, :l_min+1, :l_min+1]  # drop higher harmonics
-            weighted_hrm = np.einsum('alm,ln->almn', hrm, l_weights)
-            rslt += lmix_weights[wtOffset] * weighted_hrm
-            wtOffset += 1
-        sampOffset += sampBlkSz
-    return rslt
-
-
-def lnet_op(images, lmix_weights, l_weights, parms):
-    l_max, l_min, n_chan = parms
-    edge_len = 2 * RAD_PIXELS + 1
-    r_max = 0.5*float(edge_len + 1)
-    full_chain, l_dict = prep_rotations(edge_len, MAX_L, r_max)
-    print('images.shape is ', images.shape)
-    print('lmix_weights is type ', type(lmix_weights), ' shape ', lmix_weights.shape)
-    rslt = np.apply_along_axis(lnet_single, 1, images,
-                               full_chain=full_chain, l_dict=l_dict,
-                               l_weights=l_weights, lmix_weights=lmix_weights,
-                               parms=parms)
-    print('rslt.shape is ', rslt.shape)
-    blk_sz, a_sz, b_sz, c_sz, channels  = rslt.shape
-    assert a_sz == 2 and b_sz == c_sz, 'returned array has unexpected shape %s' % str(rslt.shape)
-    return tf.convert_to_tensor(rslt.reshape((blk_sz, a_sz*b_sz*c_sz, channels)).astype(np.float32))
-    
-
-def lnet(images, l_max, l_min, n_chan):
-    """
-    Implement the lnet algorithm
-    """
-    # All params must be float tensors, so we have to convert
-    parms = tf.constant([float(l_max), float(l_min), float(n_chan)])
-    
-    edge_len = 2 * RAD_PIXELS + 1
-    r_max = 0.5*float(edge_len + 1)
-    full_chain = prep_chain(edge_len, MAX_L, r_max)
-    n_mix_weights = len([1 for _, _, l in full_chain
-                         if l >= l_min and l <= l_max])  # not all ls have a corresponding shell
-
-    l_weights = tf.get_variable('lweight',
-                                shape=[(l_min + 1), n_chan],
-                                initializer=tf.initializers.he_uniform())
-    lmix_weights = tf.get_variable('lmixweight', shape=[n_mix_weights],
-                                   initializer=tf.initializers.he_uniform())
-    rslt = tf.py_function(lnet_op,
-                          [images, lmix_weights, l_weights, parms],
-                          dtypes.float32, name='lnet')
-    print('tf side: rslt:', rslt)
-    with tf.control_dependencies([tf.print('rslt: ', rslt),
-                                  tf.print('lweight: ', l_weights),
-                                  tf.print('lmix_weights: ', lmix_weights),
-                                  tf.print('gradients: ', 
-                                           tf.gradients(rslt,images))]):
-        rslt = tf.reshape(rslt, [-1, 2 * (l_min + 1) * (l_min + 1), n_chan])
-    print('tf side: reshaped rslt: ', rslt)
-    return rslt
-
-
 def samples_to_ylms(images, layer_list, n_chan):
     """
-    Given a collection of samples on the sphere, transform the given sub-range to Ylms
+    Given a collection of samples on the sphere, transform the layers specified
+    by layer_list to Ylms.  Note that layer_list is specifying the radii to be
+    transformed.  All l values within those layers are included in the output Ylms.
     
     input:
       images: dimensions (batch_sz, N_BALL_SAMPS, n_chan)
@@ -295,7 +236,7 @@ def samples_to_ylms(images, layer_list, n_chan):
     #print('keys: ', l_dict.keys())
 
     def this_op(images):
-        #print('images shape: ', images.shape)
+        print('images shape: ', images.shape)
         assert n_chan == images.shape[-1], 'Got the wrong number of channels'
         batch_sz, blk_sz = images.shape[:-1]
         rslt = np.zeros((batch_sz, tot_hrm_sz, n_chan))
