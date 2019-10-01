@@ -503,7 +503,7 @@ def lnet(images, l_min, l_max, n_chan):
     l_weights = tf.get_variable('lweight',
                                 shape=[(l_min + 1), n_chan],
                                 initializer=tf.initializers.he_uniform())
-    lmix_weights = tf.get_variable('lmixweight', shape=[n_mix_weights],
+    lmix_weights = tf.get_variable('lmixweight', shape=[n_mix_weights, n_chan],
                                    initializer=tf.initializers.he_uniform())
 
     indices, values, dense_shape = build_select_mtx(l_min, l_max, layer_list, full_chain)
@@ -522,7 +522,7 @@ def lnet(images, l_min, l_max, n_chan):
     mtx = tf.reshape(mtx, [-1, n_mix_weights, 2, l_min + 1, l_min + 1])
     mtx = tf.einsum('bxalm,lc->bxalmc', mtx, l_weights)
     tf.summary.histogram('l_weights', l_weights)
-    mtx = tf.einsum('bxalmc,x->balmc', mtx, lmix_weights)
+    mtx = tf.einsum('bxalmc,xc->balmc', mtx, lmix_weights)
     tf.summary.histogram('lmix_weights', lmix_weights)
     # dims now [batch_sz, 2, l_min+1, l_min+1, n_chan]
 
