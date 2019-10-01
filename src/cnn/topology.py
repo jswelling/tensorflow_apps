@@ -521,7 +521,9 @@ def lnet(images, l_min, l_max, n_chan):
     # dims now [batch_sz, n_mix_weights, elts_per_layer)]
     mtx = tf.reshape(mtx, [-1, n_mix_weights, 2, l_min + 1, l_min + 1])
     mtx = tf.einsum('bxalm,lc->bxalmc', mtx, l_weights)
+    tf.summary.histogram('l_weights', l_weights)
     mtx = tf.einsum('bxalmc,x->balmc', mtx, lmix_weights)
+    tf.summary.histogram('lmix_weights', lmix_weights)
     # dims now [batch_sz, 2, l_min+1, l_min+1, n_chan]
 
     return mtx
