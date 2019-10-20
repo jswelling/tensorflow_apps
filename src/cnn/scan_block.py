@@ -56,6 +56,8 @@ flags.DEFINE_string('file_list', None,
                    'A filename containing a list of .yaml files to use for training')
 flags.DEFINE_string('outname', 'scanner',
                     'A prefix for the scanned and predicted output file names')
+flags.DEFINE_boolean('random_rotation', False, 'use un-oriented data and apply random'
+                     ' rotations to each data sample')
 
 
 def scan(coord_base_V, scan_sz_V,
@@ -203,6 +205,10 @@ def evaluate():
 
     images = collect_ball_samples(subblock, edge_len, read_threads=FLAGS.read_threads)
     ctrpt_op = tf.dtypes.cast(images[:,0], tf.dtypes.uint8)
+
+    if FLAGS.random_rotation:
+        # ctrpt_op is not modified; it's just being used to fill a needed parameter
+        images, ctrpt_op = harmonics.apply_random_rotation(images, ctrpt_op)
 
     # Build a Graph that computes predictions from the inference model.
     logits = topology.inference(images, FLAGS.network_pattern)
