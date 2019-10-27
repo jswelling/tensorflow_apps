@@ -208,6 +208,7 @@ def evaluate():
 
     if FLAGS.random_rotation:
         # ctrpt_op is not modified; it's just being used to fill a needed parameter
+        images = tf.cast(images, tf.float32)
         images, ctrpt_op = harmonics.apply_random_rotation(images, ctrpt_op)
 
     # Build a Graph that computes predictions from the inference model.
