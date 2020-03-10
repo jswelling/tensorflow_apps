@@ -49,7 +49,7 @@ def layer_list_from_flags():
     """Extract a list of layers from the command line flag"""
     layer_list = FLAGS.layers.split(',')
     layer_list = [int(elt.strip()) for elt in layer_list]
-    assert all([elt > 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
+    assert all([elt >= 0 and elt <= MAX_L for elt in layer_list]), 'invalid layer requested'
     print('layer_list: %s'%layer_list)
     return layer_list
     
@@ -419,6 +419,116 @@ def build_filter(input, pattern_str, **kwargs):
         raise RuntimeError('Unknown inference pattern "%s"' % pattern_str)
 
 
+# def lnet_single(images, full_chain, l_dict, l_weights, lmix_weights, parms):
+#     l_max, l_min, n_chan = parms
+#     l_max = int(l_max)
+#     l_min = int(l_min)
+#     n_chan = int(n_chan)
+#     sampOffset = 0
+#     rslt = np.zeros((2, l_min+1, l_min+1, n_chan))
+#     wtOffset = 0
+#     for _, _, l in full_chain:
+#         sampDim1, sampDim2 = dims_from_l(l)
+#         sampBlkSz = sampDim1 * sampDim2
+#         if l >= l_min and l <= l_max:
+#             sampBlk = images[sampOffset: sampOffset+sampBlkSz]
+#             samps = sampBlk.reshape((sampDim1, sampDim2))
+#             nodes, weights, rotMtx = l_dict[l]
+#             hrm = psh.SHExpandGLQ(samps, weights, nodes)
+#             hrm = hrm[:, :l_min+1, :l_min+1]  # drop higher harmonics
+#             weighted_hrm = np.einsum('alm,ln->almn', hrm, l_weights)
+#             rslt += lmix_weights[wtOffset] * weighted_hrm
+#             wtOffset += 1
+#         sampOffset += sampBlkSz
+#     return rslt
+# 
+# 
+# def lnet_op(images, lmix_weights, l_weights, parms):
+#     l_max, l_min, n_chan = parms
+#     edge_len = 2 * RAD_PIXELS + 1
+#     r_max = 0.5*float(edge_len + 1)
+#     full_chain, l_dict = prep_rotations(edge_len, MAX_L, r_max)
+#     print('images.shape is ', images.shape)
+#     print('lmix_weights is type ', type(lmix_weights), ' shape ', lmix_weights.shape)
+#     rslt = np.apply_along_axis(lnet_single, 1, images,
+#                                full_chain=full_chain, l_dict=l_dict,
+#                                l_weights=l_weights, lmix_weights=lmix_weights,
+#                                parms=parms)
+#     print('rslt.shape is ', rslt.shape)
+#     blk_sz, a_sz, b_sz, c_sz, channels  = rslt.shape
+#     assert a_sz == 2 and b_sz == c_sz, 'returned array has unexpected shape %s' % str(rslt.shape)
+#     return tf.convert_to_tensor(rslt.reshape((blk_sz, a_sz*b_sz*c_sz, channels)).astype(np.float32))
+
+
+def calc_offset(dim1, dim2, dim3, x1, x2, x3):
+    return x3 + ((x1 + (dim1 * x2)) * dim2)
+
+
+def build_select_mtx(l_min, l_max, layer_list, full_chain):
+    """
+    Return a matrix that will pick the sub-matrices with fixed radial l out of a ball
+    """
+    tot_sz = sum([2 * (l+1) * (l+1) for l in layer_list])
+    out_sz = len(layer_list) * 2 * (l_min + 1) * (l_min + 1)
+    indices = []
+    values = []
+    dense_shape = [tot_sz, out_sz]
+    in_base = 0
+    out_base = 0
+    for rad_l in layer_list:
+        for a in range(2):
+            for b in range(l_min + 1):
+                for c in range(l_min + 1):
+                    in_offset = calc_offset(2, rad_l + 1, rad_l + 1, a, b, c)
+                    out_offset = calc_offset(2, l_min + 1, l_max + 1, a, b, c)
+                    indices.append([in_offset + in_base, out_offset + out_base])
+                    values.append(1.0)
+        in_base += 2 * (rad_l + 1) * (rad_l + 1)
+        out_base += 2 * (l_min + 1) * (l_min + 1)
+    return indices, values, dense_shape
+
+
+def lnet(images, l_min, l_max, n_chan):
+    """
+    Implement the lnet network
+    """
+    edge_len = 2 * RAD_PIXELS + 1
+    r_max = 0.5*float(edge_len + 1)
+    full_chain = harmonics.prep_chain(edge_len, MAX_L, r_max)
+    layer_list = [l for _, _, l in full_chain if l >= l_min and l <= l_max]
+    n_mix_weights = len(layer_list)
+    elts_per_layer = 2 * (l_min + 1) * (l_min + 1)
+    elts_before_select = sum([2*(l+1)*(l+1) for l in layer_list])
+
+    l_weights = tf.get_variable('lweight',
+                                shape=[(l_min + 1), n_chan],
+                                initializer=tf.initializers.he_uniform())
+    lmix_weights = tf.get_variable('lmixweight', shape=[n_mix_weights, n_chan],
+                                   initializer=tf.initializers.he_uniform())
+
+    indices, values, dense_shape = build_select_mtx(l_min, l_max, layer_list, full_chain)
+    select_mtx = tf.SparseTensor(indices=indices, values=values, dense_shape=dense_shape)
+    select_mtx = tf.sparse.reorder(select_mtx)
+
+    images = tf.reshape(images, [-1, N_BALL_SAMPS, 1])  # since next op expects explicit channels
+    ylms = harmonics.samples_to_ylms(images, layer_list, 1)
+    # dims of ylms should be [batch_sz, tot_hrm_sz, 1] where
+    #  tot_hrm_sz = [2*(l+1)*(l+1)] summed over l in layer_list
+    tot_hrm_sz = tf.shape(ylms)[1]
+    mtx = tf.reshape(ylms, [-1, tot_hrm_sz])
+    mtx = tf.sparse_tensor_dense_matmul(select_mtx, mtx, adjoint_a=True, adjoint_b=True)
+    mtx = tf.transpose(mtx)
+    # dims now [batch_sz, n_mix_weights, elts_per_layer)]
+    mtx = tf.reshape(mtx, [-1, n_mix_weights, 2, l_min + 1, l_min + 1])
+    mtx = tf.einsum('bxalm,lc->bxalmc', mtx, l_weights)
+    tf.summary.histogram('l_weights', l_weights)
+    mtx = tf.einsum('bxalmc,xc->balmc', mtx, lmix_weights)
+    tf.summary.histogram('lmix_weights', lmix_weights)
+    # dims now [batch_sz, 2, l_min+1, l_min+1, n_chan]
+
+    return mtx
+
+
 def inference(feature, pattern_str, **kwargs):
     """Build the model up to where it may be used for inference.
 
@@ -607,7 +717,7 @@ def inference(feature, pattern_str, **kwargs):
         num_neurons = 1024  # in dense non-linear layer
         
         with tf.variable_scope('lnet') as scope:
-            feature_harmonics = harmonics.lnet(feature, MAX_L, l_min, n_chan)
+            feature_harmonics = lnet(feature, l_min, MAX_L, n_chan)
             tf.summary.histogram('lnet', feature_harmonics)
 
         num_units = 2 * (l_min + 1) * (l_min + 1) * n_chan
