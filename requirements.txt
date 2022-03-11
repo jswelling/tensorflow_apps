@@ -5,7 +5,7 @@ nose2==0.6.5
 numpy==1.11.2
 olefile==0.44
 pbr==1.10.0
-Pillow==6.2.0
+Pillow==9.0.1
 protobuf==3.1.0.post1
 scipy==0.18.1
 six==1.10.0
